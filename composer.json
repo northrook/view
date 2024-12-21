@@ -1,0 +1,29 @@
+{
+  "name": "northrook/view",
+  "description": "An asset generator written in PHP. Creates optimised, public versions of assets from various sources.",
+  "type": "library",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Martin",
+      "email": "mn@northrook.com"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "Core\\View\\": "src"
+    }
+  },
+  "scripts": {
+    "phpstan": "vendor/bin/phpstan analyse"
+  },
+  "minimum-stability": "dev",
+  "prefer-stable": true,
+  "require": {
+    "php": ">=8.3",
+    "northrook/pathfinder": "dev-main"
+  },
+  "require-dev": {
+    "phpstan/phpstan": "@stable"
+  }
+}
