@@ -15,7 +15,7 @@
     }
   },
   "scripts": {
-    "phpstan": "vendor/bin/phpstan analyse"
+    "phpstan": "@php vendor/bin/phpstan analyse"
   },
   "minimum-stability": "dev",
   "prefer-stable": true,
@@ -24,6 +24,7 @@
     "northrook/pathfinder": "dev-main"
   },
   "require-dev": {
-    "phpstan/phpstan": "@stable"
+    "phpstan/phpstan": "@stable",
+    "northrook/dev-env": "dev-main"
   }
 }
