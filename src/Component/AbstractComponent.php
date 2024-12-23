@@ -6,6 +6,4 @@ namespace Core\View\Component;
 
 use Core\View\Interface\ViewComponentInterface;
 
-class AbstractComponent implements ViewComponentInterface
-{
-}
+class AbstractComponent implements ViewComponentInterface {}
