@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace Core\View\HTML;
 
 use Stringable;
+use BadMethodCallException;
 
+/**
+ */
 final class Tag implements Stringable
 {
     public const array TAGS = [
@@ -92,9 +95,7 @@ final class Tag implements Stringable
         'keygen',
     ];
 
-    private function __construct( private string $name )
-    {
-    }
+    private function __construct( private string $name ) {}
 
     public static function from( null|Tag|string $tag, false|string $fallback = 'div' ) : self
     {
@@ -124,6 +125,26 @@ final class Tag implements Stringable
     }
 
     /**
+     * @param string            $name
+     * @param array{string|Tag} $arguments
+     *
+     * @return bool
+     */
+    public function __call( string $name, array $arguments ) : bool
+    {
+        return match ( $name ) {
+            'isValidTag'    => $this::isValidTag( $this->name ),
+            'isContent'     => $this::isContent( $this->name ),
+            'isHeading'     => $this::isHeading( $this->name ),
+            'isInline'      => $this::isInline( $this->name ),
+            'isSelfClosing' => $this::isSelfClosing( $this->name ),
+            default         => throw new BadMethodCallException(
+                'Warning: Undefined method: '.$this::class."::\${$name}",
+            ),
+        };
+    }
+
+    /**
      * @param string $name
      *
      * @return self
@@ -135,22 +156,7 @@ final class Tag implements Stringable
     }
 
     /**
-     * @param 'heading'|'inline'|'self-closing'|string $name
-     *
-     * @return bool
-     */
-    public function is( string $name ) : bool
-    {
-        return match ( $name ) {
-            'heading'      => \in_array( $this->name, Tag::HEADING ),
-            'inline'       => \in_array( $this->name, Tag::INLINE ),
-            'self-closing' => \in_array( $this->name, Tag::SELF_CLOSING ),
-            default        => $this->name === $name,
-        };
-    }
-
-    /**
-     * @param null|array<string, null|array<array-key, ?string>|string>|Attributes $attributes
+     * @param null|array<array-key, null|array<array-key, string>|bool|string>|Attributes $attributes
      *
      * @return string
      */
@@ -175,32 +181,78 @@ final class Tag implements Stringable
      * Check if the provided tag is a valid HTML tag.
      *
      * - Only checks native HTML tags.
+     * - Instanced calls checks `$this->name`.
      *
-     * @param null|string|Tag $name
+     * @param null|self|string $name
      *
      * @return bool
      */
-    public static function isValidTag( null|string|Tag $name ) : bool
+    public static function isValidTag( null|string|Tag $name = null ) : bool
     {
         if ( ! $name ) {
             return false;
         }
 
-        return \in_array( \strtolower( $name ), [...Tag::TAGS, ...Tag::SELF_CLOSING], true );
+        return \in_array( \strtolower( (string) $name ), [...Tag::TAGS, ...Tag::SELF_CLOSING], true );
     }
 
-    public static function isContent( Tag|string $name ) : bool
+    /**
+     * Instanced calls checks `$this->name`.
+     *
+     * @param null|self|string $name
+     *
+     * @return bool
+     */
+    public static function isContent( null|string|self $name = null ) : bool
     {
+        if ( ! $name ) {
+            return false;
+        }
         return \in_array( \strtolower( (string) $name ), [...Tag::HEADING, ...Tag::INLINE, 'p'], true );
     }
 
-    public static function isInline( Tag|string $name ) : bool
+    /**
+     * Instanced calls checks `$this->name`.
+     *
+     * @param null|self|string $name
+     *
+     * @return bool
+     */
+    public static function isHeading( null|string|self $name = null ) : bool
     {
+        if ( ! $name ) {
+            return false;
+        }
+        return \in_array( \strtolower( (string) $name ), Tag::HEADING );
+    }
+
+    /**
+     * Instanced calls checks `$this->name`.
+     *
+     * @param null|self|string $name
+     *
+     * @return bool
+     */
+    public static function isInline( null|string|self $name = null ) : bool
+    {
+        if ( ! $name ) {
+            return false;
+        }
         return \in_array( \strtolower( (string) $name ), Tag::INLINE, true );
     }
 
-    public static function isSelfClosing( Tag|string $name ) : bool
+    /**
+     * Instanced calls checks `$this->name`.
+     *
+     * @param null|self|string $name
+     *
+     * @return bool
+     */
+    public static function isSelfClosing( null|string|self $name = null ) : bool
     {
+        if ( ! $name ) {
+            return false;
+        }
         return \in_array( \strtolower( (string) $name ), Tag::SELF_CLOSING, true );
     }
 }

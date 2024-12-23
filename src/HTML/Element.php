@@ -17,9 +17,9 @@ class Element implements Stringable
     public readonly Content $content;
 
     /**
-     * @param string|Tag                                                     $tag
-     * @param array<string, null|array<array-key, string>|string>|Attributes $attributes
-     * @param string|Stringable                                              ...$content
+     * @param string|Tag                                                             $tag
+     * @param array<array-key, null|array<array-key, string>|bool|string>|Attributes $attributes
+     * @param string|Stringable                                                      ...$content
      */
     public function __construct(
         string|Tag           $tag = 'div',
@@ -31,13 +31,12 @@ class Element implements Stringable
         $this->content    = new Content( ...$content );
     }
 
-    final public function render( bool $rebuild = false ) : string
+    protected function build() : string
     {
-        if ( $rebuild ) {
-            $this->html = null;
+        if ( $this->tag->isSelfClosing() ) {
+            return $this->tag->getOpeningTag( $this->attributes );
         }
-
-        return $this->html ??= \implode(
+        return \implode(
             '',
             [
                 $this->tag->getOpeningTag( $this->attributes ),
@@ -45,6 +44,15 @@ class Element implements Stringable
                 $this->tag->getClosingTag(),
             ],
         );
+    }
+
+    final public function render( bool $rebuild = false ) : string
+    {
+        if ( $rebuild ) {
+            $this->html = null;
+        }
+
+        return $this->html ??= $this->build();
     }
 
     public function __toString() : string

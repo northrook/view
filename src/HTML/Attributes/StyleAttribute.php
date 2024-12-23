@@ -50,7 +50,7 @@ final class StyleAttribute
      * @param bool                                $prepend
      * @param bool                                $append
      *
-     * @return $this
+     * @return Attributes
      */
     public function add( null|string|array $style, bool $prepend = false, bool $append = false ) : Attributes
     {
@@ -62,8 +62,8 @@ final class StyleAttribute
             $style = \trim( $style );
             $style = match ( true ) {
                 \str_contains( $style, ';' ) => \explode( ';', $style ),
-                \str_contains( $style, ':' ) => [$style],
-                default                      => $style,
+                // \str_contains( $style, ':' ) => [$style],
+                default => [$style],
             };
         }
 
@@ -158,9 +158,16 @@ final class StyleAttribute
         return $this;
     }
 
+    /**
+     * Remove one or more styles.
+     *
+     * @param string ...$style
+     *
+     * @return $this
+     */
     public function remove( string ...$style ) : self
     {
-        foreach ( (array) $style as $value ) {
+        foreach ( $style as $value ) {
             $value = \strtolower( \trim( $value ) );
             unset( $this->style[$value] );
         }

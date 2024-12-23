@@ -23,7 +23,7 @@ final class Attributes implements Stringable
     ];
 
     /**
-     * @param array<string, null|array<array-key, string>|string> $attributes
+     * @param array<string, null|array<array-key, string>|bool|string> $attributes
      */
     public function __construct( array $attributes = [] )
     {
