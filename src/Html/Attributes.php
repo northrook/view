@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Core\View\HTML;
+namespace Core\View\Html;
 
-use Core\View\HTML\Attributes\{ClassAttribute, StyleAttribute};
+use Core\View\Html\Attributes\{ClassAttribute, StyleAttribute};
 use Stringable, InvalidArgumentException, LogicException;
 
 /**

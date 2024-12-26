@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Core\View\HTML;
+namespace Core\View\Html;
 
 use Stringable;
 use BadMethodCallException;

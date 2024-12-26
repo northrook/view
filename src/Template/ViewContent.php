@@ -2,7 +2,7 @@
 
 namespace Core\View\Template;
 
-use Core\View\HTML\Element;
+use Core\View\Html\Element;
 use Core\View\Template\View;
 use Override;
 use Stringable;

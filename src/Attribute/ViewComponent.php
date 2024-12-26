@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Core\View\Attribute;
 
 use Attribute;
-use Core\View\HTML\Tag;
+use Core\View\Html\Tag;
 use Northrook\Logger\Log;
 
 /**

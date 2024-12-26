@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Core\View\HTML\Attributes;
+namespace Core\View\Html\Attributes;
 
 /**
  * @internal
