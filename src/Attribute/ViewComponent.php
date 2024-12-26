@@ -64,7 +64,9 @@ final class ViewComponent extends Autodiscover
 
     protected function setServiceID() : void
     {
-        $this->serviceID ??= 'view_component.'.classBasename( $this->className );
+        if ( ! $this->serviceID ) {
+            $this->serviceID = \strtolower( 'view.component.'.classBasename( $this->className ) );
+        }
     }
 
     /**
