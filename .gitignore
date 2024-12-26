@@ -20,6 +20,7 @@
 /build
 /index.php
 /*.html
+*.latte
 
 # Node
 /node_modules/

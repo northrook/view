@@ -1,13 +1,13 @@
 <?php
 
-namespace Core\View;
+declare(strict_types=1);
+
+namespace Core\View\HTML;
 
 use InvalidArgumentException;
-
-use Core\View\HTML\{Element, Tag};
 use Support\Escape;
 
-final class HTML
+trait StaticElements
 {
     /**
      * @param string                                    $href

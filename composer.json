@@ -21,7 +21,9 @@
   "prefer-stable": true,
   "require": {
     "php": ">=8.3",
-    "northrook/pathfinder": "dev-main"
+    "northrook/pathfinder": "dev-main",
+    "northrook/core-symfony": "dev-main",
+    "latte/latte": "@stable"
   },
   "require-dev": {
     "phpstan/phpstan": "@stable",

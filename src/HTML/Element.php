@@ -8,6 +8,8 @@ use Stringable;
 
 class Element implements Stringable
 {
+    use StaticElements;
+
     private ?string $html = null;
 
     public readonly Tag $tag;
