@@ -39,11 +39,11 @@ abstract class TemplateEngine implements TemplateEngineInterface
     private array $globalParameters = [];
 
     /**
-     * @param PathfinderInterface  $pathfinder
-     * @param array<int, mixed>    $configuration
-     * @param null|LoggerInterface $logger
-     * @param array<string, mixed> $globalParameters `$var: $value`
-     * @param \Latte\Extension[]   $engineExtensions
+     * @param PathfinderInterface                           $pathfinder
+     * @param array<string, bool|float|int|string|string[]> $configuration
+     * @param null|LoggerInterface                          $logger
+     * @param array<string, mixed>                          $globalParameters `$var: $value`
+     * @param \Latte\Extension[]                            $engineExtensions
      */
     public function __construct(
         protected readonly PathfinderInterface $pathfinder,
