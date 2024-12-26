@@ -10,6 +10,11 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 final class RegisterViewComponentsPass extends CompilerPass
 {
     /**
+     * @param array $directories
+     */
+    public function __construct( private array $directories ) {}
+
+    /**
      * Find classes annotated with {@see ViewComponent} and implementing the {@see ViewComponentInterface}.
      *
      * Register them as Components:
@@ -22,9 +27,10 @@ final class RegisterViewComponentsPass extends CompilerPass
      */
     public function compile( ContainerBuilder $container ) : void
     {
-        foreach ( $this->getDeclaredClasses() as $classId ) {
-            $this->console->info( $classId );
-        }
+        dump( $this->directories );
+        // foreach ( $this->getDeclaredClasses() as $classId ) {
+        //     $this->console->info( $classId );
+        // }
         // Reflect::getAttribute( $this->component->reflect(), ViewComponent::class );
     }
 }

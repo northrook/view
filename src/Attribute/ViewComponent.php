@@ -7,7 +7,6 @@ namespace Core\View\Attribute;
 use Attribute;
 use Core\View\Html\Tag;
 use Northrook\Logger\Log;
-use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 
 /**
  * Classing annotated with {@see ViewComponent} and implementing the {@see ViewComponentInterface}, will be autoconfigured as a `service`.
@@ -17,10 +16,10 @@ use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
  * @author  Martin Nielsen
  */
 #[Attribute( Attribute::TARGET_CLASS )]
-final class ViewComponent extends Autoconfigure
+final readonly class ViewComponent
 {
     /** @var string[] */
-    public readonly array $nodeTags;
+    public array $tags;
 
     /**
      * Configure how this {@see ViewComponentInterface} is handled.
@@ -41,24 +40,13 @@ final class ViewComponent extends Autoconfigure
      * @param string[] $tag      [optional]
      * @param bool     $static   [false]
      * @param int      $priority [0]
-     * @param bool     $lazy
-     * @param bool     $shared
      */
     public function __construct(
         string|array $tag = [],
         public bool  $static = false,
         public int   $priority = 0,
-        bool         $lazy = true,
-        bool         $shared = false,
     ) {
         $this->setTags( (array) $tag );
-        parent::__construct(
-            ['view.component_locator'],
-            lazy     : $lazy,
-            public   : false,
-            shared   : $shared,
-            autowire : false,
-        );
     }
 
     /**
@@ -82,6 +70,6 @@ final class ViewComponent extends Autoconfigure
             }
         }
 
-        $this->nodeTags = \array_values( $tags );
+        $this->tags = \array_values( $tags );
     }
 }
