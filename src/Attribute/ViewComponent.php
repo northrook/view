@@ -8,6 +8,7 @@ use Attribute;
 use Core\Symfony\DependencyInjection\Autodiscover;
 use Core\View\Html\Tag;
 use Northrook\Logger\Log;
+use function Support\classBasename;
 
 /**
  * Classing annotated with {@see ViewComponent} and implementing the {@see ViewComponentInterface}, will be autoconfigured as a `service`.
@@ -20,7 +21,7 @@ use Northrook\Logger\Log;
 final class ViewComponent extends Autodiscover
 {
     /** @var string[] */
-    public readonly array $tags;
+    public readonly array $nodeTags;
 
     /**
      * Configure how this {@see ViewComponentInterface} is handled.
@@ -42,16 +43,28 @@ final class ViewComponent extends Autodiscover
      * @param bool     $static    [false]
      * @param int      $priority  [0]
      * @param ?string  $serviceId
+     * @param bool     $autowire
      */
     public function __construct(
         string|array $tag = [],
         public bool  $static = false,
         public int   $priority = 0,
         ?string      $serviceId = null,
+        bool         $autowire = false,
     ) {
         $this->setTags( (array) $tag );
 
-        parent::__construct( $serviceId );
+        parent::__construct(
+            serviceID : $serviceId ?? '',
+            tags      : ['view.component_locator'],
+            lazy      : true,
+            autowire  : $autowire,
+        );
+    }
+
+    protected function setServiceID() : void
+    {
+        $this->serviceID ??= 'view_component.'.classBasename( $this->className );
     }
 
     /**
@@ -75,6 +88,6 @@ final class ViewComponent extends Autodiscover
             }
         }
 
-        $this->tags = \array_values( $tags );
+        $this->nodeTags = \array_values( $tags );
     }
 }
