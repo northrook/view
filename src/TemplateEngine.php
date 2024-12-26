@@ -23,7 +23,7 @@ use function String\hashKey;
  * @param string   $locale
  * @param bool     $debug
  *
- * @return Configuration
+ * @return array<int, mixed>
  */
 #[Pure]
 function config(
@@ -31,13 +31,13 @@ function config(
     array  $templateDirectories,
     string $locale = 'en',
     bool   $debug = true,
-) : Configuration {
-    return new Configuration(
+) : array {
+    return [
         $cacheDirectory,
         $templateDirectories,
         $locale,
         $debug,
-    );
+    ];
 }
 
 /**
@@ -54,6 +54,8 @@ function config(
  */
 abstract class TemplateEngine implements TemplateEngineInterface
 {
+    protected readonly Configuration $configuration;
+
     /** @var array<string, Engine> */
     private array $engine = [];
 
@@ -62,18 +64,20 @@ abstract class TemplateEngine implements TemplateEngineInterface
 
     /**
      * @param PathfinderInterface  $pathfinder
-     * @param Configuration        $configuration
+     * @param array<int, mixed>    $configuration
      * @param null|LoggerInterface $logger
      * @param array<string, mixed> $globalParameters `$var: $value`
      * @param \Latte\Extension[]   $engineExtensions
      */
     public function __construct(
         protected readonly PathfinderInterface $pathfinder,
-        protected readonly Configuration       $configuration,
+        array                                  $configuration,
         protected readonly ?LoggerInterface    $logger = null,
         array                                  $globalParameters = [],
         private readonly array                 $engineExtensions = [],
     ) {
+        $this->configuration = new Configuration( ...$configuration );
+
         foreach ( $globalParameters as $key => $value ) {
             $this->addGlobalParameter( $key, $value );
         }

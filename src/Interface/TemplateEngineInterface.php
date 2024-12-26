@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace Core\View\Interface;
 
-use Core\{PathfinderInterface,
-    View\Template\Engine\Configuration
+use Core\{PathfinderInterface
 };
 use Psr\Log\LoggerInterface;
 
@@ -13,12 +12,12 @@ interface TemplateEngineInterface
 {
     /**
      * @param PathfinderInterface  $pathfinder
-     * @param Configuration        $configuration
+     * @param array<int, mixed>    $configuration
      * @param null|LoggerInterface $logger
      */
     public function __construct(
         PathfinderInterface $pathfinder,
-        Configuration       $configuration,
+        array               $configuration,
         ?LoggerInterface    $logger,
     );
 
