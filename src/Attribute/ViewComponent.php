@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Core\View\Attribute;
 
 use Attribute;
+use Core\Symfony\DependencyInjection\Autodiscover;
 use Core\View\Html\Tag;
 use Northrook\Logger\Log;
 
@@ -16,10 +17,10 @@ use Northrook\Logger\Log;
  * @author  Martin Nielsen
  */
 #[Attribute( Attribute::TARGET_CLASS )]
-final readonly class ViewComponent
+final class ViewComponent extends Autodiscover
 {
     /** @var string[] */
-    public array $tags;
+    public readonly array $tags;
 
     /**
      * Configure how this {@see ViewComponentInterface} is handled.
@@ -37,16 +38,20 @@ final readonly class ViewComponent
      * ### `Priority`
      * The higher the number, the earlier the Component is parsed.
      *
-     * @param string[] $tag      [optional]
-     * @param bool     $static   [false]
-     * @param int      $priority [0]
+     * @param string[] $tag       [optional]
+     * @param bool     $static    [false]
+     * @param int      $priority  [0]
+     * @param ?string  $serviceId
      */
     public function __construct(
         string|array $tag = [],
         public bool  $static = false,
         public int   $priority = 0,
+        ?string      $serviceId = null,
     ) {
         $this->setTags( (array) $tag );
+
+        parent::__construct( $serviceId );
     }
 
     /**

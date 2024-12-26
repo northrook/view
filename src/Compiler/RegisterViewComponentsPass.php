@@ -4,15 +4,30 @@ namespace Core\View\Compiler;
 
 use Core\Symfony\DependencyInjection\CompilerPass;
 use Core\View\Attribute\ViewComponent;
-use Support\Reflect;
+use Support\{FileInfo};
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use InvalidArgumentException;
 
 final class RegisterViewComponentsPass extends CompilerPass
 {
+    /** @var FileInfo[] */
+    private array $directories;
+
     /**
-     * @param array $directories
+     * @param string[] $scan
      */
-    public function __construct( private array $directories ) {}
+    public function __construct( string ...$scan )
+    {
+        foreach ( $scan as $directory ) {
+            $fileInfo = new FileInfo( $directory );
+            if ( $fileInfo->isDir() && $fileInfo->isReadable() ) {
+                $this->directories[] = $fileInfo;
+            }
+            else {
+                throw new InvalidArgumentException();
+            }
+        }
+    }
 
     /**
      * Find classes annotated with {@see ViewComponent} and implementing the {@see ViewComponentInterface}.
@@ -25,12 +40,5 @@ final class RegisterViewComponentsPass extends CompilerPass
      *
      * @return void
      */
-    public function compile( ContainerBuilder $container ) : void
-    {
-        dump( $this->directories );
-        // foreach ( $this->getDeclaredClasses() as $classId ) {
-        //     $this->console->info( $classId );
-        // }
-        // Reflect::getAttribute( $this->component->reflect(), ViewComponent::class );
-    }
+    public function compile( ContainerBuilder $container ) : void {}
 }
