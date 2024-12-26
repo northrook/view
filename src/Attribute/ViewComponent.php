@@ -9,6 +9,7 @@ use Core\Symfony\DependencyInjection\Autodiscover;
 use Core\View\Html\Tag;
 use Northrook\Logger\Log;
 use function Support\classBasename;
+use Override;
 
 /**
  * Classing annotated with {@see ViewComponent} and implementing the {@see ViewComponentInterface}, will be autoconfigured as a `service`.
@@ -62,11 +63,10 @@ final class ViewComponent extends Autodiscover
         );
     }
 
-    protected function setServiceID() : void
+    #[Override]
+    protected function serviceID() : string
     {
-        if ( ! $this->serviceID ) {
-            $this->serviceID = \strtolower( 'view.component.'.classBasename( $this->className ) );
-        }
+        return \strtolower( 'view.component.'.classBasename( $this->className ) );
     }
 
     /**
