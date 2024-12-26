@@ -9,36 +9,12 @@ use Core\PathfinderInterface;
 use Core\View\Exception\TemplateCompilerException;
 use Core\View\Latte\PreformatterExtension;
 use Core\View\Template\Engine\Configuration;
-use JetBrains\PhpStorm\Pure;
 use Latte\{Engine, Loader, Loaders\FileLoader};
-use Support\FileInfo;
+use Support\{FileInfo};
 use Core\View\Interface\{TemplateEngineInterface};
 use Psr\Log\LoggerInterface;
 use RuntimeException;
 use function String\hashKey;
-
-/**
- * @param string   $cacheDirectory
- * @param string[] $templateDirectories
- * @param string   $locale
- * @param bool     $debug
- *
- * @return array<int, mixed>
- */
-#[Pure]
-function config(
-    string $cacheDirectory,
-    array  $templateDirectories,
-    string $locale = 'en',
-    bool   $debug = true,
-) : array {
-    return [
-        $cacheDirectory,
-        $templateDirectories,
-        $locale,
-        $debug,
-    ];
-}
 
 /**
  * Provides the Template Manager Service to the Framework.
@@ -60,7 +36,7 @@ abstract class TemplateEngine implements TemplateEngineInterface
     private array $engine = [];
 
     /** @var array<string, mixed> */
-    private array $globalParameters;
+    private array $globalParameters = [];
 
     /**
      * @param PathfinderInterface  $pathfinder
