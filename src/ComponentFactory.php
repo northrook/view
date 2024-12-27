@@ -19,9 +19,9 @@ class ComponentFactory implements ComponentFactoryInterface
     /**
      * @template Component
      *
-     * @param ServiceLocator<Component>                           $locator
-     * @param array<string, ComponentFactory\ComponentProperties> $components
-     * @param ?LoggerInterface                                    $logger
+     * @param ServiceLocator<Component> $locator
+     * @param ComponentBag              $components
+     * @param ?LoggerInterface          $logger
      */
     public function __construct(
         protected readonly ServiceLocator   $locator,
