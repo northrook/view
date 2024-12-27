@@ -18,6 +18,10 @@ final class RegisterViewComponentsPass extends CompilerPass
      */
     public function __construct( string ...$scan )
     {
+
+        // Do not scan by files, we're using Autodisover for that
+        // Instead, look for tagged 'view.component_locator' services
+        // Reflect, find ViewComponent->tags, or we could do ViewComponent::config/parse
         foreach ( $scan as $directory ) {
             $fileInfo = new FileInfo( $directory );
             if ( $fileInfo->isDir() && $fileInfo->isReadable() ) {

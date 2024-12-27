@@ -1,17 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Core\View;
 
 use Core\Symfony\DependencyInjection as Core;
 use Core\View\Interface\{ComponentFactoryInterface};
-use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use Symfony\Component\DependencyInjection\ServiceLocator;
 use const Cache\AUTO;
 
-#[Autoconfigure(
-    lazy   : true,   // lazy-load using ghost
-    public : false,  // private
-)]
 class ComponentFactory implements ComponentFactoryInterface
 {
     use Core\ServiceLocator;
@@ -21,9 +18,7 @@ class ComponentFactory implements ComponentFactoryInterface
      *
      * @param ServiceLocator<Component> $locator `view.component_locator`
      */
-    public function __construct(
-        private readonly ServiceLocator $locator,
-    ) {}
+    public function __construct( public readonly ServiceLocator $locator ) {}
 
     /**
      * Renders a component at runtime.
