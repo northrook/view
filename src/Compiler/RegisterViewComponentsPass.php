@@ -6,7 +6,6 @@ namespace Core\View\Compiler;
 
 use Symfony\Component\DependencyInjection\{ContainerBuilder,
     Definition,
-    Loader\Configurator\InlineServiceConfigurator,
     Reference
 };
 use Core\Symfony\DependencyInjection\CompilerPass;
@@ -77,6 +76,7 @@ final class RegisterViewComponentsPass extends CompilerPass
     {
         $serviceLocatorArguments = [];
         $componentProperties     = [];
+        $componentTags           = [];
 
         foreach ( $this->taggedViewComponents() as $serviceId ) {
             //
@@ -91,6 +91,10 @@ final class RegisterViewComponentsPass extends CompilerPass
                 $this->container->getDefinition( $serviceId ),
             );
 
+            $properties = $viewComponent->getProperties();
+
+            $componentTags = \array_merge( $componentTags, $properties['tagged'] );
+
             if ( $viewComponent ) {
                 $componentProperties[$serviceId]     = $viewComponent->getProperties();
                 $serviceLocatorArguments[$serviceId] = new Reference( $serviceId );
@@ -102,10 +106,11 @@ final class RegisterViewComponentsPass extends CompilerPass
 
         $this->locatorDefinition->setArguments( [$serviceLocatorArguments] );
 
-        $componentBag = new InlineServiceConfigurator( new Definition( ComponentBag::class ) );
-        $componentBag->args( [$componentProperties] );
+        $componentBag = new Definition( ComponentBag::class );
+        $componentBag->setArguments( [$componentProperties] );
 
         $this->factoryDefinition->replaceArgument( '$components', $componentBag );
+        $this->factoryDefinition->replaceArgument( '$tags', $componentTags );
 
         $meta = new PhpStormMeta( $this->projectDirectory );
 
@@ -119,6 +124,7 @@ final class RegisterViewComponentsPass extends CompilerPass
                 [ComponentBag::class, 'has'],
                 [ComponentBag::class, 'get'],
                 [ComponentFactory::class, 'render'],
+                [ComponentFactory::class, 'has'],
             ],
         );
 

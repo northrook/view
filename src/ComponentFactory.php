@@ -4,28 +4,35 @@ declare(strict_types=1);
 
 namespace Core\View;
 
-use Core\Symfony\DependencyInjection as Core;
-use Core\View\Interface\{ComponentFactoryInterface};
-use Core\View\ComponentFactory\ComponentBag;
+use Core\View\Interface\{ComponentFactoryInterface, ViewComponentInterface};
+use Core\View\ComponentFactory\{ComponentBag, ComponentProperties};
+use Core\View\Exception\ComponentNotFoundException;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ServiceLocator;
 use const Cache\AUTO;
+use InvalidArgumentException;
 
 class ComponentFactory implements ComponentFactoryInterface
 {
-    public const string PARAMETER_KEY = 'view.components';
-    // use Core\ServiceLocator;
+    /**
+     * `[ component.name => uniqueId ]`.
+     *
+     * @var array<string, array<int, string>>
+     */
+    private array $instantiated = [];
 
     /**
-     * @template Component
+     * @template Component of ViewComponentInterface
      *
      * @param ServiceLocator<Component> $locator
      * @param ComponentBag              $components
+     * @param array<string, string>     $tags
      * @param ?LoggerInterface          $logger
      */
     public function __construct(
         protected readonly ServiceLocator   $locator,
         protected readonly ComponentBag     $components,
+        protected readonly array            $tags = [],
         protected readonly ?LoggerInterface $logger,
     ) {
         dump( $this );
@@ -38,11 +45,107 @@ class ComponentFactory implements ComponentFactoryInterface
      * @param array<string, mixed> $arguments
      * @param ?int                 $cache
      *
-     * @return string
+     * @return ViewComponentInterface
      */
-    public function render( string $component, array $arguments = [], ?int $cache = AUTO ) : string
+    public function render( string $component, array $arguments = [], ?int $cache = AUTO ) : ViewComponentInterface
     {
-        dump( $this->locator->getProvidedServices() );
-        return $component;
+        return $this->getComponent( $component );
+    }
+
+    // :: retrieve
+
+    /**
+     * Begin the Build proccess of a component.
+     *
+     * @param class-string|ComponentProperties|string $component
+     *
+     * @return ViewComponentInterface
+     */
+    final public function getComponent( string|ComponentProperties $component ) : ViewComponentInterface
+    {
+        $component = $this->getComponentName( (string) $component );
+
+        if ( ! $component ) {
+            $message = "The component '{$component}' does not exist.";
+            throw new InvalidArgumentException( $message );
+        }
+
+        if ( $this->locator->has( $component ) ) {
+            $component = $this->locator->get( $component );
+
+            \assert( $component instanceof ViewComponentInterface );
+
+            return clone $component;
+        }
+
+        throw new ComponentNotFoundException( $component, 'Not found in the Component Container.' );
+    }
+
+    final public function getComponentProperties( string $component ) : ?ComponentProperties
+    {
+        $component = $this->getComponentName( $component );
+
+        if ( ! $component || ! $this->components->has( $component ) ) {
+            return null;
+        }
+
+        return $this->components->get( $component );
+    }
+
+    /**
+     * @param string $from name or tag
+     *
+     * @return null|string
+     */
+    final public function getComponentName( string $from ) : ?string
+    {
+        // If the provided $value matches an array name, return it
+        if ( $this->components->has( $from ) ) {
+            return $from;
+        }
+
+        return $this->tags[ComponentProperties::tag( $from )] ?? null;
+    }
+
+    /**
+     * @return array<string, array<int, string>>
+     */
+    final public function getInstantiated() : array
+    {
+        return $this->instantiated;
+    }
+
+    /**
+     * @return ComponentProperties[]
+     */
+    final public function getRegisteredComponents() : array
+    {
+        return $this->components->all();
+    }
+
+    // .. validation
+
+    /**
+     * Check if the provided string matches any {@see ComponentFactory::$components}.
+     *
+     * @param string $component
+     *
+     * @return bool
+     */
+    final public function hasComponent( string $component ) : bool
+    {
+        return $this->components->has( $component );
+    }
+
+    /**
+     * Check if the provided string matches any {@see ComponentFactory::$tags}.
+     *
+     * @param string $tag
+     *
+     * @return bool
+     */
+    final public function hasTag( string $tag ) : bool
+    {
+        return \array_key_exists( $tag, $this->tags );
     }
 }

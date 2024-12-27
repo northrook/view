@@ -8,6 +8,7 @@ use Latte\Compiler\{Node, Nodes\FragmentNode, Nodes\TextNode, NodeTraverser};
 use Latte\Compiler\Nodes\Html\ElementNode;
 use Latte\Compiler\Nodes\Php\ExpressionNode;
 use Support\{Character, Trim};
+
 trait NodeTraverserMethods
 {
     /**

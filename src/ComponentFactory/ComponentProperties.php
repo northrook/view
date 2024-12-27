@@ -6,12 +6,13 @@ namespace Core\View\ComponentFactory;
 
 use Core\View\Interface\ViewComponentInterface;
 use Support\Interface\DataObject;
+use Stringable;
 
 /**
  * @internal
  * @author Martin Nielsen <mn@northrook.com>
  */
-final readonly class ComponentProperties extends DataObject
+final readonly class ComponentProperties extends DataObject implements Stringable
 {
     /**
      * @param string                               $name
@@ -29,6 +30,11 @@ final readonly class ComponentProperties extends DataObject
         public array  $tags = [],
         public array  $tagged = [],
     ) {}
+
+    public function __toString() : string
+    {
+        return $this->name;
+    }
 
     public function targetTag( string $tag ) : bool
     {
