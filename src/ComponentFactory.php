@@ -6,12 +6,14 @@ namespace Core\View;
 
 use Core\Symfony\DependencyInjection as Core;
 use Core\View\Interface\{ComponentFactoryInterface};
+use Core\View\ComponentFactory\ComponentBag;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ServiceLocator;
 use const Cache\AUTO;
 
 class ComponentFactory implements ComponentFactoryInterface
 {
+    public const string PARAMETER_KEY = 'view.components';
     // use Core\ServiceLocator;
 
     /**
@@ -23,9 +25,11 @@ class ComponentFactory implements ComponentFactoryInterface
      */
     public function __construct(
         protected readonly ServiceLocator   $locator,
-        protected readonly array            $components,
+        protected readonly ComponentBag     $components,
         protected readonly ?LoggerInterface $logger,
-    ) {}
+    ) {
+        dump( $this );
+    }
 
     /**
      * Renders a component at runtime.
@@ -38,6 +42,7 @@ class ComponentFactory implements ComponentFactoryInterface
      */
     public function render( string $component, array $arguments = [], ?int $cache = AUTO ) : string
     {
+        dump( $this->locator->getProvidedServices() );
         return $component;
     }
 }

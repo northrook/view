@@ -4,11 +4,18 @@ declare(strict_types=1);
 
 namespace Core\View\Compiler;
 
-use Symfony\Component\DependencyInjection\{ContainerBuilder, Definition, Reference};
+use Symfony\Component\DependencyInjection\{ContainerBuilder,
+    Definition,
+    Loader\Configurator\InlineServiceConfigurator,
+    Reference
+};
 use Core\Symfony\DependencyInjection\CompilerPass;
 use Core\View\Attribute\ViewComponent;
 use Core\View\ComponentFactory;
+use Core\View\ComponentFactory\ComponentBag;
 use ReflectionClass;
+use LogicException;
+use Support\{PhpStormMeta};
 
 final class RegisterViewComponentsPass extends CompilerPass
 {
@@ -59,12 +66,17 @@ final class RegisterViewComponentsPass extends CompilerPass
 
         $viewComponentAttributes = $reflectionClass->getAttributes( ViewComponent::class );
 
-        return $viewComponentAttributes[0]?->newInstance() ?? null;
+        /** @var ViewComponent $viewComponent */
+        $viewComponent = $viewComponentAttributes[0]?->newInstance();
+        $viewComponent->setClassName( $className );
+
+        return $viewComponent;
     }
 
     protected function registerTaggedComponents() : void
     {
         $serviceLocatorArguments = [];
+        $componentProperties     = [];
 
         foreach ( $this->taggedViewComponents() as $serviceId ) {
             //
@@ -79,14 +91,42 @@ final class RegisterViewComponentsPass extends CompilerPass
                 $this->container->getDefinition( $serviceId ),
             );
 
-            dump(
-                $viewComponent,
-            );
-
-            $serviceLocatorArguments[$serviceId] = new Reference( $serviceId );
+            if ( $viewComponent ) {
+                $componentProperties[$serviceId]     = $viewComponent->getProperties();
+                $serviceLocatorArguments[$serviceId] = new Reference( $serviceId );
+            }
+            else {
+                throw new LogicException( __METHOD__.' parsing '.$serviceId );
+            }
         }
 
         $this->locatorDefinition->setArguments( [$serviceLocatorArguments] );
+
+        $componentBag = new InlineServiceConfigurator( new Definition( ComponentBag::class ) );
+        $componentBag->args( [$componentProperties] );
+
+        $this->factoryDefinition->replaceArgument( '$components', $componentBag );
+
+        $meta = new PhpStormMeta( $this->projectDirectory );
+
+        $meta->registerArgumentsSet(
+            'view_component_keys',
+            ...\array_keys( $componentProperties ),
+        );
+
+        $generateReferences = \array_merge(
+            [
+                [ComponentBag::class, 'has'],
+                [ComponentBag::class, 'get'],
+                [ComponentFactory::class, 'render'],
+            ],
+        );
+
+        foreach ( $generateReferences as $generateReference ) {
+            $meta->expectedArguments( $generateReference, [0 => 'view_component_keys'] );
+        }
+
+        $meta->save( 'view_components' );
     }
 
     private function validateRequiredServices( ContainerBuilder $container ) : bool

@@ -7,7 +7,6 @@ namespace Core\View\Attribute;
 use Attribute;
 use Core\Symfony\Console\Output;
 use Core\Symfony\DependencyInjection\Autodiscover;
-use Core\View\ComponentFactory\ComponentProperties;
 use Core\View\Html\Tag;
 use Core\View\Interface\ViewComponentInterface;
 use Northrook\Logger\Log;
@@ -66,7 +65,7 @@ final class ViewComponent extends Autodiscover
         parent::__construct(
             serviceID : $serviceId ?? '',
             tags      : ['view.component_locator'],
-            lazy      : true,
+            lazy      : false,
             autowire  : $autowire,
         );
     }
@@ -101,20 +100,23 @@ final class ViewComponent extends Autodiscover
         $this->nodeTags = \array_values( $tags );
     }
 
-    public function getProperties() : ComponentProperties
+    /**
+     * @return array{name: string, class: class-string<ViewComponentInterface>, static: bool, priority: int, tags: string[], tagged: array<string, string>}
+     */
+    public function getProperties() : array
     {
-        return new ComponentProperties(
-            $this->serviceID,
-            $this->className,
-            $this->static,
-            $this->priority,
-            $this->nodeTags,
-            $this->taggedNodeTags(),
-        );
+        return [
+            'name'     => $this->serviceID,
+            'class'    => $this->className,
+            'static'   => $this->static,
+            'priority' => $this->priority,
+            'tags'     => $this->nodeTags,
+            'tagged'   => $this->taggedNodeTags(),
+        ];
     }
 
     /**
-     * @return array<string, ?string[]>
+     * @return array<string, string>
      */
     protected function taggedNodeTags() : array
     {
