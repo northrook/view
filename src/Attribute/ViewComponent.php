@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace Core\View\Attribute;
 
 use Attribute;
+use Core\Symfony\Console\Output;
 use Core\Symfony\DependencyInjection\Autodiscover;
+use Core\View\ComponentFactory\ComponentProperties;
 use Core\View\Html\Tag;
+use Core\View\Interface\ViewComponentInterface;
 use Northrook\Logger\Log;
 use function Support\classBasename;
 use Override;
@@ -21,6 +24,11 @@ use Override;
 #[Attribute( Attribute::TARGET_CLASS )]
 final class ViewComponent extends Autodiscover
 {
+    public const string LOCATOR_ID = 'view.component_locator';
+
+    /** @var class-string<ViewComponentInterface> */
+    protected readonly string $className;
+
     /** @var string[] */
     public readonly array $nodeTags;
 
@@ -91,5 +99,57 @@ final class ViewComponent extends Autodiscover
         }
 
         $this->nodeTags = \array_values( $tags );
+    }
+
+    public function getProperties() : ComponentProperties
+    {
+        return new ComponentProperties(
+            $this->serviceID,
+            $this->className,
+            $this->static,
+            $this->priority,
+            $this->nodeTags,
+            $this->taggedNodeTags(),
+        );
+    }
+
+    /**
+     * @return array<string, ?string[]>
+     */
+    protected function taggedNodeTags() : array
+    {
+        $set = [];
+
+        foreach ( $this->nodeTags as $tag ) {
+            if ( ! $tag || \preg_match( '#[^a-z]#', $tag[0] ) ) {
+                $reason = $tag ? null : 'Tags cannot be empty.';
+                $reason ??= ':' === $tag[0] ? 'Tags cannot start with a separator.'
+                        : 'Tags must start with a letter.';
+                Output::error( 'Invalid component tag.', 'Value: '.$tag, $reason );
+
+                continue;
+            }
+
+            if ( \str_contains( $tag, ':' ) ) {
+                $fragments      = \explode( ':', $tag );
+                $tag            = \array_shift( $fragments );
+                $taggedFragment = false;
+
+                foreach ( $fragments as $index => $fragment ) {
+                    if ( \preg_match( '{[a-z]+}', $fragment ) ) {
+                        $taggedFragment = true;
+                    }
+
+                    if ( $taggedFragment ) {
+                        unset( $fragments[$index] );
+                    }
+                }
+                $tag .= ':'.\implode( ':', $fragments );
+            }
+
+            $set[$tag] = $this->serviceID;
+        }
+
+        return $set;
     }
 }

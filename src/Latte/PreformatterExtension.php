@@ -4,16 +4,13 @@ declare(strict_types=1);
 
 namespace Core\View\Latte;
 
-use Core\View\Latte\Compiler\NodeTraverserMethods;
-use Latte;
-use Latte\Compiler\{Node,
-    Nodes\Html\ElementNode,
-    Nodes\Php\ExpressionNode,
-    Nodes\TextNode,
-    NodeTraverser
-};
-use Latte\Compiler\Nodes\TemplateNode;
 use Override;
+use Latte;
+use Latte\Compiler\{Node, NodeTraverser};
+use Latte\Compiler\Nodes\{FragmentNode, TemplateNode, TextNode};
+use Latte\Compiler\Nodes\Html\ElementNode;
+use Latte\Compiler\Nodes\Php\ExpressionNode;
+use Core\View\Latte\Compiler\NodeTraverserMethods;
 use Psr\Log\LoggerInterface;
 
 final class PreformatterExtension extends Latte\Extension
@@ -55,7 +52,7 @@ final class PreformatterExtension extends Latte\Extension
 
         $this->elementAttributes( $node );
 
-        if ( $node->content instanceof Latte\Compiler\Nodes\FragmentNode ) {
+        if ( $node->content instanceof FragmentNode ) {
             $this->trimFragmentWhitespace( $node->content, $node->name );
         }
 
