@@ -7,6 +7,9 @@ namespace Core\View\Latte;
 use Core\Symfony\DependencyInjection\Autodiscover;
 use Core\View\ComponentFactory;
 use Core\View\ComponentFactory\ComponentProperties;
+use Latte\Compiler\{Node, NodeTraverser};
+use Latte\Compiler\Nodes\Html\ElementNode;
+use Latte\Compiler\Nodes\Php\ExpressionNode;
 use Latte\Compiler\Nodes\TemplateNode;
 use Latte\Extension;
 use Override;
@@ -58,7 +61,49 @@ final class ViewComponentExtension extends Extension
      * @param TemplateNode        $template
      * @param ComponentProperties $component
      */
-    public function componentPass( TemplateNode $template, ComponentProperties $component ) : void {}
+    public function componentPass( TemplateNode $template, ComponentProperties $component ) : void
+    {
+        ( new NodeTraverser() )->traverse(
+            $template,
+            // null,
+            function( Node $node ) use ( $component ) : int|Node {
+                // Skip expression nodes, as a component cannot exist there
+                if ( $node instanceof ExpressionNode ) {
+                    return NodeTraverser::DontTraverseChildren;
+                }
+
+                // Components are only called from ElementNodes
+                if ( ! $node instanceof ElementNode ) {
+                    return $node;
+                }
+
+                if ( ! $component->targetTag( $node->name ) ) {
+                    return $node;
+                }
+
+                dump( $component );
+
+                return $node;
+                // $parser = new NodeParser( $node );
+                //
+                // if ( $component->static ) {
+                //     $build = clone $this->factory->getComponent( $component->name );
+                //     $build->create(
+                //             ComponentNode::nodeArguments( $parser ),
+                //             $component->tagged,
+                //     );
+                //
+                //     // TODO : Create a ComponentCompiler that does not include the FrameworkExtension
+                //     // $html = $build->render( new TemplateCompiler() );
+                //     $html = $build->render( $this->serviceLocator( TemplateCompiler::class ) );
+                //
+                //     return $html ? new StaticNode( $html, $node->position ) : $node;
+                // }
+                //
+                // return new ComponentNode( $component->name, $parser );
+            },
+        );
+    }
 
     #[Override]
     public function getProviders() : array

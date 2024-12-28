@@ -6,6 +6,7 @@ namespace Core\View;
 
 use Core\View\Interface\{ComponentFactoryInterface, ViewComponentInterface, ViewInterface};
 use Core\View\ComponentFactory\{ComponentBag, ComponentProperties};
+use Core\View\Component\AbstractComponent;
 use Core\View\Exception\ComponentNotFoundException;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ServiceLocator;
@@ -69,15 +70,15 @@ class ComponentFactory implements ComponentFactoryInterface
      */
     final public function getComponent( string|ComponentProperties $component ) : ViewComponentInterface
     {
-        $component = $this->getComponentName( (string) $component );
+        $serviceID = $this->getComponentServiceID( (string) $component );
 
-        if ( ! $component ) {
-            $message = "The component '{$component}' does not exist.";
+        if ( ! $serviceID ) {
+            $message = "The component '{$serviceID}'  does not exist.";
             throw new InvalidArgumentException( $message );
         }
 
-        if ( $this->locator->has( $component ) ) {
-            $component = $this->locator->get( $component );
+        if ( $this->locator->has( $serviceID ) ) {
+            $component = $this->locator->get( $serviceID );
 
             \assert( $component instanceof ViewComponentInterface );
 
@@ -107,7 +108,32 @@ class ComponentFactory implements ComponentFactoryInterface
     {
         // If the provided $value matches an array name, return it
         if ( $this->components->has( $from ) ) {
+            return $this->components->get( $from )->name;
+        }
+
+        if ( \class_exists( $from ) && \is_subclass_of( $from, AbstractComponent::class ) ) {
+            return $from::viewComponentAttribute()->name;
+        }
+
+        $serviceID = $this->tags[ComponentProperties::tag( $from )] ?? null;
+
+        return $serviceID ? $this->getComponentName( $serviceID ) : null;
+    }
+
+    /**
+     * @param string $from name or tag
+     *
+     * @return null|string
+     */
+    final public function getComponentServiceID( string $from ) : ?string
+    {
+        // If the provided $value matches an array name, return it
+        if ( $this->components->has( $from ) ) {
             return $from;
+        }
+
+        if ( \class_exists( $from ) && \is_subclass_of( $from, AbstractComponent::class ) ) {
+            return $from::viewComponentAttribute()->serviceID;
         }
 
         return $this->tags[ComponentProperties::tag( $from )] ?? null;

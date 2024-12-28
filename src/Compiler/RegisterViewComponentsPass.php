@@ -89,11 +89,11 @@ final class RegisterViewComponentsPass extends CompilerPass
 
             $viewComponent = $this->definitionViewComponentAttribute(
                 $this->container->getDefinition( $serviceId ),
-            );
+            ) ?? throw new LogicException();
 
             $properties = $viewComponent->getProperties();
 
-            $componentTags = \array_merge( $componentTags, $properties['tagged'] );
+            $componentTags = \array_merge( $componentTags, $properties['tags'] );
 
             if ( $viewComponent ) {
                 $componentProperties[$serviceId]     = $viewComponent->getProperties();

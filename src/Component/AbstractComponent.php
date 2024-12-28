@@ -5,13 +5,21 @@ declare(strict_types=1);
 namespace Core\View\Component;
 
 use Core\View\Html\{Attributes, Tag};
+use Core\View\Attribute\ViewComponent;
 use Core\View\Interface\ViewComponentInterface;
 use Core\View\Template\View;
+use InvalidArgumentException;
 use Northrook\Logger\Log;
 use Override;
+use function Cache\memoize;
+use ReflectionClass;
+use BadMethodCallException;
 
 abstract class AbstractComponent extends View implements ViewComponentInterface
 {
+    /** @var ?string Define a name for this component */
+    protected const ?string NAME = null;
+
     public readonly string $name;
 
     public readonly string $uniqueID;
@@ -151,5 +159,52 @@ abstract class AbstractComponent extends View implements ViewComponentInterface
                 $arguments[$position] = $tag;
             }
         }
+    }
+
+    final public static function componentName() : string
+    {
+        $name = self::NAME ?? self::viewComponentAttribute()->name;
+        return memoize(
+            static function() use ( $name ) {
+                if ( ! $name || ! \preg_match( '/^[a-z0-9:]+$/', $name ) ) {
+                    $message = static::class." name '{$name}' must be lower-case alphanumeric.";
+
+                    if ( \is_numeric( $name[0] ) ) {
+                        $message = static::class." name '{$name}' cannot start with a number.";
+                    }
+
+                    if ( \str_starts_with( $name, ':' ) || \str_ends_with( $name, ':' ) ) {
+                        $message = static::class." name '{$name}' must not start or end with a separator.";
+                    }
+
+                    throw new InvalidArgumentException( $message );
+                }
+
+                return $name;
+            },
+            $name,
+        );
+    }
+
+    final public static function viewComponentAttribute() : ViewComponent
+    {
+        /** @var ViewComponent $viewAttribute */
+        static $viewAttribute;
+
+        if ( $viewAttribute ) {
+            return $viewAttribute;
+        }
+
+        $viewComponentAttributes = ( new ReflectionClass( self::class ) )->getAttributes( ViewComponent::class );
+
+        if ( empty( $viewComponentAttributes ) ) {
+            $message = 'This Component is missing the '.ViewComponent::class.' attribute.';
+            throw new BadMethodCallException( $message );
+        }
+
+        $viewAttribute = $viewComponentAttributes[0]->newInstance();
+        $viewAttribute->setClassName( self::class );
+
+        return $viewAttribute;
     }
 }
