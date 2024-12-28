@@ -37,7 +37,9 @@ abstract class AbstractComponent extends View implements ViewComponentInterface
         array   $promote = [],
         ?string $uniqueId = null,
     ) : ViewComponentInterface {
-        $this->name = $this::componentName();
+        $this->name       = $this::componentName();
+        $this->attributes = new Attributes();
+        $this->prepareArguments( $arguments );
         $this->componentUniqueID( $uniqueId ?? \serialize( [$arguments] ) );
         $this->promoteTaggedProperties( $arguments, $promote );
         $this->maybeAssignTag( $arguments );
@@ -75,9 +77,24 @@ abstract class AbstractComponent extends View implements ViewComponentInterface
      */
     abstract protected function render() : string;
 
+    /**
+     * Process arguments passed to the {@see self::create()} method.
+     *
+     * @param array<string, mixed> $arguments
+     *
+     * @return void
+     */
+    protected function prepareArguments( array &$arguments ) : void {}
+
+    /**
+     * @param array                $attributes
+     * @param array<string, mixed> $arguments
+     *
+     * @return void
+     */
     final protected function setAttributes( array $attributes ) : void
     {
-        ( $this->attributes ??= new Attributes() )->set( $attributes );
+        $this->attributes->set( $attributes );
     }
 
     private function componentUniqueID( string $set ) : void
