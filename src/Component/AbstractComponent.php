@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace Core\View\Component;
 
-use Core\View\Html\Tag;
+use Core\View\Html\{Attributes, Tag};
 use Core\View\Interface\ViewComponentInterface;
 use Core\View\Template\View;
+use Northrook\Logger\Log;
 use Override;
 
 abstract class AbstractComponent extends View implements ViewComponentInterface
@@ -14,6 +15,8 @@ abstract class AbstractComponent extends View implements ViewComponentInterface
     public readonly string $name;
 
     public readonly string $uniqueID;
+
+    public readonly Attributes $attributes;
 
     #[Override]
     public function __toString() : string
@@ -29,6 +32,29 @@ abstract class AbstractComponent extends View implements ViewComponentInterface
         $this->componentUniqueID( $uniqueId ?? \serialize( [$arguments] ) );
         $this->promoteTaggedProperties( $arguments, $promote );
         $this->maybeAssignTag( $arguments );
+        $this->assignAttributes( $arguments );
+
+        if ( isset( $arguments['content'] ) ) {
+            dump( $arguments );
+            unset( $arguments['content'] );
+        }
+
+        foreach ( $arguments as $property => $value ) {
+            if ( \property_exists( $this, $property ) && ! isset( $this->{$property} ) ) {
+                $this->{$property} = $value;
+
+                continue;
+            }
+
+            if ( \is_string( $value ) && \method_exists( $this, $value ) ) {
+                $this->{$value}();
+            }
+
+            Log::error(
+                'The {component} was provided with undefined property {property}.',
+                ['component' => $this->name, 'property' => $property],
+            );
+        }
 
         return $this;
     }
@@ -39,6 +65,11 @@ abstract class AbstractComponent extends View implements ViewComponentInterface
      * @return string
      */
     abstract protected function render() : string;
+
+    final protected function setAttributes( array $attributes ) : void
+    {
+        ( $this->attributes ??= new Attributes() )->set( $attributes );
+    }
 
     private function componentUniqueID( string $set ) : void
     {
@@ -69,6 +100,24 @@ abstract class AbstractComponent extends View implements ViewComponentInterface
         $this->tag->set( $arguments['tag'] );
 
         unset( $arguments['tag'] );
+    }
+
+    /**
+     * @param array<string, mixed> $arguments
+     *
+     * @return void
+     */
+    private function assignAttributes( array &$arguments ) : void
+    {
+        if ( ! isset( $arguments['attributes'] ) ) {
+            return;
+        }
+
+        \assert( \is_array( $arguments['attributes'] ) );
+
+        $this->setAttributes( $arguments['attributes'] );
+
+        unset( $arguments['attributes'] );
     }
 
     /**
