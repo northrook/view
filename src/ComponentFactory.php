@@ -6,9 +6,11 @@ namespace Core\View;
 
 use Core\View\Interface\{ComponentFactoryInterface, ViewComponentInterface, ViewInterface};
 use Core\View\ComponentFactory\{ComponentBag, ComponentProperties};
+use Core\View\Attribute\ViewComponent;
 use Core\View\Component\AbstractComponent;
 use Core\View\Exception\ComponentNotFoundException;
 use Psr\Log\LoggerInterface;
+use Support\Str;
 use Symfony\Component\DependencyInjection\ServiceLocator;
 use const Cache\AUTO;
 use InvalidArgumentException;
@@ -78,14 +80,14 @@ class ComponentFactory implements ComponentFactoryInterface
         }
 
         if ( $this->locator->has( $serviceID ) ) {
-            $component = $this->locator->get( $serviceID );
+            $viewComponent = $this->locator->get( $serviceID );
 
-            \assert( $component instanceof ViewComponentInterface );
+            \assert( $viewComponent instanceof ViewComponentInterface );
 
-            return clone $component;
+            return clone $viewComponent;
         }
 
-        throw new ComponentNotFoundException( $component, 'Not found in the Component Container.' );
+        throw new ComponentNotFoundException( $serviceID, 'Not found in the Component Container.' );
     }
 
     final public function getComponentProperties( string $component ) : ComponentProperties
@@ -93,7 +95,10 @@ class ComponentFactory implements ComponentFactoryInterface
         $component = $this->getComponentServiceID( $component );
 
         if ( ! $component || ! $this->components->has( $component ) ) {
-            throw new ComponentNotFoundException( $component, 'Not found in the Component Container.' );
+            throw new ComponentNotFoundException(
+                $component,
+                'Not found in the Component Container.',
+            );
         }
 
         return $this->components->get( $component );
@@ -121,22 +126,32 @@ class ComponentFactory implements ComponentFactoryInterface
     }
 
     /**
-     * @param string $from name or tag
+     * @param string $from class, name, or tag
      *
      * @return null|string
      */
     final public function getComponentServiceID( string $from ) : ?string
     {
+        if (
+            \str_contains( $from, '\\' )
+            && \class_exists( $from )
+            && \is_subclass_of( $from, AbstractComponent::class )
+        ) {
+            return $from::viewComponentAttribute()->serviceID;
+        }
+
+        $from = Str::start( $from, ViewComponent::PREFIX );
+
         // If the provided $value matches an array name, return it
         if ( $this->components->has( $from ) ) {
             return $from;
         }
 
-        if ( \class_exists( $from ) && \is_subclass_of( $from, AbstractComponent::class ) ) {
-            return $from::viewComponentAttribute()->serviceID;
-        }
+        $tag = ComponentProperties::tag( $from );
 
-        return $this->tags[ComponentProperties::tag( $from )] ?? null;
+        return $this->tags[$tag] ?? throw new InvalidArgumentException(
+            "Unable to resolve Component serviceID from '{$from}'.",
+        );
     }
 
     /**

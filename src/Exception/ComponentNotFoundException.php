@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Core\View\Exception;
 
-use Core\View\Interface\ComponentInterface;
+use Core\View\Interface\ViewComponentInterface;
 use InvalidArgumentException;
 use Throwable;
 
@@ -17,7 +17,7 @@ class ComponentNotFoundException extends InvalidArgumentException
         ?string                 $message = null,
         ?Throwable              $previous = null,
     ) {
-        $this->interface = ComponentInterface::class;
+        $this->interface = ViewComponentInterface::class;
 
         parent::__construct( $this->message( $message ), 500, $previous );
     }
