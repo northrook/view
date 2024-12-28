@@ -20,7 +20,7 @@ final readonly class ComponentProperties extends DataObject implements Stringabl
      * @param bool                                 $static
      * @param int                                  $priority
      * @param string[]                             $tags
-     * @param array<string, ?string[]>             $tagged
+     * @param array<string, string>             $tagged
      */
     public function __construct(
         public string $name,

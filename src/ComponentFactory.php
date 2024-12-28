@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Core\View;
 
-use Core\View\Interface\{ComponentFactoryInterface, ViewComponentInterface};
+use Core\View\Interface\{ComponentFactoryInterface, ViewComponentInterface, ViewInterface};
 use Core\View\ComponentFactory\{ComponentBag, ComponentProperties};
 use Core\View\Exception\ComponentNotFoundException;
 use Psr\Log\LoggerInterface;
@@ -22,18 +22,16 @@ class ComponentFactory implements ComponentFactoryInterface
     private array $instantiated = [];
 
     /**
-     * @template Component of ViewComponentInterface
-     *
-     * @param ServiceLocator<Component> $locator
-     * @param ComponentBag              $components
-     * @param array<string, string>     $tags
-     * @param ?LoggerInterface          $logger
+     * @param ServiceLocator<ViewComponentInterface> $locator
+     * @param ComponentBag                           $components
+     * @param array<string, string>                  $tags
+     * @param ?LoggerInterface                       $logger
      */
     public function __construct(
         protected readonly ServiceLocator   $locator,
         protected readonly ComponentBag     $components,
         protected readonly array            $tags = [],
-        protected readonly ?LoggerInterface $logger,
+        protected readonly ?LoggerInterface $logger = null,
     ) {
         dump( $this );
     }
@@ -41,15 +39,23 @@ class ComponentFactory implements ComponentFactoryInterface
     /**
      * Renders a component at runtime.
      *
-     * @param class-string|string  $component
-     * @param array<string, mixed> $arguments
-     * @param ?int                 $cache
+     * @param class-string|string                                                    $component
+     * @param array<string, null|array<string,bool|string|string[]>|string|string[]> $arguments
+     * @param ?int                                                                   $cache
      *
      * @return ViewComponentInterface
      */
-    public function render( string $component, array $arguments = [], ?int $cache = AUTO ) : ViewComponentInterface
+    public function render( string $component, array $arguments = [], ?int $cache = AUTO ) : ViewInterface
     {
-        return $this->getComponent( $component );
+        $properties = $this->getComponentProperties( $component );
+
+        $viewComponent = $this->getComponent( $properties->name );
+
+        $viewComponent->create( $arguments, $properties->tagged );
+
+        $this->instantiated[$properties->name][] = $viewComponent->uniqueID;
+
+        return $viewComponent;
     }
 
     // :: retrieve
@@ -81,12 +87,12 @@ class ComponentFactory implements ComponentFactoryInterface
         throw new ComponentNotFoundException( $component, 'Not found in the Component Container.' );
     }
 
-    final public function getComponentProperties( string $component ) : ?ComponentProperties
+    final public function getComponentProperties( string $component ) : ComponentProperties
     {
         $component = $this->getComponentName( $component );
 
         if ( ! $component || ! $this->components->has( $component ) ) {
-            return null;
+            throw new ComponentNotFoundException( $component, 'Not found in the Component Container.' );
         }
 
         return $this->components->get( $component );

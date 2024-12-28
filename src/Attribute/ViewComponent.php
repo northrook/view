@@ -9,12 +9,13 @@ use Core\Symfony\Console\Output;
 use Core\Symfony\DependencyInjection\Autodiscover;
 use Core\View\Html\Tag;
 use Core\View\Interface\ViewComponentInterface;
+use Core\View\Component\AbstractComponent;
 use Northrook\Logger\Log;
 use function Support\classBasename;
 use Override;
 
 /**
- * Classing annotated with {@see ViewComponent} and implementing the {@see ViewComponentInterface}, will be autoconfigured as a `service`.
+ * Classing annotated with {@see AbstractComponent} and implementing the {@see ViewComponentInterface}, will be autoconfigured as a `service`.
  *
  * @used-by ComponentFactory, ComponentParser
  *
@@ -23,6 +24,8 @@ use Override;
 #[Attribute( Attribute::TARGET_CLASS )]
 final class ViewComponent extends Autodiscover
 {
+    public const string PREFIX = 'view.component.';
+
     public const string LOCATOR_ID = 'view.component_locator';
 
     /** @var class-string<ViewComponentInterface> */
@@ -30,6 +33,8 @@ final class ViewComponent extends Autodiscover
 
     /** @var string[] */
     public readonly array $nodeTags;
+
+    public readonly string $name;
 
     /**
      * Configure how this {@see ViewComponentInterface} is handled.
@@ -50,30 +55,36 @@ final class ViewComponent extends Autodiscover
      * @param string[] $tag       [optional]
      * @param bool     $static    [false]
      * @param int      $priority  [0]
+     * @param ?string  $name
      * @param ?string  $serviceId
-     * @param bool     $autowire
      */
     public function __construct(
         string|array $tag = [],
         public bool  $static = false,
         public int   $priority = 0,
+        ?string      $name = null,
         ?string      $serviceId = null,
-        bool         $autowire = false,
     ) {
+        if ( $name ) {
+            $this->name = \strtolower( \trim( $name, " \n\r\t\v\0." ) );
+        }
+
         $this->setTags( (array) $tag );
 
         parent::__construct(
             serviceID : $serviceId ?? '',
-            tags      : ['view.component_locator'],
+            tags      : ['view.component_locator', 'controller.service_arguments'],
             lazy      : false,
-            autowire  : $autowire,
+            public    : false,
+            autowire  : true,
         );
     }
 
     #[Override]
     protected function serviceID() : string
     {
-        return \strtolower( 'view.component.'.classBasename( $this->className ) );
+        $this->name ??= \strtolower( classBasename( $this->className ) );
+        return \strtolower( $this::PREFIX.$this->name );
     }
 
     /**
@@ -106,7 +117,7 @@ final class ViewComponent extends Autodiscover
     public function getProperties() : array
     {
         return [
-            'name'     => $this->serviceID,
+            'name'     => $this->name,
             'class'    => $this->className,
             'static'   => $this->static,
             'priority' => $this->priority,
