@@ -26,6 +26,7 @@ abstract class AbstractComponent extends View implements ViewComponentInterface
         array   $promote = [],
         ?string $uniqueId = null,
     ) : ViewComponentInterface {
+        $this->componentUniqueID( $uniqueId ?? \serialize( [$arguments] ) );
         $this->promoteTaggedProperties( $arguments, $promote );
         $this->maybeAssignTag( $arguments );
 
@@ -38,6 +39,19 @@ abstract class AbstractComponent extends View implements ViewComponentInterface
      * @return string
      */
     abstract protected function render() : string;
+
+    private function componentUniqueID( string $set ) : void
+    {
+        // Set a predefined hash
+        if ( \strlen( $set ) === 16
+             && \ctype_alnum( $set )
+             && \strtolower( $set ) === $set
+        ) {
+            $this->uniqueID = $set;
+            return;
+        }
+        $this->uniqueID = \hash( algo : 'xxh3', data : $set );
+    }
 
     /**
      * @param array<string, mixed> $arguments
