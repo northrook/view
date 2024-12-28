@@ -12,9 +12,9 @@ interface ViewComponentInterface extends ViewInterface
     /**
      * Creates a new {@see ComponentInterface} object using the provided `$arguments`.
      *
-     * @param array<string, null|array<string,bool|string|string[]>|string|string[]> $arguments
-     * @param array<string, string>                                                  $promote
-     * @param ?string                                                                $uniqueId  [optional]
+     * @param array<string, mixed>     $arguments
+     * @param array<string, ?string[]> $promote
+     * @param ?string                  $uniqueId  [optional]
      *
      * @return self
      */

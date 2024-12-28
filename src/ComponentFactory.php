@@ -39,9 +39,9 @@ class ComponentFactory implements ComponentFactoryInterface
     /**
      * Renders a component at runtime.
      *
-     * @param class-string|string                                                    $component
-     * @param array<string, null|array<string,bool|string|string[]>|string|string[]> $arguments
-     * @param ?int                                                                   $cache
+     * @param class-string|string  $component
+     * @param array<string, mixed> $arguments
+     * @param ?int                 $cache
      *
      * @return ViewComponentInterface
      */
@@ -49,7 +49,7 @@ class ComponentFactory implements ComponentFactoryInterface
     {
         $properties = $this->getComponentProperties( $component );
 
-        $viewComponent = $this->getComponent( $properties->name );
+        $viewComponent = $this->getComponent( $component );
 
         $viewComponent->create( $arguments, $properties->tagged );
 

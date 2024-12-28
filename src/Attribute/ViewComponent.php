@@ -11,6 +11,7 @@ use Core\View\Html\Tag;
 use Core\View\Interface\ViewComponentInterface;
 use Core\View\Component\AbstractComponent;
 use Northrook\Logger\Log;
+use Support\Reflect;
 use function Support\classBasename;
 use Override;
 
@@ -112,7 +113,7 @@ final class ViewComponent extends Autodiscover
     }
 
     /**
-     * @return array{name: string, class: class-string<ViewComponentInterface>, static: bool, priority: int, tags: string[], tagged: array<string, string>}
+     * @return array{name: string, class: class-string<ViewComponentInterface>, static: bool, priority: int, tags: string[], tagged: array<string, array<int, null|string>>}
      */
     public function getProperties() : array
     {
@@ -121,7 +122,7 @@ final class ViewComponent extends Autodiscover
             'class'    => $this->className,
             'static'   => $this->static,
             'priority' => $this->priority,
-            'tags'     => $this->nodeTags,
+            'tags'     => $this->componentNodeTags(),
             'tagged'   => $this->taggedNodeTags(),
         ];
     }
@@ -129,7 +130,7 @@ final class ViewComponent extends Autodiscover
     /**
      * @return array<string, string>
      */
-    protected function taggedNodeTags() : array
+    protected function componentNodeTags() : array
     {
         $set = [];
 
@@ -164,5 +165,43 @@ final class ViewComponent extends Autodiscover
         }
 
         return $set;
+    }
+
+    /**
+     * @return array<string, array<int, null|string>>
+     */
+    protected function taggedNodeTags() : array
+    {
+        $properties = [];
+
+        foreach ( $this->nodeTags as $tag ) {
+            $tags = \explode( ':', $tag );
+            $tag  = $tags[0];
+
+            foreach ( $tags as $position => $argument ) {
+                if ( \str_contains( $argument, '{' ) ) {
+                    $property = \trim( $argument, " \t\n\r\0\x0B{}" );
+
+                    if ( Reflect::class( $this->className )->hasProperty( $property ) ) {
+                        $tags[$position] = $property;
+                    }
+                    else {
+                        Output::error( "Property '{$property}' not found in component '{$this->name}'" );
+                    }
+
+                    continue;
+                }
+
+                if ( $position && ! Reflect::class( $this->className )->hasMethod( $argument ) ) {
+                    Output::error( "Method {$this->className}::{$argument}' not found in component '{$this->name}'" );
+                }
+
+                $tags[$position] = null;
+            }
+
+            $properties[$tag] = $tags;
+        }
+
+        return $properties;
     }
 }

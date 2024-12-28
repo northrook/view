@@ -97,13 +97,13 @@ final class Tag implements Stringable
 
     private function __construct( private string $name ) {}
 
-    public static function from( null|Tag|string $tag, false|string $fallback = 'div' ) : self
+    public static function from( null|Tag|string $value, false|string $fallback = 'div' ) : self
     {
-        if ( ! $tag && $fallback ) {
-            $tag = $fallback;
+        if ( ! $value && $fallback ) {
+            $value = $fallback;
         }
 
-        return new self( (string) $tag );
+        return new self( (string) $value );
     }
 
     /**
