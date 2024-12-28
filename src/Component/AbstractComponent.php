@@ -206,13 +206,6 @@ abstract class AbstractComponent extends View implements ViewComponentInterface
 
     final public static function viewComponentAttribute() : ViewComponent
     {
-        /** @var ViewComponent $viewAttribute */
-        static $viewAttribute;
-
-        if ( $viewAttribute ) {
-            return $viewAttribute;
-        }
-
         $viewComponentAttributes = ( new ReflectionClass( static::class ) )->getAttributes( ViewComponent::class );
 
         if ( empty( $viewComponentAttributes ) ) {
