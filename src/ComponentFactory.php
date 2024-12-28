@@ -90,7 +90,7 @@ class ComponentFactory implements ComponentFactoryInterface
 
     final public function getComponentProperties( string $component ) : ComponentProperties
     {
-        $component = $this->getComponentName( $component );
+        $component = $this->getComponentServiceID( $component );
 
         if ( ! $component || ! $this->components->has( $component ) ) {
             throw new ComponentNotFoundException( $component, 'Not found in the Component Container.' );

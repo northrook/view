@@ -37,6 +37,7 @@ abstract class AbstractComponent extends View implements ViewComponentInterface
         array   $promote = [],
         ?string $uniqueId = null,
     ) : ViewComponentInterface {
+        $this->name = $this::componentName();
         $this->componentUniqueID( $uniqueId ?? \serialize( [$arguments] ) );
         $this->promoteTaggedProperties( $arguments, $promote );
         $this->maybeAssignTag( $arguments );
@@ -195,7 +196,7 @@ abstract class AbstractComponent extends View implements ViewComponentInterface
             return $viewAttribute;
         }
 
-        $viewComponentAttributes = ( new ReflectionClass( self::class ) )->getAttributes( ViewComponent::class );
+        $viewComponentAttributes = ( new ReflectionClass( static::class ) )->getAttributes( ViewComponent::class );
 
         if ( empty( $viewComponentAttributes ) ) {
             $message = 'This Component is missing the '.ViewComponent::class.' attribute.';
@@ -203,7 +204,7 @@ abstract class AbstractComponent extends View implements ViewComponentInterface
         }
 
         $viewAttribute = $viewComponentAttributes[0]->newInstance();
-        $viewAttribute->setClassName( self::class );
+        $viewAttribute->setClassName( static::class );
 
         return $viewAttribute;
     }

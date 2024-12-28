@@ -7,6 +7,8 @@ namespace Core\View\Latte;
 use Core\Symfony\DependencyInjection\Autodiscover;
 use Core\View\ComponentFactory;
 use Core\View\ComponentFactory\ComponentProperties;
+use Core\View\Latte\Compiler\NodeParser;
+use Core\View\Latte\Node\{ComponentNode, StaticNode};
 use Latte\Compiler\{Node, NodeTraverser};
 use Latte\Compiler\Nodes\Html\ElementNode;
 use Latte\Compiler\Nodes\Php\ExpressionNode;
@@ -14,6 +16,7 @@ use Latte\Compiler\Nodes\TemplateNode;
 use Latte\Extension;
 use Override;
 use Psr\Log\LoggerInterface;
+use Exception;
 
 #[Autodiscover(
     tags     : ['monolog.logger', ['channel' => 'view']],
@@ -81,26 +84,25 @@ final class ViewComponentExtension extends Extension
                     return $node;
                 }
 
-                dump( $component );
+                $parser = new NodeParser( $node );
 
-                return $node;
-                // $parser = new NodeParser( $node );
-                //
-                // if ( $component->static ) {
-                //     $build = clone $this->factory->getComponent( $component->name );
-                //     $build->create(
-                //             ComponentNode::nodeArguments( $parser ),
-                //             $component->tagged,
-                //     );
-                //
-                //     // TODO : Create a ComponentCompiler that does not include the FrameworkExtension
-                //     // $html = $build->render( new TemplateCompiler() );
-                //     $html = $build->render( $this->serviceLocator( TemplateCompiler::class ) );
-                //
-                //     return $html ? new StaticNode( $html, $node->position ) : $node;
-                // }
-                //
-                // return new ComponentNode( $component->name, $parser );
+                if ( $component->static ) {
+                    $build = $this->factory->getComponent( $component );
+                    $build->create(
+                        ComponentNode::nodeArguments( $parser ),
+                        $component->tagged,
+                    );
+
+                    try {
+                        return new StaticNode( (string) $build, $node->position );
+                    }
+                    catch ( Exception $e ) {
+                        $this->logger?->critical( $e->getMessage() );
+                        return $node;
+                    }
+                }
+
+                return new ComponentNode( $component->name, $parser );
             },
         );
     }
