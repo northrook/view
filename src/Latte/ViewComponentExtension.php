@@ -19,7 +19,7 @@ use Psr\Log\LoggerInterface;
 use Exception;
 
 #[Autodiscover(
-    tags     : ['monolog.logger', ['channel' => 'view']],
+    tags     : ['monolog.logger' => ['channel' => 'view']],
     autowire : true,
 )]
 final class ViewComponentExtension extends Extension
