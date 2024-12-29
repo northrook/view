@@ -115,6 +115,11 @@ final class Attributes implements Stringable
         return $this;
     }
 
+    public function get( string $name ) : null|string|array
+    {
+        return $this->attributes[$name] ?? null;
+    }
+
     /**
      * @param string  $name
      * @param ?string $value
@@ -233,6 +238,12 @@ final class Attributes implements Stringable
         $attributes = [];
 
         foreach ( $this->attributes as $attribute => $value ) {
+            if ( \is_array( $value ) ) {
+                if ( ! \array_filter( $value ) ) {
+                    continue;
+                }
+            }
+
             // Attribute value formatting
             $value = match ( $attribute ) {
                 'class' => ClassAttribute::resolve( (array) $value ),
