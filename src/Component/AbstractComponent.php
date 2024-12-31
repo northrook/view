@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Core\View\Component;
 
-use Core\View\Html\{Attributes, Element, Tag};
+use Core\View\Html\{Attributes, Tag};
 use Core\View\Attribute\ViewComponent;
 use Core\View\Interface\ViewComponentInterface;
 use Core\View\Template\View;
@@ -76,7 +76,6 @@ abstract class AbstractComponent extends View implements ViewComponentInterface
      * @return string
      */
     abstract protected function render() : string;
-
 
     /**
      * Process arguments passed to the {@see self::create()} method.

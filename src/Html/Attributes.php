@@ -53,6 +53,16 @@ final class Attributes implements Stringable
     }
 
     /**
+     * @param array<string, null|array<array-key, string>|bool|string>|self $attributes
+     *
+     * @return self
+     */
+    public static function from( array|self $attributes ) : self
+    {
+        return $attributes instanceof Attributes ? $attributes : new Attributes( $attributes );
+    }
+
+    /**
      * Assign one or more attributes, clearing any existing attributes.
      *
      * @param array<string, null|array<array-key, string>|string> $attributes

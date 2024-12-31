@@ -7,10 +7,9 @@ namespace Core\View\Latte\Compiler;
 use Latte\Compiler\{Node, PrintContext};
 use Latte\Essential\Nodes\PrintNode;
 use Northrook\Logger\Log;
-use Stringable;
 use Support\Str;
 use const Support\EMPTY_STRING;
-use Exception;
+use Stringable, Exception;
 
 final class PrintedNode implements Stringable
 {

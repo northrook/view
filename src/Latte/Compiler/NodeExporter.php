@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace Core\View\Latte\Compiler;
 
-use Stringable;
 use Support\Str;
 use const Support\EMPTY_STRING;
-use LogicException;
+use Stringable, LogicException;
 
 final class NodeExporter
 {
@@ -85,6 +84,7 @@ final class NodeExporter
             $string = '[ ';
 
             foreach ( $argument as $key => $value ) {
+                \assert( \is_string( $value ) );
                 $key   = \trim( $key, " \t\n\r\0\x0B'" );
                 $value = \trim( $value, " \t\n\r\0\x0B'" );
                 $string .= "'{$key}' => '{$value}', ";
