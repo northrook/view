@@ -8,13 +8,8 @@ use Core\View\Interface\ViewInterface;
 use Latte\Runtime as Latte;
 use Stringable;
 
-class View implements ViewInterface
+abstract class View implements ViewInterface
 {
-    public function __toString() : string
-    {
-        return __METHOD__;
-    }
-
     /**
      * Return a {@see ViewInterface} as {@see Stringable} or `string`.
      *

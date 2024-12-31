@@ -15,6 +15,9 @@ use function Cache\memoize;
 use ReflectionClass;
 use BadMethodCallException;
 
+/**
+ * @method static string view()
+ */
 abstract class AbstractComponent extends View implements ViewComponentInterface
 {
     /** @var ?string Define a name for this component */
