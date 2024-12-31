@@ -256,7 +256,7 @@ final class Attributes implements Stringable
             }
 
             \assert(
-                \is_string( $value ) || \is_null( $value ) || \is_bool( $value ),
+                \is_string( $value ) || \is_null( $value ) || \is_bool( $value ) || \is_numeric( $value ),
                 "Attribute '{$name}' can only be null|string|bool. ".\gettype( $value ).' provided.',
             );
 
