@@ -33,7 +33,7 @@ final class Attributes implements Stringable
     /**
      * @param string $name
      *
-     * @return array<string, string|string[]>|ClassAttribute|StyleAttribute
+     * @return array<string, array<array-key, string>|bool|string>|ClassAttribute|StyleAttribute
      */
     public function __get( string $name ) : ClassAttribute|StyleAttribute|array
     {
@@ -65,7 +65,7 @@ final class Attributes implements Stringable
     /**
      * Assign one or more attributes, clearing any existing attributes.
      *
-     * @param array<string, null|array<array-key, string>|string> $attributes
+     * @param array<string, null|array<array-key, string>|bool|string> $attributes
      *
      * @return $this
      */
@@ -82,13 +82,13 @@ final class Attributes implements Stringable
      * - Boolean `$value` set as `true|false`.
      * - Only `class` and `style` accept `array` values.
      *
-     * @param null|array<string, null|array<array-key, null|bool|string>|string>|string $attribute
-     * @param null|array<array-key, null|bool|string>|bool|string                       $value
+     * @param array<string, null|array<array-key, string>|bool|string>|string $attribute
+     * @param null|array<array-key, string>|bool|string                       $value
      *
      * @return $this
      */
     public function add(
-        string|array           $attribute = null,
+        string|array           $attribute,
         string|array|bool|null $value = null,
     ) : self {
         if ( \is_string( $attribute ) ) {
@@ -107,13 +107,13 @@ final class Attributes implements Stringable
      * - Boolean `$value` set as `true|false`.
      * - Only `class` and `style` accept `array` values.
      *
-     * @param null|array<string, null|array<array-key, null|bool|string>|string>|string $attribute
-     * @param null|array<array-key, null|bool|string>|bool|string                       $value
+     * @param array<string, null|array<array-key, string>|bool|string>|string $attribute
+     * @param null|array<array-key, string>|bool|string                       $value
      *
      * @return $this
      */
     public function set(
-        string|array           $attribute = null,
+        string|array           $attribute,
         string|array|bool|null $value = null,
     ) : self {
         if ( \is_string( $attribute ) ) {
@@ -125,9 +125,32 @@ final class Attributes implements Stringable
         return $this;
     }
 
-    public function get( string $name ) : null|string|array
+    /**
+     * @param 'class'|'id'|'style'|string $name
+     *
+     * @return null|string
+     */
+    public function get( string $name ) : ?string
     {
-        return $this->attributes[$name] ?? null;
+        $value = $this->attributes[$name] ?? null;
+
+        if ( \is_array( $value ) ) {
+            // Attribute value formatting
+            return match ( $name ) {
+                'class' => ClassAttribute::resolve( $value ),
+                'style' => StyleAttribute::resolve( $value ),
+                default => \implode( ' ', \array_filter( $value ) ),
+            };
+        }
+
+        // Convert types to string
+        return match ( \gettype( $value ) ) {
+            'string'  => $value,
+            'boolean' => $value ? 'true' : 'false',
+            'object'  => \method_exists( $value, '__toString' ) ? $value->__toString() : null,
+            'NULL'    => null,
+            default   => (string) $value,
+        };
     }
 
     /**
@@ -153,13 +176,14 @@ final class Attributes implements Stringable
     /**
      * Merges one or more attributes.
      *
-     * @param array<string, null|array<array-key, ?string>|string>|Attributes $attributes
+     * @param array<string, null|array<array-key, string>|bool|string>|Attributes $attributes
      *
      * @return $this
      */
     public function merge( Attributes|array $attributes ) : self
     {
-        return $this;
+        $attributes = $attributes instanceof Attributes ? $attributes->attributes : $attributes;
+        return $this->assign( $attributes );
     }
 
     /**
@@ -254,22 +278,7 @@ final class Attributes implements Stringable
                 }
             }
 
-            // Attribute value formatting
-            $value = match ( $attribute ) {
-                'class' => ClassAttribute::resolve( (array) $value ),
-                'style' => StyleAttribute::resolve( (array) $value ),
-                default => $value,
-            };
-
-            // Convert types to string
-            $value = match ( \gettype( $value ) ) {
-                'string'  => $value,
-                'boolean' => $value ? 'true' : 'false',
-                'array'   => \implode( ' ', \array_filter( $value ) ),
-                'object'  => \method_exists( $value, '__toString' ) ? $value->__toString() : null,
-                'NULL'    => null,
-                default   => (string) $value,
-            };
+            $value = $this->get( $attribute );
 
             if ( \is_null( $value ) ) {
                 continue;
@@ -289,7 +298,7 @@ final class Attributes implements Stringable
     /**
      * Return a normalized, but unprocessed version of {@see self::$attributes}.
      *
-     * @return array<string, string|string[]>
+     * @return array<string, array<array-key, string>|bool|string>
      */
     private function attributeArray() : array
     {
