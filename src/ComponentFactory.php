@@ -35,9 +35,7 @@ class ComponentFactory implements ComponentFactoryInterface
         protected readonly ComponentBag     $components,
         protected readonly array            $tags = [],
         protected readonly ?LoggerInterface $logger = null,
-    ) {
-        // dump( $this );
-    }
+    ) {}
 
     /**
      * Renders a component at runtime.
@@ -96,7 +94,7 @@ class ComponentFactory implements ComponentFactoryInterface
 
         if ( ! $component || ! $this->components->has( $component ) ) {
             throw new ComponentNotFoundException(
-                $component,
+                (string) $component,
                 'Not found in the Component Container.',
             );
         }
