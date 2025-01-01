@@ -7,7 +7,7 @@ namespace Core\View\Latte\Compiler;
 use Latte\Compiler\{Node, Nodes\FragmentNode, Nodes\TextNode, NodeTraverser};
 use Latte\Compiler\Nodes\Html\ElementNode;
 use Latte\Compiler\Nodes\Php\ExpressionNode;
-use Support\{Character, Trim};
+use Support\{Character, Normalize};
 
 trait NodeTraverserMethods
 {
@@ -95,7 +95,7 @@ trait NodeTraverserMethods
         // dump( $nodeTag);
         // if ( Tag::isContent( $nodeTag ) ) {
         // }
-        $textNode->content = Trim::whitespace( $textNode->content );
+        $textNode->content = Normalize::whitespace( $textNode->content );
 
         if ( ! ( $previousTag || $nextTag ) || ! $textNode->content ) {
             return;

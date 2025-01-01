@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace Core\View\Compiler;
 
-use Symfony\Component\DependencyInjection\{ContainerBuilder,
+use Symfony\Component\DependencyInjection\{
+    ContainerBuilder,
     Definition,
     Reference
 };
@@ -12,8 +13,7 @@ use Core\Symfony\DependencyInjection\CompilerPass;
 use Core\View\Attribute\ViewComponent;
 use Core\View\ComponentFactory;
 use Core\View\ComponentFactory\ComponentBag;
-use ReflectionClass;
-use LogicException;
+use ReflectionClass, LogicException;
 use Support\{PhpStormMeta};
 
 final class RegisterViewComponentsPass extends CompilerPass

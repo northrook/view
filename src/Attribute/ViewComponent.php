@@ -4,16 +4,15 @@ declare(strict_types=1);
 
 namespace Core\View\Attribute;
 
-use Attribute;
+use Attribute, Override;
 use Core\Symfony\Console\Output;
 use Core\Symfony\DependencyInjection\Autodiscover;
-use Core\View\Html\Tag;
 use Core\View\Interface\ViewComponentInterface;
 use Core\View\Component\AbstractComponent;
+use Core\View\Html\Tag;
 use Northrook\Logger\Log;
 use Support\Reflect;
 use function Support\classBasename;
-use Override;
 
 /**
  * Classing annotated with {@see AbstractComponent} and implementing the {@see ViewComponentInterface}, will be autoconfigured as a `service`.
