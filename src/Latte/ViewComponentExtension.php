@@ -56,7 +56,7 @@ final class ViewComponentExtension extends Extension
             );
         }
 
-        dump( $this );
+        // dump( $this );
         return $componentPasses;
     }
 

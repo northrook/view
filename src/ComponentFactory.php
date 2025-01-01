@@ -36,7 +36,7 @@ class ComponentFactory implements ComponentFactoryInterface
         protected readonly array            $tags = [],
         protected readonly ?LoggerInterface $logger = null,
     ) {
-        dump( $this );
+        // dump( $this );
     }
 
     /**

@@ -196,7 +196,7 @@ abstract class TemplateEngine implements TemplateEngineInterface
 
         // Return full valid paths early
         if ( \is_readable( $view ) && \is_file( $view ) ) {
-            dump( $view, \is_file( $view ) );
+            // dump( $view, \is_file( $view ) );
             return $view;
         }
 

@@ -49,7 +49,7 @@ abstract class AbstractComponent extends View implements ViewComponentInterface
         $this->assignAttributes( $arguments );
 
         if ( isset( $arguments['content'] ) ) {
-            dump( $arguments );
+            dump( ['Component Content' => $arguments] );
             unset( $arguments['content'] );
         }
 
