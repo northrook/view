@@ -26,7 +26,12 @@ final class NodeParser
         $this->elementProperties();
     }
 
-    final public function getContent( ?ElementNode $from = null ) : array
+    /**
+     * @param null|ElementNode $from
+     *
+     * @return null|array<array-key, string>
+     */
+    final public function getContent( ?ElementNode $from = null ) : ?array
     {
         if ( ! $from && $this->node instanceof ElementNode ) {
             $from = $this->node;
@@ -38,14 +43,16 @@ final class NodeParser
 
         $level = 0;
 
-        return $this->parseContent( $from, $level );
+        $content = $this->parseContent( $from, $level );
+
+        return empty( $content ) ? null : $content;
     }
 
     /**
      * @param ElementNode $from
      * @param int         $level
      *
-     * @return array
+     * @return array<array-key, string>
      */
     final public function parseContent( ElementNode $from, int &$level ) : array
     {
@@ -90,19 +97,23 @@ final class NodeParser
      *
      * @param ?ElementNode $from
      *
-     * @return array
+     * @return array<string, null|array<array-key, string>|bool|int|string>
      */
     final public function attributes( ?ElementNode $from = null ) : array
     {
         // TODO : Does NOT account for expressions or n:tags at this point
         $attributes = [];
 
-        foreach ( self::getAttributeNodes( $from ?? $this->node ) as $attribute ) {
+        $node = $from ?? $this->node;
+
+        \assert( $node instanceof ElementNode );
+
+        foreach ( self::getAttributeNodes( $node ) as $attribute ) {
             $name              = NodeHelpers::toText( $attribute->name );
             $value             = NodeHelpers::toText( $attribute->value );
             $attributes[$name] = $value;
         }
-        // dump( $attributes );
+
         return $attributes;
     }
 

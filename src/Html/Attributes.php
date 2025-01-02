@@ -23,7 +23,7 @@ final class Attributes implements Stringable
     ];
 
     /**
-     * @param array<string, null|array<array-key, string>|bool|string> $attributes
+     * @param array<string, null|array<array-key, string>|bool|int|string> $attributes
      */
     public function __construct( array $attributes = [] )
     {
@@ -65,7 +65,7 @@ final class Attributes implements Stringable
     /**
      * Assign one or more attributes, clearing any existing attributes.
      *
-     * @param array<string, null|array<array-key, string>|bool|string> $attributes
+     * @param array<string, null|array<array-key, string>|bool|int|string> $attributes
      *
      * @return $this
      */
@@ -82,8 +82,8 @@ final class Attributes implements Stringable
      * - Boolean `$value` set as `true|false`.
      * - Only `class` and `style` accept `array` values.
      *
-     * @param array<string, null|array<array-key, string>|bool|string>|string $attribute
-     * @param null|array<array-key, string>|bool|string                       $value
+     * @param array<string, null|array<array-key, string>|bool|int|string>|string $attribute
+     * @param null|array<array-key, string>|bool|string                           $value
      *
      * @return $this
      */
@@ -107,8 +107,8 @@ final class Attributes implements Stringable
      * - Boolean `$value` set as `true|false`.
      * - Only `class` and `style` accept `array` values.
      *
-     * @param array<string, null|array<array-key, string>|bool|string>|string $attribute
-     * @param null|array<array-key, string>|bool|string                       $value
+     * @param array<string, null|array<array-key, string>|bool|int|string>|string $attribute
+     * @param null|array<array-key, string>|bool|string                           $value
      *
      * @return $this
      */
@@ -176,7 +176,7 @@ final class Attributes implements Stringable
     /**
      * Merges one or more attributes.
      *
-     * @param array<string, null|array<array-key, string>|bool|string>|Attributes $attributes
+     * @param array<string, null|array<array-key, string>|bool|int|string>|Attributes $attributes
      *
      * @return $this
      */
@@ -215,8 +215,8 @@ final class Attributes implements Stringable
     }
 
     /**
-     * @param array<string, null|array<array-key, string>|bool|string> $attributes
-     * @param bool                                                     $override
+     * @param array<string, null|array<array-key, string>|bool|int|string> $attributes
+     * @param bool                                                         $override
      */
     private function setAttributes( array $attributes, bool $override = false ) : void
     {

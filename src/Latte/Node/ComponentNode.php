@@ -2,8 +2,8 @@
 
 namespace Core\View\Latte\Node;
 
-use Core\View\Latte\Compiler\NodeExporter;
-use Core\View\Latte\Compiler\NodeParser;
+use Core\View\Html\Attributes;
+use Core\View\Latte\Compiler\{NodeExporter, NodeParser};
 use Latte\Compiler\Nodes\TextNode;
 use Latte\Compiler\PrintContext;
 use const Cache\AUTO;
@@ -54,6 +54,11 @@ final class ComponentNode extends TextNode
         return $this->content;
     }
 
+    /**
+     * @param NodeParser $node
+     *
+     * @return array{tag: string, attributes: array<string, null|array<array-key, string>|bool|int|string>, content: ?array<array-key, string>}
+     */
     public static function nodeArguments( NodeParser $node ) : array
     {
         return [
