@@ -27,8 +27,17 @@ final class ComponentContent
 
     /**
      * @return array<array-key, string>
+     * @param  string                   $separator
      */
-    public function getContent() : array
+    public function getString( string $separator = '' ) : string
+    {
+        return \implode( $separator, $this->content );
+    }
+
+    /**
+     * @return array<array-key, string>
+     */
+    public function getArray() : array
     {
         return $this->content;
     }

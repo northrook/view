@@ -45,13 +45,9 @@ abstract class AbstractComponent extends View implements ViewComponentInterface
         $this->prepareArguments( $arguments );
         $this->componentUniqueID( $uniqueId ?? \serialize( [$arguments] ) );
         $this->promoteTaggedProperties( $arguments, $promote );
+        $this->maybeAssignInnerContent( $arguments );
         $this->maybeAssignTag( $arguments );
         $this->assignAttributes( $arguments );
-
-        if ( isset( $arguments['content'] ) ) {
-            dump( ['Component HtmlContent' => $arguments] );
-            unset( $arguments['content'] );
-        }
 
         foreach ( $arguments as $property => $value ) {
             if ( \property_exists( $this, $property ) && ! isset( $this->{$property} ) ) {
@@ -111,6 +107,26 @@ abstract class AbstractComponent extends View implements ViewComponentInterface
             return;
         }
         $this->uniqueID = \hash( algo : 'xxh3', data : $set );
+    }
+
+    /**
+     * @param array<string, mixed> $arguments
+     *
+     * @return void
+     */
+    private function maybeAssignInnerContent( array &$arguments ) : void
+    {
+        $content = $arguments['content'] ?? null;
+
+        if ( $content && \method_exists( $this, 'assignInnerContent' ) ) {
+            $this->assignInnerContent( $content );
+        }
+        else {
+            $message = "Component missing required Trait 'InnerContent' when using inner html content.'";
+            throw new BadMethodCallException( $message );
+        }
+
+        unset( $arguments['content'] );
     }
 
     /**
