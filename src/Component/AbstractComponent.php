@@ -50,7 +50,7 @@ abstract class AbstractComponent extends View implements ViewComponentInterface
         $this->assignAttributes( $arguments );
 
         foreach ( $arguments as $property => $value ) {
-            if ( \property_exists( $this, $property ) && ! isset( $this->{$property} ) ) {
+            if ( \property_exists( $this, (string) $property ) && ! isset( $this->{$property} ) ) {
                 $this->{$property} = $value;
 
                 continue;
@@ -118,12 +118,14 @@ abstract class AbstractComponent extends View implements ViewComponentInterface
     {
         $content = $arguments['content'] ?? null;
 
-        if ( $content && \method_exists( $this, 'assignInnerContent' ) ) {
-            $this->assignInnerContent( $content );
-        }
-        else {
-            $message = "Component missing required Trait 'InnerContent' when using inner html content.'";
-            throw new BadMethodCallException( $message );
+        if ( $content ) {
+            if ( \method_exists( $this, 'assignInnerContent' ) ) {
+                $this->assignInnerContent( $content );
+            }
+            else {
+                $message = "Component missing required Trait 'InnerContent' when using inner html content.'";
+                throw new BadMethodCallException( $message );
+            }
         }
 
         unset( $arguments['content'] );

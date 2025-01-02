@@ -6,11 +6,12 @@ namespace Core\View\Component;
 
 use Core\View\Html\Element;
 use Northrook\Logger\Log;
+use Stringable;
 
 /**
  * @internal
  */
-final class ComponentContent
+final class ComponentContent implements Stringable
 {
     /** @var array<array-key, string> */
     protected array $content;
@@ -25,9 +26,15 @@ final class ComponentContent
         $this->parseSyntaxTree();
     }
 
+    public function __toString() : string
+    {
+        return $this->getString();
+    }
+
     /**
+     * @param string $separator
+     *
      * @return array<array-key, string>
-     * @param  string                   $separator
      */
     public function getString( string $separator = '' ) : string
     {

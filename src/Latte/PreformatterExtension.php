@@ -17,6 +17,10 @@ final class PreformatterExtension extends Latte\Extension
 {
     use NodeTraverserMethods;
 
+    private const array SKIP_TAGS = ['code', 'pre', 'script', 'style'];
+
+    private const array SKIP_PARTIAL_TAGS = ['code:', 'pre:'];
+
     public function __construct( private readonly ?LoggerInterface $logger = null ) {}
 
     #[Override]
@@ -52,11 +56,32 @@ final class PreformatterExtension extends Latte\Extension
 
         $this->elementAttributes( $node );
 
+        if ( $this->skipFragment( $node ) ) {
+            return $node;
+        }
+
         if ( $node->content instanceof FragmentNode ) {
             $this->trimFragmentWhitespace( $node->content, $node->name );
         }
 
         return $node;
+    }
+
+    private function skipFragment( ElementNode $node ) : bool
+    {
+        $tag = \strtolower( $node->name );
+
+        if ( \in_array( $tag, $this::SKIP_TAGS ) ) {
+            return true;
+        }
+
+        foreach ( $this::SKIP_PARTIAL_TAGS as $skp ) {
+            if ( \str_starts_with( $tag, $skp ) ) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     protected function elementAttributes( ElementNode &$element ) : void

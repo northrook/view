@@ -11,7 +11,7 @@ trait InnerContent
 {
     protected readonly ComponentContent $innerContent;
 
-    private function assignInnerContent( array $content ) : void
+    protected function assignInnerContent( array $content ) : void
     {
         $this->innerContent = new ComponentContent( $content );
     }
