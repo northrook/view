@@ -144,6 +144,11 @@ final class Tag implements Stringable
         };
     }
 
+    /**
+     * @param string $name
+     *
+     * @return bool
+     */
     public function is( string $name ) : bool
     {
         return $this->name === $name;

@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace Core\View\Interface;
 
-use Core\{PathfinderInterface
-};
+use Core\PathfinderInterface;
 use Psr\Log\LoggerInterface;
 
 interface TemplateEngineInterface
