@@ -11,8 +11,9 @@ use Core\View\Template\DocumentView\{Head};
 use Psr\Log\LoggerInterface;
 use InvalidArgumentException;
 
+// This should be extended by Framework to provide Runtime Render Services
 #[Autodiscover( tag : 'core.service_locator', autowire : true )]
-final class DocumentView extends Element
+abstract class DocumentView extends Element
 {
     public readonly Head $head;
 

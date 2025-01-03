@@ -53,7 +53,7 @@ final class RegisterViewComponentsPass extends CompilerPass
 
     private function definitionViewComponentAttribute( Definition $definition ) : ?ViewComponent
     {
-        $className = $definition->getClass();
+        $className = $definition->getClass() ?: 'invalid';
 
         if ( ! \class_exists( $className ) ) {
             $message = $this::class." class '{$className}' does not exist.";
