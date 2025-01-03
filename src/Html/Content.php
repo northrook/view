@@ -19,7 +19,7 @@ final class Content implements Stringable
 
     public function __toString() : string
     {
-        return \implode( '', $this->content );
+        return \implode( PHP_EOL, $this->content );
     }
 
     public function prepend( null|string|Stringable ...$content ) : void

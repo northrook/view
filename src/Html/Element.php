@@ -39,7 +39,7 @@ class Element implements Stringable
             return $this->tag->getOpeningTag( $this->attributes );
         }
         return \implode(
-            '',
+            PHP_EOL,
             [
                 $this->tag->getOpeningTag( $this->attributes ),
                 $this->content,

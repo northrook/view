@@ -27,6 +27,7 @@
   },
   "require-dev": {
     "phpstan/phpstan": "@stable",
-    "northrook/dev-env": "dev-main"
+    "northrook/dev-env": "dev-main",
+    "northrook/assets": "dev-main"
   }
 }

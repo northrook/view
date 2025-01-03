@@ -82,8 +82,8 @@ final class Attributes implements Stringable
      * - Boolean `$value` set as `true|false`.
      * - Only `class` and `style` accept `array` values.
      *
-     * @param array<string, null|array<array-key, string>|bool|int|string>|string $attribute
-     * @param null|array<array-key, string>|bool|string                           $value
+     * @param array<array-key, null|array<array-key, string>|bool|int|string>|string $attribute
+     * @param null|array<array-key, string>|bool|string                              $value
      *
      * @return $this
      */
@@ -224,6 +224,10 @@ final class Attributes implements Stringable
             $name = $this->name( $name );
 
             if ( 'class' == $name || 'classes' == $name ) {
+                if ( ! $value ) {
+                    continue;
+                }
+
                 \assert(
                     \is_array( $value ) || \is_string( $value ),
                     "Attribute '{$name}' can only be string|string[]. ".\gettype( $value ).' provided.',
@@ -237,6 +241,10 @@ final class Attributes implements Stringable
             }
 
             if ( 'style' == $name || 'styles' == $name ) {
+                if ( ! $value ) {
+                    continue;
+                }
+
                 \assert(
                     \is_array( $value ) || \is_string( $value ),
                     "Attribute '{$name}' can only be string|array<string,string>. ".\gettype(
