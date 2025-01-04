@@ -9,13 +9,17 @@ use Core\View\Html\Attributes;
 use Core\View\Template\DocumentView\Body;
 use Psr\Log\LoggerInterface;
 use Support\Interface\ActionInterface;
-use Traversable;
-use ArrayIterator;
-use IteratorAggregate;
 use Stringable;
 
-#[Autodiscover]
-final class Document implements ActionInterface, IteratorAggregate
+#[Autodiscover(
+    tag      : [
+        'controller.service_arguments',
+        'core.service_locator',
+    ],
+    shared   : true,
+    autowire : true,
+)]
+final class Document implements ActionInterface
 {
     private const array GROUPS = [
         'document' => ['title', 'description', 'author', 'keywords'],
@@ -174,7 +178,6 @@ final class Document implements ActionInterface, IteratorAggregate
             return $this;
         }
 
-
         return $this;
     }
 
@@ -299,15 +302,5 @@ final class Document implements ActionInterface, IteratorAggregate
     public function getRawHeadHtml() : array
     {
         return $this->head;
-    }
-
-    public function getIterator() : Traversable
-    {
-        return new ArrayIterator(
-            [
-                ...$this->document,
-                ...$this->meta,
-            ],
-        );
     }
 }

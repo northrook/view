@@ -11,15 +11,21 @@ use Core\View\Template\DocumentView\{Head};
 use Psr\Log\LoggerInterface;
 use InvalidArgumentException;
 
-// This should be extended by Framework to provide Runtime Render Services
-#[Autodiscover( tag : 'core.service_locator', autowire : true )]
-abstract class DocumentView extends Element
+#[Autodiscover(
+    tag      : [
+        'core.service_locator',
+        'monolog.logger' => ['channel' => 'http_event'],
+    ],
+    lazy     : true,
+    autowire : true,
+)]
+class DocumentView extends Element
 {
     public readonly Head $head;
 
     public function __construct(
-        public readonly Document          $document,
-        private readonly ?LoggerInterface $logger = null,
+        public readonly Document            $document,
+        protected readonly ?LoggerInterface $logger = null,
     ) {
         $this->head = new Head();
         parent::__construct(

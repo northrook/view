@@ -73,7 +73,11 @@ final class ViewComponent extends Autodiscover
 
         parent::__construct(
             serviceID : $serviceId ?? '',
-            tag       : ['view.component_locator', 'controller.service_arguments'],
+            tag       : [
+                'view.component_locator',
+                'controller.service_arguments',
+                'monolog.logger' => ['channel' => 'view_component'],
+            ],
             lazy      : false,
             public    : false,
             autowire  : true,
