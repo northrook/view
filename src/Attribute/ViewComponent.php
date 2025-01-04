@@ -29,7 +29,7 @@ final class ViewComponent extends Autodiscover
     public const string LOCATOR_ID = 'view.component_locator';
 
     /** @var class-string<ViewComponentInterface> */
-    protected readonly string $className;
+    public readonly string $className;
 
     /** @var string[] */
     public readonly array $nodeTags;
