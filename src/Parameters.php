@@ -25,10 +25,19 @@ final class Parameters implements ActionInterface
     /** @var array<string, mixed> */
     private array $parameters = [];
 
+    public function __construct( mixed ...$set )
+    {
+        foreach ( $set as $key => $parameter ) {
+            \assert( \is_string( $key ), __METHOD__.' requires named arguments.' );
+
+            $this->set( $key, $parameter );
+        }
+    }
+
     public function __invoke( mixed ...$parameters ) : self
     {
         foreach ( $parameters as $key => $parameter ) {
-            \assert( \is_string( $parameter ), __METHOD__.' requires named arguments.' );
+            \assert( \is_string( $key ), __METHOD__.' requires named arguments.' );
 
             $this->add( $key, $parameter );
         }

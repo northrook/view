@@ -5,18 +5,21 @@ declare(strict_types=1);
 namespace Core\View\Interface;
 
 use Core\PathfinderInterface;
+use Core\View\Parameters;
 use Psr\Log\LoggerInterface;
 
 interface TemplateEngineInterface
 {
     /**
+     * @param string               $cacheDirectory full path or `parameter.key`
+     * @param ?Parameters          $parameters
      * @param PathfinderInterface  $pathfinder
-     * @param array<int, mixed>    $configuration
      * @param null|LoggerInterface $logger
      */
     public function __construct(
+        string              $cacheDirectory,
+        ?Parameters         $parameters,
         PathfinderInterface $pathfinder,
-        array               $configuration,
         ?LoggerInterface    $logger,
     );
 

@@ -8,58 +8,46 @@ use BadMethodCallException;
 use Core\PathfinderInterface;
 use Core\View\Exception\TemplateCompilerException;
 use Core\View\Latte\PreformatterExtension;
-use Core\View\Template\Engine\Configuration;
 use Latte\{Engine, Loader, Loaders\FileLoader};
 use Support\{FileInfo};
+use Symfony\Component\DependencyInjection\Attribute\Lazy;
 use Core\View\Interface\{TemplateEngineInterface};
 use Psr\Log\LoggerInterface;
 use RuntimeException;
 use function String\hashKey;
 
-/**
- * Provides the Template Manager Service to the Framework.
- *
- * Get Asset:
- * - HtmlData `get`
- * - FactoryModel `getModel`
- * - ManifestReference `getReference`
- *
- * Public access:
- * - Locator
- * - Factory
- */
-abstract class TemplateEngine implements TemplateEngineInterface
+#[Lazy]
+class TemplateEngine implements TemplateEngineInterface
 {
-    protected readonly Configuration $configuration;
+    public readonly Parameters $parameters;
 
     /** @var array<string, Engine> */
     private array $engine = [];
 
-    /** @var array<string, mixed> */
-    private array $globalParameters = [];
-
     /**
-     * @param PathfinderInterface                 $pathfinder
-     * @param array<string, bool|string|string[]> $configuration
-     * @param null|LoggerInterface                $logger
-     * @param array<string, mixed>                $globalParameters `$var: $value`
-     * @param \Latte\Extension[]                  $engineExtensions
+     * @param string               $cacheDirectory
+     * @param Parameters           $parameters
+     * @param PathfinderInterface  $pathfinder
+     * @param null|LoggerInterface $logger
+     * @param array                $templateDirectories
+     * @param \Latte\Extension[]   $engineExtensions
+     * @param string               $locale
+     * @param bool                 $debug
      */
     public function __construct(
+        public string                          $cacheDirectory,
+        ?Parameters                            $parameters,
         protected readonly PathfinderInterface $pathfinder,
-        array                                  $configuration,
         protected readonly ?LoggerInterface    $logger = null,
-        array                                  $globalParameters = [],
-        private readonly array                 $engineExtensions = [],
+        protected readonly array               $templateDirectories = [],
+        protected readonly array               $engineExtensions = [],
+        protected string                       $locale = 'en',
+        public bool                            $debug = true,
     ) {
-        $this->configuration = Configuration::set( $configuration );
-
-        foreach ( $globalParameters as $key => $value ) {
-            $this->addGlobalParameter( $key, $value );
-        }
+        $this->parameters = $parameters ?? new Parameters();
     }
 
-    public function render(
+    final public function render(
         string       $view,
         object|array $parameters = [],
         bool         $cache = true,
@@ -85,25 +73,14 @@ abstract class TemplateEngine implements TemplateEngineInterface
         return $render;
     }
 
-    public function clearTemplateCache() : bool
+    final public function clearTemplateCache() : bool
     {
         return $this->cacheDirectory( true );
     }
 
-    public function pruneTemplateCache() : array
+    final public function pruneTemplateCache() : array
     {
         throw new BadMethodCallException( __METHOD__.' not implemented yet.' );
-    }
-
-    /**
-     * @param string $key
-     * @param mixed  $value
-     *
-     * @return void
-     */
-    final public function addGlobalParameter( string $key, mixed $value ) : void
-    {
-        $this->globalParameters[$key] = $value;
     }
 
     // .. Engine
@@ -146,9 +123,9 @@ abstract class TemplateEngine implements TemplateEngineInterface
 
         $engine
             ->setTempDirectory( $this->cacheDirectory() )
-            ->setAutoRefresh( $this->configuration->debug )
+            ->setAutoRefresh( $this->debug )
             ->setLoader( $loader )
-            ->setLocale( $this->configuration->locale );
+            ->setLocale( $this->locale );
 
         $this->logger?->info(
             'Started Latte Engine {id} using '.\strchr( $loader::class, '\\' ),
@@ -171,7 +148,7 @@ abstract class TemplateEngine implements TemplateEngineInterface
     final protected function cacheDirectory( bool $purgeCacheDirectory = false ) : bool|string
     {
         $cacheDirectory = $this->pathfinder->getFileInfo(
-            path      : $this->configuration->cacheDirectory,
+            path      : $this->cacheDirectory,
             assertive : true,
         );
 
@@ -220,7 +197,7 @@ abstract class TemplateEngine implements TemplateEngineInterface
             return $fileInfo->getPathname();
         }
 
-        foreach ( $this->configuration->templateDirectories as $directoryKey ) {
+        foreach ( $this->templateDirectories as $directoryKey ) {
             $fileInfo = $this->pathfinder->getFileInfo( "{$directoryKey}/{$view}" );
 
             if ( $fileInfo && $fileInfo->isReadable() ) {
@@ -245,6 +222,16 @@ abstract class TemplateEngine implements TemplateEngineInterface
             return $parameters;
         }
 
-        return $this->globalParameters + $parameters;
+        foreach ( $parameters as $key => $value ) {
+            if ( $this->parameters->has( $key ) ) {
+                $this->logger?->warning(
+                    'Parameter {key} exists in {parameters}.',
+                    ['key' => $key, 'parameters' => $this->parameters],
+                );
+            }
+            $this->parameters->set( $key, $value );
+        }
+
+        return $this->parameters->getParameters();
     }
 }
