@@ -16,10 +16,7 @@ final class Head implements Stringable
     /** @var array<string, string> */
     private array $head = [];
 
-    public function __construct( string $charset = 'utf-8' )
-    {
-        $this->meta( charset : $charset );
-    }
+    public function __construct() {}
 
     public function title( string $value ) : self
     {
@@ -33,6 +30,11 @@ final class Head implements Stringable
         return $this;
     }
 
+    /**
+     * @param array<array-key, string>|string $value
+     *
+     * @return $this
+     */
     public function keywords( string|array $value ) : self
     {
         $value = \implode( ', ', (array) $value );
@@ -77,6 +79,8 @@ final class Head implements Stringable
         }
         $meta .= '/>';
 
+        $key = \trim( (string) $key, " \n\r\t\v\0." );
+
         $this->head[$key] = $meta;
     }
 
@@ -100,9 +104,14 @@ final class Head implements Stringable
         return $this->head;
     }
 
+    public function render() : string
+    {
+        return "<head>\n\t".\implode( "\n\t", $this->head )."\n</head>";
+    }
+
     public function __toString() : string
     {
         // TODO : Sort before dump
-        return "<head>\n\t".\implode( "\n\t", $this->head )."\n</head>";
+        return $this->render();
     }
 }

@@ -4,18 +4,16 @@ declare(strict_types=1);
 
 namespace Core\View\Template\DocumentView;
 
-use Core\View\Html\{Attributes, Element};
-use Core\Symfony\DependencyInjection\Autodiscover;
+use Core\View\Html\{Element};
 
 /**
  * @internal
  * @author Martin Nielsen <mn@northrook.com>
  */
-#[Autodiscover]
 final class Body extends Element
 {
-    public function __construct( array|Attributes $attributes = [] )
+    public function __construct()
     {
-        parent::__construct( 'body', $attributes, innerHtml : '' );
+        parent::__construct( 'body', innerHtml : '' );
     }
 }

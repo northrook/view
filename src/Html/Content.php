@@ -22,6 +22,11 @@ final class Content implements Stringable
         return \implode( PHP_EOL, $this->content );
     }
 
+    public function set( string $key, string|Stringable $value ) : void
+    {
+        $this->content[$key] = $value;
+    }
+
     public function prepend( null|string|Stringable ...$content ) : void
     {
         foreach ( $content as $item ) {
@@ -41,7 +46,7 @@ final class Content implements Stringable
      *
      * @return string
      */
-    public function innerTextContent( bool $normalize = true ) : string
+    public function getTextContent( bool $normalize = true ) : string
     {
         $textContent = \strip_tags( \implode( ' ', $this->content ) );
 
