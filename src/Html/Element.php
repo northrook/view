@@ -33,16 +33,16 @@ class Element implements Stringable
         $this->content    = new Content( ...$content );
     }
 
-    protected function build() : string
+    protected function build( string $separator = '' ) : string
     {
         if ( $this->tag->isSelfClosing() ) {
             return $this->tag->getOpeningTag( $this->attributes );
         }
         return \implode(
-            PHP_EOL,
+            $separator,
             [
                 $this->tag->getOpeningTag( $this->attributes ),
-                $this->content,
+                ...$this->content->getArray(),
                 $this->tag->getClosingTag(),
             ],
         );

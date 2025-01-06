@@ -41,6 +41,11 @@ final class Content implements Stringable
         }
     }
 
+    public function getArray() : array
+    {
+        return $this->content;
+    }
+
     /**
      * @param bool $normalize
      *
