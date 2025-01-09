@@ -9,6 +9,8 @@ use Symfony\Component\DependencyInjection\{
     Definition,
     Reference
 };
+use Core\Assets\AssetManifest;
+use Core\Symfony\Console\ListReport;
 use Core\Symfony\DependencyInjection\CompilerPass;
 use Core\View\Attribute\ViewComponent;
 use Core\View\ComponentFactory;
@@ -25,6 +27,8 @@ final class RegisterViewComponentsPass extends CompilerPass
     protected readonly Definition $locatorDefinition;
 
     protected readonly Definition $factoryDefinition;
+
+    public function __construct( protected readonly ?AssetManifest $assetManifest = null ) {}
 
     /**
      * @param ContainerBuilder $container
@@ -74,15 +78,19 @@ final class RegisterViewComponentsPass extends CompilerPass
 
     protected function registerTaggedComponents() : void
     {
+        $registeredServices = new ListReport( __METHOD__ );
+
         $serviceLocatorArguments = [];
         $componentProperties     = [];
         $componentTags           = [];
 
         foreach ( $this->taggedViewComponents() as $serviceId ) {
             //
+            $registeredServices->item( $serviceId );
             if ( ! $this->container->hasDefinition( $serviceId ) ) {
                 $message = $this::class." missing required '{$serviceId}' definition.";
-                $this->console->error( $message );
+
+                $registeredServices->remove( $message );
 
                 continue;
             }
@@ -95,13 +103,8 @@ final class RegisterViewComponentsPass extends CompilerPass
 
             $componentTags = \array_merge( $componentTags, $properties['tags'] );
 
-            if ( $viewComponent ) {
-                $componentProperties[$serviceId]     = $viewComponent->getProperties();
-                $serviceLocatorArguments[$serviceId] = new Reference( $serviceId );
-            }
-            else {
-                throw new LogicException( __METHOD__.' parsing '.$serviceId );
-            }
+            $componentProperties[$serviceId]     = $viewComponent->getProperties();
+            $serviceLocatorArguments[$serviceId] = new Reference( $serviceId );
         }
 
         $this->locatorDefinition->setArguments( [$serviceLocatorArguments] );
@@ -133,6 +136,8 @@ final class RegisterViewComponentsPass extends CompilerPass
         }
 
         $meta->save( 'view_components' );
+
+        $registeredServices->output();
     }
 
     private function validateRequiredServices( ContainerBuilder $container ) : bool
