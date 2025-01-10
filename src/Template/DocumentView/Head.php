@@ -90,9 +90,9 @@ final class Head implements Stringable
     //
     // }
 
-    public function injectHtml( string|Stringable $html ) : self
+    public function injectHtml( string|Stringable $html, ?string $key = null ) : self
     {
-        $key = $html instanceof Stringable ? $html::class.\spl_object_id( $html ) : hashKey( $html );
+        $key              ??= $html instanceof Stringable ? $html::class.\spl_object_id( $html ) : hashKey( $html );
         $this->head[$key] ??= (string) $html;
         return $this;
     }
