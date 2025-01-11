@@ -32,6 +32,7 @@ final class HtmlNode
     ) : self {
         try {
             $html = Str::normalize( $string );
+            dump( $html );
             $this->dom->loadHTML(
                 source  : "<div>{$html}</div>",
                 options : LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD,
@@ -64,18 +65,25 @@ final class HtmlNode
     /**
      * @param string $html
      * @param bool   $asArray
+     * @param bool   $strict
      *
-     * @return ($asArray is true ? array<string, null|array<array-key, string>|bool|string> : Attributes)
+     * @return ($asArray is true ? array<string, array<array-key, string>|bool|string> : Attributes)
      */
-    public static function extractAttributes( string $html, bool $asArray = false ) : array|Attributes
-    {
+    public static function extractAttributes(
+        string $html,
+        bool   $asArray = false,
+        bool   $strict = false,
+    ) : array|Attributes {
         // Trim whitespace, bail early if empty
-        if ( ! $html = \preg_replace( '# +#', '', $html ) ) {
+        if ( ! $html = \preg_replace( '# +#', ' ', \trim( $html ) ) ) {
             return $asArray ? [] : new Attributes();
         }
 
-        if ( ! ( \str_starts_with( $html, '<' ) && \str_starts_with( $html, '>' ) )
+        if ( ! ( \str_starts_with( $html, '<' ) && \str_ends_with( $html, '>' ) )
         ) {
+            if ( $strict ) {
+                return $asArray ? [] : new Attributes();
+            }
             $html = "<div {$html}>";
         }
         else {
@@ -167,13 +175,13 @@ final class HtmlNode
     /**
      * @param bool $asArray
      *
-     * @return ($asArray is true ? array<string, null|array<array-key, string>|bool|string> : Attributes)
+     * @return ($asArray is true ? array<string, array<array-key, string>|bool|string> : Attributes)
      */
     public function getAttributes( bool $asArray = false ) : array|Attributes
     {
         $attributes = [];
 
-        $node = $this->dom->firstElementChild;
+        $node = $this->dom->firstElementChild?->firstElementChild;
 
         if ( ! $node ) {
             return $attributes;

@@ -21,12 +21,12 @@ class Element implements Stringable
     /**
      * @param string|Tag                                                             $tag
      * @param array<array-key, null|array<array-key, string>|bool|string>|Attributes $attributes
-     * @param string|Stringable                                                      ...$content
+     * @param null|string|Stringable                                                 ...$content
      */
     public function __construct(
-        string|Tag           $tag = 'div',
-        array|Attributes     $attributes = [],
-        string|Stringable ...$content,
+        string|Tag                $tag = 'div',
+        array|Attributes          $attributes = [],
+        null|string|Stringable ...$content,
     ) {
         $this->tag        = $tag instanceof Tag ? $tag : Tag::from( $tag );
         $this->attributes = $attributes instanceof Attributes ? $attributes : new Attributes( $attributes );

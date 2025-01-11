@@ -9,10 +9,10 @@ use Support\{Normalize};
 
 final class Content implements Stringable
 {
-    /** @var string[]|Stringable[] */
+    /** @var array<array-key, null|string|Stringable> */
     private array $content;
 
-    public function __construct( string|Stringable ...$content )
+    public function __construct( null|string|Stringable ...$content )
     {
         $this->content = $content;
     }
@@ -41,6 +41,9 @@ final class Content implements Stringable
         }
     }
 
+    /**
+     * @return null[]|string[]|Stringable[]
+     */
     public function getArray() : array
     {
         return $this->content;
