@@ -7,8 +7,13 @@ namespace Core\View\Component;
 use Core\View\Html\{Attributes, Tag};
 use Core\View\Attribute\ViewComponent;
 use Core\View\Interface\ViewComponentInterface;
-use Core\View\Template\View;
+use Core\View\Latte\Node\StaticNode;
+use Stringable;
+use Core\View\Template\ViewElement;
+use Latte\Compiler\Nodes\{FragmentNode, TextNode};
+use Latte\Compiler\Nodes\Html\{AttributeNode, ElementNode};
 use InvalidArgumentException;
+use Latte\Compiler\Position;
 use Northrook\Logger\Log;
 use Override;
 use function Cache\memoize;
@@ -16,16 +21,18 @@ use ReflectionClass;
 use BadMethodCallException;
 
 /**
- * @method static string view()
+ * @method static ViewElement view()
  */
-abstract class AbstractComponent extends View implements ViewComponentInterface
+abstract class AbstractComponent implements ViewComponentInterface
 {
-    /** @var ?string Define a name for this component */
+    /** @var ?string Manually define a name for this component */
     protected const ?string NAME = null;
 
     public readonly string $name;
 
     public readonly string $uniqueID;
+
+    public readonly ViewElement $view;
 
     public readonly Attributes $attributes;
 
@@ -35,17 +42,49 @@ abstract class AbstractComponent extends View implements ViewComponentInterface
         return $this->render();
     }
 
+    public function getHtml( bool $string = false ) : string|Stringable
+    {
+        return $this->view->getHtml();
+    }
+
+    abstract public function getView() : ViewElement;
+
+    public function getElementNode(
+        Position     $position,
+        ?ElementNode $parent = null,
+    ) : ElementNode {
+        $element = new ElementNode(
+            name     : $this->view->tag->getTagName(),
+            position : $position,
+            parent   : $parent,
+        );
+        $element->attributes = new FragmentNode();
+        $element->content    = new StaticNode( $this->view->content->getString() );
+
+        foreach ( $this->attributes->resolveAttributes() as $attribute => $value ) {
+            $element->attributes->append(
+                new AttributeNode(
+                    new TextNode( (string) $attribute ),
+                    $value ? new TextNode( $value ) : null,
+                ),
+            );
+        }
+
+        return $element;
+    }
+
     final public function create(
         array   $arguments,
         array   $promote = [],
         ?string $uniqueId = null,
     ) : ViewComponentInterface {
         $this->name       = $this::componentName();
-        $this->attributes = new Attributes();
+        $this->view       = new ViewElement();
+        $this->attributes = $this->view->attributes;
         $this->prepareArguments( $arguments );
         $this->componentUniqueID( $uniqueId ?? \serialize( [$arguments] ) );
         $this->promoteTaggedProperties( $arguments, $promote );
-        $this->maybeAssignInnerContent( $arguments );
+        $this->assignInnerContent( $arguments );
         $this->maybeAssignTag( $arguments );
         $this->assignAttributes( $arguments );
 
@@ -114,18 +153,11 @@ abstract class AbstractComponent extends View implements ViewComponentInterface
      *
      * @return void
      */
-    private function maybeAssignInnerContent( array &$arguments ) : void
+    private function assignInnerContent( array &$arguments ) : void
     {
-        $content = $arguments['content'] ?? null;
-
-        if ( $content ) {
-            if ( \method_exists( $this, 'assignInnerContent' ) ) {
-                $this->assignInnerContent( $content );
-            }
-            else {
-                $message = "Component missing required Trait 'InnerContent' when using inner html content.'";
-                throw new BadMethodCallException( $message );
-            }
+        if ( isset( $arguments['content'] ) ) {
+            // @phpstan-ignore-next-line
+            $this->view->content( $arguments['content'] );
         }
 
         unset( $arguments['content'] );

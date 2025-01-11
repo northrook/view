@@ -210,8 +210,39 @@ final class Attributes implements Stringable
      */
     public function __toString() : string
     {
-        $attributes = \implode( ' ', $this->parseAttributes() );
+        $attributes = \implode( ' ', $this->resolveAttributes() );
         return $attributes ? " {$attributes}" : '';
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public function resolveAttributes() : array
+    {
+        $attributes = [];
+
+        foreach ( $this->attributes as $attribute => $value ) {
+            if ( \is_array( $value ) ) {
+                if ( ! \array_filter( $value ) ) {
+                    continue;
+                }
+            }
+
+            $value = $this->get( $attribute );
+
+            if ( \is_null( $value ) ) {
+                continue;
+            }
+
+            if ( $value ) {
+                $attributes[$attribute] = "{$attribute}=\"{$value}\"";
+            }
+            else {
+                $attributes[$attribute] = $attribute;
+            }
+        }
+
+        return $attributes;
     }
 
     /**
@@ -270,37 +301,6 @@ final class Attributes implements Stringable
 
             $this->attributes[$name] = $value;
         }
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    private function parseAttributes() : array
-    {
-        $attributes = [];
-
-        foreach ( $this->attributes as $attribute => $value ) {
-            if ( \is_array( $value ) ) {
-                if ( ! \array_filter( $value ) ) {
-                    continue;
-                }
-            }
-
-            $value = $this->get( $attribute );
-
-            if ( \is_null( $value ) ) {
-                continue;
-            }
-
-            if ( $value ) {
-                $attributes[$attribute] = "{$attribute}=\"{$value}\"";
-            }
-            else {
-                $attributes[$attribute] = $attribute;
-            }
-        }
-
-        return $attributes;
     }
 
     /**

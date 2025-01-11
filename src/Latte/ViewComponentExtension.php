@@ -24,12 +24,6 @@ use Exception;
 )]
 final class ViewComponentExtension extends Extension
 {
-    /** @var array<string, ComponentProperties> */
-    private array $staticComponents = [];
-
-    /** @var array<string, ComponentProperties> */
-    private array $nodeComponents = [];
-
     public function __construct(
         public readonly ComponentFactory  $factory,
         private readonly ?LoggerInterface $logger = null,
@@ -38,19 +32,30 @@ final class ViewComponentExtension extends Extension
     #[Override]
     public function getPasses() : array
     {
-        $this->parseComponentPasses();
+        $registeredComponents = [];
+
+        foreach ( $this->factory->getRegisteredComponents() as $component ) {
+            $index = $component->priority ?: \count( $registeredComponents );
+            if ( \array_key_exists( $component->priority, $registeredComponents ) ) {
+                $index += \count( $registeredComponents );
+                $this->logger?->warning(
+                    '{component} priority {priority} already defined. Auto-bumped to {bump} to prevent conflict.',
+                    [
+                        'component' => $component->name,
+                        'priority'  => $component->priority,
+                        'bump'      => $index,
+                    ],
+                );
+            }
+            $registeredComponents[$index] = $component;
+        }
+
+        \krsort( $registeredComponents );
 
         $componentPasses = [];
 
-        foreach ( $this->staticComponents as $component ) {
+        foreach ( $registeredComponents as $component ) {
             $componentPasses["static-{$component->name}-pass"] = fn( TemplateNode $template ) => $this->componentPass(
-                $template,
-                $component,
-            );
-        }
-
-        foreach ( $this->nodeComponents as $component ) {
-            $componentPasses["node-{$component->name}-pass"] = fn( TemplateNode $template ) => $this->componentPass(
                 $template,
                 $component,
             );
@@ -83,6 +88,7 @@ final class ViewComponentExtension extends Extension
                     return $node;
                 }
 
+                // View Engine Parser for Latte
                 $parser = new NodeParser( $node );
 
                 if ( $component->static ) {
@@ -93,6 +99,7 @@ final class ViewComponentExtension extends Extension
                     );
 
                     try {
+                        return $build->getElementNode();
                         return new StaticNode( (string) $build, $node->position );
                     }
                     catch ( Exception $e ) {

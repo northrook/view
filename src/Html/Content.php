@@ -41,6 +41,11 @@ final class Content implements Stringable
         }
     }
 
+    public function getString( string $separator = '' ) : string
+    {
+        return \implode( $separator, $this->content );
+    }
+
     /**
      * @return null[]|string[]|Stringable[]
      */

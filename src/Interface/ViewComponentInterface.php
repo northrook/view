@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Core\View\Interface;
 
+use Latte\Compiler\Nodes\Html\ElementNode;
+use Latte\Compiler\Position;
+
 /**
  * @phpstan-require-extends \Core\View\Component\AbstractComponent
  */
@@ -23,4 +26,9 @@ interface ViewComponentInterface extends ViewInterface
         array   $promote = [],
         ?string $uniqueId = null,
     ) : self;
+
+    public function getElementNode(
+        Position     $position,
+        ?ElementNode $parent = null,
+    ) : ElementNode;
 }

@@ -165,6 +165,11 @@ final class Tag implements Stringable
         return $this;
     }
 
+    public function getTagName() : string
+    {
+        return $this->name;
+    }
+
     /**
      * @param null|array<array-key, null|array<array-key, string>|bool|string>|Attributes $attributes
      *
