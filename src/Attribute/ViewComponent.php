@@ -13,6 +13,7 @@ use Core\View\Html\Tag;
 use Northrook\Logger\Log;
 use Support\Reflect;
 use function Support\classBasename;
+use LogicException;
 
 /**
  * Classing annotated with {@see AbstractComponent} and implementing the {@see ViewComponentInterface}, will be autoconfigured as a `service`.
@@ -87,7 +88,19 @@ final class ViewComponent extends Autodiscover
     #[Override]
     protected function serviceID() : string
     {
-        $this->name ??= \strtolower( classBasename( $this->className ) );
+        if ( ! isset( $this->name ) ) {
+            if ( ! isset( $this->className ) ) {
+                $message = "Could not generate ViewComponent->name: ViewComponent->className is not defined.\n";
+                $message .= 'Call ViewComponent->setClassName( .. ) when registering the component.';
+                throw new LogicException( $message );
+            }
+
+            $fromClassName = \strtolower( classBasename( $this->className ) );
+            if ( \str_ends_with( $fromClassName, 'component' ) ) {
+                $fromClassName = \substr( $fromClassName, 0, -\strlen( 'component' ) );
+            }
+            $this->name = $fromClassName;
+        }
         return \strtolower( $this::PREFIX.$this->name );
     }
 
