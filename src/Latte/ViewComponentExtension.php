@@ -56,7 +56,6 @@ final class ViewComponentExtension extends Extension
             );
         }
 
-        // dump( $this );
         return $componentPasses;
     }
 
@@ -118,18 +117,34 @@ final class ViewComponentExtension extends Extension
         $staticComponents = [];
         $nodeComponents   = [];
 
-        foreach ( $this->factory->getRegisteredComponents() as $key => $component ) {
+        foreach ( $this->factory->getRegisteredComponents() as $component ) {
             if ( $component->static ) {
                 $index = $component->priority ?: \count( $staticComponents );
                 if ( \array_key_exists( $component->priority, $staticComponents ) ) {
-                    $index++;
+                    $index += \count( $staticComponents );
+                    $this->logger?->warning(
+                        '{component} priority {priority} already defined. Auto-bumped to {bump} to prevent conflict.',
+                        [
+                            'component' => $component->name,
+                            'priority'  => $component->priority,
+                            'bump'      => $index,
+                        ],
+                    );
                 }
                 $staticComponents[$index] = $component;
             }
             else {
                 $index = $component->priority ?: \count( $nodeComponents );
                 if ( \array_key_exists( $component->priority, $nodeComponents ) ) {
-                    $index++;
+                    $this->logger?->warning(
+                        '{component} priority {priority} already defined. Auto-bumped to {bump} to prevent conflict.',
+                        [
+                            'component' => $component->name,
+                            'priority'  => $component->priority,
+                            'bump'      => $index,
+                        ],
+                    );
+                    $index += \count( $nodeComponents );
                 }
                 $nodeComponents[$index] = $component;
             }
