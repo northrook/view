@@ -113,7 +113,10 @@ abstract class AbstractComponent implements ViewComponentInterface
      *
      * @return string
      */
-    abstract protected function render() : string;
+    protected function render() : string
+    {
+        return $this->getView()->render();
+    }
 
     /**
      * Process arguments passed to the {@see self::create()} method.

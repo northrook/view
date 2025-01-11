@@ -99,7 +99,7 @@ final class ViewComponentExtension extends Extension
                     );
 
                     try {
-                        return $build->getElementNode();
+                        return $build->getElementNode( $node->position, $node->parent );
                         return new StaticNode( (string) $build, $node->position );
                     }
                     catch ( Exception $e ) {
