@@ -32,7 +32,7 @@ final class HtmlNode
     ) : self {
         try {
             $html = Str::normalize( $string );
-            dump( $html );
+            // dump( $html );
             $this->dom->loadHTML(
                 source  : "<div>{$html}</div>",
                 options : LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD,
