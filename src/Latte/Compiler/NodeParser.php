@@ -5,10 +5,11 @@ namespace Core\View\Latte\Compiler;
 // : NodeCompiler 2.0
 
 use InvalidArgumentException;
-use Latte\Compiler\{Node, NodeHelpers, Nodes\Html\AttributeNode, PrintContext};
+use Latte\Compiler\{Node, NodeHelpers, Nodes\Html\AttributeNode, Position, PrintContext};
 use Latte\Compiler\Nodes\Html\ElementNode;
 use Latte\Compiler\Nodes\TextNode;
 use Latte\Essential\Nodes\PrintNode;
+use Stringable;
 
 final class NodeParser
 {
@@ -20,25 +21,24 @@ final class NodeParser
     public bool $hasExpression = false;
 
     public function __construct(
-            public readonly Node   $node,
-            private readonly ?self $parent = null,
-    )
-    {
+        public readonly Node   $node,
+        private readonly ?self $parent = null,
+    ) {
         $this->elementProperties();
     }
 
     /**
-     * @param null|ElementNode  $from
+     * @param null|ElementNode $from
      *
      * @return null|array<array-key, string>
      */
     final public function getContent( ?ElementNode $from = null ) : ?array
     {
-        if ( !$from && $this->node instanceof ElementNode ) {
+        if ( ! $from && $this->node instanceof ElementNode ) {
             $from = $this->node;
         }
 
-        if ( !$from ) {
+        if ( ! $from ) {
             throw new InvalidArgumentException();
         }
 
@@ -51,8 +51,8 @@ final class NodeParser
     }
 
     /**
-     * @param ElementNode  $from
-     * @param int          $level
+     * @param ElementNode $from
+     * @param int         $level
      *
      * @return array<array-key, string>
      */
@@ -64,23 +64,23 @@ final class NodeParser
         foreach ( $from->content->getIterator() as $index => $node ) {
             if ( $node instanceof TextNode ) {
                 $value = NodeHelpers::toText( $node );
-                if ( !\trim( $value ) ) {
+                if ( ! \trim( $value ) ) {
                     continue;
                 }
-                $content[ $index ] = $value;
+                $content[$index] = $value;
             }
 
             if ( $node instanceof PrintNode ) {
                 $node = $this->printNode( $node );
                 $key  = $node->variable ?? "\${$index}";
 
-                $content[ "{$key}:{$index}" ] = $node->value;
+                $content["{$key}:{$index}"] = $node->value;
             }
 
             if ( $node instanceof ElementNode ) {
-                $content[ "{$node->name}:{$index}" ] = [
-                        'attributes' => $this->attributes( $node ),
-                        'content'    => $this->parseContent( $node, $level ),
+                $content["{$node->name}:{$index}"] = [
+                    'attributes' => $this->attributes( $node ),
+                    'content'    => $this->parseContent( $node, $level ),
                 ];
                 // continue;
             }
@@ -97,7 +97,7 @@ final class NodeParser
      *
      * - Each `[key=>value]` is passed through {@see NodeHelpers::toText()}.
      *
-     * @param ?ElementNode  $from
+     * @param ?ElementNode $from
      *
      * @return array<string, null|array<array-key, string>|bool|int|string>
      */
@@ -111,28 +111,28 @@ final class NodeParser
         \assert( $node instanceof ElementNode );
 
         foreach ( self::getAttributeNodes( $node ) as $attribute ) {
-            $name                = NodeHelpers::toText( $attribute->name );
-            $value               = NodeHelpers::toText( $attribute->value );
-            $attributes[ $name ] = $value;
+            $name              = NodeHelpers::toText( $attribute->name );
+            $value             = NodeHelpers::toText( $attribute->value );
+            $attributes[$name] = $value;
         }
 
         return $attributes;
     }
 
-    final public function properties( string | array ...$keys ) : array
+    final public function properties( string|array ...$keys ) : array
     {
         $properties = [];
         $attributes = $this->attributes();
 
         foreach ( $keys as $key ) {
-            $default            = \is_array( $key ) ? $key[ \array_key_first( $key ) ] : null;
-            $key                = \is_array( $key ) ? \array_key_first( $key ) : $key;
-            $value              = $attributes[ $key ] ?? $default;
-            $properties[ $key ] = $value;
-            unset( $attributes[ $key ] );
+            $default          = \is_array( $key ) ? $key[\array_key_first( $key )] : null;
+            $key              = \is_array( $key ) ? \array_key_first( $key ) : $key;
+            $value            = $attributes[$key] ?? $default;
+            $properties[$key] = $value;
+            unset( $attributes[$key] );
         }
 
-        return [ ...$properties, 'attributes' => $attributes ];
+        return [...$properties, 'attributes' => $attributes];
     }
 
     final public function printNode( ?Node $node = null, ?PrintContext $context = null ) : PrintedNode
@@ -145,8 +145,8 @@ final class NodeParser
     }
 
     /**
-     * @param ElementNode  $node
-     * @param bool         $clean
+     * @param ElementNode $node
+     * @param bool        $clean
      *
      * @return AttributeNode[]
      */
@@ -155,14 +155,14 @@ final class NodeParser
         $attributes = [];
 
         foreach ( $node->attributes->children as $index => $attribute ) {
-            if ( $clean && !$attribute instanceof AttributeNode ) {
-                unset( $node->attributes->children[ $index ] );
+            if ( $clean && ! $attribute instanceof AttributeNode ) {
+                unset( $node->attributes->children[$index] );
 
                 continue;
             }
 
             if ( $attribute instanceof AttributeNode
-                 && !$attribute->name instanceof PrintNode
+                 && ! $attribute->name instanceof PrintNode
             ) {
                 $attributes[] = $attribute;
             }
@@ -174,7 +174,7 @@ final class NodeParser
     {
         $this->type = $this->node::class;
 
-        if ( !$this->node instanceof ElementNode ) {
+        if ( ! $this->node instanceof ElementNode ) {
             return;
         }
 

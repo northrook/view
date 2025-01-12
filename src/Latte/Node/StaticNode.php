@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 namespace Core\View\Latte\Node;
+use Latte\Compiler\Nodes\AreaNode;
 use Latte\Compiler\Nodes\TextNode;
 use Latte\Compiler\PrintContext;
 use Override;

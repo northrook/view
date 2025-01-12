@@ -9,9 +9,8 @@ use Core\View\Attribute\ViewComponent;
 use Core\View\Interface\ViewComponentInterface;
 use Core\View\Latte\Node\StaticNode;
 use Stringable;
-use Core\View\Template\ViewElement;
-use Latte\Compiler\Nodes\{FragmentNode, TextNode};
-use Latte\Compiler\Nodes\Html\{AttributeNode, ElementNode};
+use Core\View\Template\{ViewElement, ViewNode};
+use Latte\Compiler\Nodes\Html\{ElementNode};
 use InvalidArgumentException;
 use Latte\Compiler\Position;
 use Northrook\Logger\Log;
@@ -57,26 +56,14 @@ abstract class AbstractComponent implements ViewComponentInterface
     ) : ElementNode {
         $view = $this->getView();
 
-        $element = new ElementNode(
-            name     : $view->tag->getTagName(),
-            position : $position,
-            parent   : $parent,
+        $element = ViewNode::element(
+            name       : $view->tag->getTagName(),
+            position   : $position,
+            parent     : $parent,
+            attributes : $view->attributes,
         );
 
-        $element->attributes = new FragmentNode();
-        $element->content    = new StaticNode( $view->content->getString() );
-
-        foreach ( $view->attributes->resolveAttributes( true ) as $attribute => $value ) {
-            // dump([ $attribute,$value]);
-            $element->attributes->append( new TextNode( ' ' ) );
-            $element->attributes->append(
-                new AttributeNode(
-                    new TextNode( (string) $attribute ),
-                    $value ? new TextNode( $value ) : null,
-                    '"',
-                ),
-            );
-        }
+        $element->content->append( new StaticNode( $view->content->getString() ) );
 
         return $element;
     }
