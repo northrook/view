@@ -83,13 +83,13 @@ final class Attributes implements Stringable
      * - Only `class` and `style` accept `array` values.
      *
      * @param array<array-key, null|array<array-key, string>|bool|int|string>|string $attribute
-     * @param null|array<array-key, string>|bool|string                              $value
+     * @param null|array<array-key, string>|bool|int|string                          $value
      *
      * @return $this
      */
     public function add(
-        string|array           $attribute,
-        string|array|bool|null $value = null,
+        string|array               $attribute,
+        int|string|array|bool|null $value = null,
     ) : self {
         if ( \is_string( $attribute ) ) {
             $attribute = [$attribute => $value];
@@ -108,13 +108,13 @@ final class Attributes implements Stringable
      * - Only `class` and `style` accept `array` values.
      *
      * @param array<string, null|array<array-key, string>|bool|int|string>|string $attribute
-     * @param null|array<array-key, string>|bool|string                           $value
+     * @param null|array<array-key, string>|bool|int|string                       $value
      *
      * @return $this
      */
     public function set(
-        string|array           $attribute,
-        string|array|bool|null $value = null,
+        string|array               $attribute,
+        int|string|array|bool|null $value = null,
     ) : self {
         if ( \is_string( $attribute ) ) {
             $attribute = [$attribute => $value];
@@ -215,8 +215,9 @@ final class Attributes implements Stringable
     }
 
     /**
+     * @param bool $associative
+     *
      * @return array<string, string>
-     * @param  bool                  $associative
      */
     public function resolveAttributes( bool $associative = false ) : array
     {
