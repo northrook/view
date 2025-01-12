@@ -216,8 +216,9 @@ final class Attributes implements Stringable
 
     /**
      * @return array<string, string>
+     * @param  bool                  $associative
      */
-    public function resolveAttributes() : array
+    public function resolveAttributes( bool $associative = false ) : array
     {
         $attributes = [];
 
@@ -231,6 +232,12 @@ final class Attributes implements Stringable
             $value = $this->get( $attribute );
 
             if ( \is_null( $value ) ) {
+                continue;
+            }
+
+            if ( $associative ) {
+                $attributes[$attribute] = $value;
+
                 continue;
             }
 

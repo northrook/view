@@ -55,19 +55,25 @@ abstract class AbstractComponent implements ViewComponentInterface
         Position     $position,
         ?ElementNode $parent = null,
     ) : ElementNode {
+        $view = $this->getView();
+
         $element = new ElementNode(
-            name     : $this->view->tag->getTagName(),
+            name     : $view->tag->getTagName(),
             position : $position,
             parent   : $parent,
         );
-        $element->attributes = new FragmentNode();
-        $element->content    = new StaticNode( $this->view->content->getString() );
 
-        foreach ( $this->attributes->resolveAttributes() as $attribute => $value ) {
+        $element->attributes = new FragmentNode();
+        $element->content    = new StaticNode( $view->content->getString() );
+
+        foreach ( $view->attributes->resolveAttributes( true ) as $attribute => $value ) {
+            // dump([ $attribute,$value]);
+            $element->attributes->append( new TextNode( ' ' ) );
             $element->attributes->append(
                 new AttributeNode(
                     new TextNode( (string) $attribute ),
                     $value ? new TextNode( $value ) : null,
+                    '"',
                 ),
             );
         }
