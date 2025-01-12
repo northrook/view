@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Core\View\Component;
 
-use Core\View\Html\{Attributes, Tag};
+use Core\View\Html\{Attributes};
 use Core\View\Attribute\ViewComponent;
 use Core\View\Interface\ViewComponentInterface;
 use Core\View\Latte\Node\StaticNode;
@@ -87,7 +87,7 @@ abstract class AbstractComponent implements ViewComponentInterface
         $this->componentUniqueID( $uniqueId ?? \serialize( [$arguments] ) );
         $this->promoteTaggedProperties( $arguments, $promote );
         $this->assignInnerContent( $arguments );
-        $this->maybeAssignTag( $arguments );
+        $this->assignTag( $arguments );
         $this->assignAttributes( $arguments );
 
         foreach ( $arguments as $property => $value ) {
@@ -181,17 +181,12 @@ abstract class AbstractComponent implements ViewComponentInterface
      *
      * @return void
      */
-    private function maybeAssignTag( array &$arguments ) : void
+    private function assignTag( array &$arguments ) : void
     {
-        if ( ! ( isset( $arguments['tag'], $this->tag ) && $this->tag instanceof Tag ) ) {
-            return;
-        }
-
-        \assert( \is_string( $arguments['tag'] ) );
-
-        $this->tag->set( $arguments['tag'] );
-
+        $tag = $arguments['tag'] ?? null;
         unset( $arguments['tag'] );
+
+        $this->view->tag->set( $tag );
     }
 
     /**
