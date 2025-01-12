@@ -36,6 +36,8 @@ abstract class AbstractComponent implements ViewComponentInterface
 
     public readonly Attributes $attributes;
 
+    protected readonly InnerContent $innerContent;
+
     #[Override]
     public function __toString() : string
     {
@@ -158,12 +160,20 @@ abstract class AbstractComponent implements ViewComponentInterface
      */
     private function assignInnerContent( array &$arguments ) : void
     {
-        if ( isset( $arguments['content'] ) ) {
-            // @phpstan-ignore-next-line
-            $this->view->content( $arguments['content'] );
+        $content = $arguments['content'] ?? [];
+        unset( $arguments['content'] );
+
+        if ( ! $content ) {
+            return;
         }
 
-        unset( $arguments['content'] );
+        if ( \is_string( $content ) ) {
+            $content = [$content];
+        }
+
+        \assert( \is_array( $content ) );
+
+        $this->innerContent = new InnerContent( $content );
     }
 
     /**
