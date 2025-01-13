@@ -8,6 +8,7 @@ use Core\View\Html\{Attributes};
 use Core\View\Attribute\ViewComponent;
 use Core\View\Interface\ViewComponentInterface;
 use Core\View\Latte\Node\StaticNode;
+use Latte\Compiler\Nodes\FragmentNode;
 use Stringable;
 use Core\View\Template\{ViewElement, ViewNode};
 use Latte\Compiler\Nodes\Html\{ElementNode};
@@ -26,6 +27,9 @@ abstract class AbstractComponent implements ViewComponentInterface
 {
     /** @var ?string Manually define a name for this component */
     protected const ?string NAME = null;
+
+    /** @var ?string Define a default `tag` for this component */
+    protected const ?string TAG = null;
 
     public readonly string $name;
 
@@ -62,6 +66,8 @@ abstract class AbstractComponent implements ViewComponentInterface
             parent     : $parent,
             attributes : $view->attributes,
         );
+
+        \assert( $element->content instanceof FragmentNode );
 
         $element->content->append( new StaticNode( $view->content->getString() ) );
 
@@ -123,8 +129,7 @@ abstract class AbstractComponent implements ViewComponentInterface
     protected function prepareArguments( array &$arguments ) : void {}
 
     /**
-     * @param array                $attributes
-     * @param array<string, mixed> $arguments
+     * @param array<string, null|array<array-key, string>|bool|int|string> $attributes
      *
      * @return void
      */
@@ -176,7 +181,7 @@ abstract class AbstractComponent implements ViewComponentInterface
      */
     private function assignTag( array &$arguments ) : void
     {
-        $tag = $arguments['tag'] ?? null;
+        $tag = (string) ( $arguments['tag'] ?? $this::TAG ?? 'div' );
         unset( $arguments['tag'] );
 
         $this->view->tag->set( $tag );
@@ -189,15 +194,13 @@ abstract class AbstractComponent implements ViewComponentInterface
      */
     private function assignAttributes( array &$arguments ) : void
     {
-        if ( ! isset( $arguments['attributes'] ) ) {
-            return;
-        }
-
-        \assert( \is_array( $arguments['attributes'] ) );
-
-        $this->setAttributes( $arguments['attributes'] );
-
+        /** @var array<string, null|array<array-key, string>|bool|int|string> $attributes */
+        $attributes = $arguments['attributes'] ?? [];
         unset( $arguments['attributes'] );
+
+        if ( $attributes ) {
+            $this->setAttributes( $attributes );
+        }
     }
 
     /**

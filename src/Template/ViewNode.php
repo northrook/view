@@ -12,6 +12,14 @@ use Stringable;
 
 final class ViewNode
 {
+    /**
+     * @param string           $name
+     * @param null|Position    $position
+     * @param null|ElementNode $parent
+     * @param null|Attributes  $attributes
+     *
+     * @return ElementNode
+     */
     public static function element(
         string       $name,
         ?Position    $position = null,
