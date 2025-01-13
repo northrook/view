@@ -90,8 +90,16 @@ abstract class AbstractComponent implements ViewComponentInterface
         $this->assignAttributes( $arguments );
 
         foreach ( $arguments as $property => $value ) {
-            if ( \property_exists( $this, (string) $property ) && ! isset( $this->{$property} ) ) {
-                $this->{$property} = $value;
+            if ( \property_exists( $this, (string) $property ) ) {
+                if ( ! isset( $this->{$property} ) ) {
+                    $this->{$property} = $value;
+                }
+                else {
+                    $this->{$property} = match ( \gettype( $this->{$property} ) ) {
+                        'boolean' => (bool) $value,
+                        default   => $value,
+                    };
+                }
 
                 continue;
             }
