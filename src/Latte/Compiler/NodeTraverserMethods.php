@@ -101,12 +101,16 @@ trait NodeTraverserMethods
             return;
         }
 
+        // TODO: Issue where the &nbsp; causes a double-space
+
         if ( $nextTag ) {
+            // $textNode->content = "{$textNode->content}&nbsp;";
             $textNode->content = "{$textNode->content} ";
         }
 
         if ( $previousTag && ! Character::isPunctuation( $textNode->content[0] ) ) {
-            $textNode->content = "&nbsp;{$textNode->content}";
+            // $textNode->content = "&nbsp;{$textNode->content}";
+            $textNode->content = " {$textNode->content}";
         }
 
         // if ( $before ) {
