@@ -102,7 +102,7 @@ trait NodeTraverserMethods
         }
 
         if ( $nextTag ) {
-            $textNode->content = "{$textNode->content}&nbsp;";
+            $textNode->content = "{$textNode->content} ";
         }
 
         if ( $previousTag && ! Character::isPunctuation( $textNode->content[0] ) ) {
