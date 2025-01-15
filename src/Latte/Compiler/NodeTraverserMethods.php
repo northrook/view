@@ -38,7 +38,9 @@ trait NodeTraverserMethods
             $firstNode = 0      === $index;
             $lastNode  = $index === $lastIndex;
             $edgeNode  = ( $firstNode || $lastNode );
-            $linebreak = \str_contains( PHP_EOL, $node->content );
+
+            // Normalize inner newlines to white space
+            $node->content = \str_replace( ["\n\r", "\n", "\r"], ' ', $node->content );
 
             $before   = $fragment->children[$index - 2] ?? null;
             $previous = $fragment->children[$index - 1] ?? null;
