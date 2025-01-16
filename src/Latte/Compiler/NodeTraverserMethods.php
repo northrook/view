@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Core\View\Latte\Compiler;
 
+use Core\View\Html\Tag;
 use Latte\Compiler\{Node, Nodes\FragmentNode, Nodes\TextNode, NodeTraverser};
 use Latte\Compiler\Nodes\Html\ElementNode;
 use Latte\Compiler\Nodes\Php\ExpressionNode;
@@ -11,6 +12,24 @@ use Support\{Character, Normalize};
 
 trait NodeTraverserMethods
 {
+    final protected function matchTag( Node $node, string|Tag ...$tag ) : bool
+    {
+        // Components are only called from ElementNodes
+        if ( ! $node instanceof ElementNode ) {
+            return false;
+        }
+
+        $tagName = $node->name;
+
+        foreach ( $tag as $match ) {
+            if ( (string) $match === $tagName ) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     /**
      * Loop one level of children and trim whitespace from the first and last child.
      *
