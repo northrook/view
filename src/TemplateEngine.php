@@ -7,7 +7,7 @@ namespace Core\View;
 use BadMethodCallException;
 use Core\PathfinderInterface;
 use Core\View\Exception\TemplateCompilerException;
-use Core\View\Latte\PreformatterExtension;
+use Core\View\Latte\{PreformatterExtension, StyleSystemExtension};
 use Latte\{Engine, Loader, Loaders\FileLoader};
 use Support\{FileInfo};
 use Symfony\Component\DependencyInjection\Attribute\Lazy;
@@ -120,6 +120,8 @@ class TemplateEngine implements TemplateEngineInterface
 
         // Add all registered extensions to the Engine.
         \array_map( [$engine, 'addExtension'], $this->engineExtensions );
+
+        $engine->addExtension( new StyleSystemExtension( $this->logger ) );
 
         $engine
             ->setTempDirectory( $this->cacheDirectory() )

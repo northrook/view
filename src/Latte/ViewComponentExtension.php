@@ -8,7 +8,7 @@ use Core\Symfony\DependencyInjection\Autodiscover;
 use Core\View\ComponentFactory;
 use Core\View\ComponentFactory\ComponentProperties;
 use Core\View\Latte\Compiler\NodeParser;
-use Core\View\Latte\Node\{ComponentNode, StaticNode};
+use Core\View\Latte\Node\{ComponentNode};
 use Latte\Compiler\{Node, NodeTraverser};
 use Latte\Compiler\Nodes\Html\ElementNode;
 use Latte\Compiler\Nodes\Php\ExpressionNode;
@@ -100,7 +100,6 @@ final class ViewComponentExtension extends Extension
 
                     try {
                         return $build->getElementNode( $node->position, $node->parent );
-                        return new StaticNode( (string) $build, $node->position );
                     }
                     catch ( Exception $e ) {
                         $this->logger?->critical( $e->getMessage() );

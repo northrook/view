@@ -48,7 +48,7 @@ trait NodeTraverserMethods
             $after    = $fragment->children[$index + 2] ?? null;
 
             if ( $node->isWhitespace() ) {
-                if ( $next instanceof TextNode && $next->isWhitespace() ) {
+                if ( $lastNode || ( $next instanceof TextNode && $next->isWhitespace() ) ) {
                     unset( $fragment->children[$index] );
 
                     continue;
