@@ -104,14 +104,19 @@ abstract class AbstractComponent implements ViewComponentInterface
                 continue;
             }
 
-            if ( \is_string( $value ) && \method_exists( $this, $value ) ) {
-                $this->{$value}();
-            }
+            \assert( \is_string( $value ), 'All remaining arguments should be method calls at this point.' );
 
-            Log::error(
-                'The {component} was provided with undefined property {property}.',
-                ['component' => $this->name, 'property' => $property],
-            );
+            $method = 'do'.\ucfirst( $value );
+
+            if ( \method_exists( $this, $method ) ) {
+                $this->{$method}();
+            }
+            else {
+                Log::error(
+                    'The {component} was provided with undefined property {property}.',
+                    ['component' => $this->name, 'property' => $property],
+                );
+            }
         }
 
         return $this;
