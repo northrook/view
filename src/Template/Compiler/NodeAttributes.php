@@ -38,10 +38,15 @@ final readonly class NodeAttributes
         return $this->attributes;
     }
 
-    public function getNode() : FragmentNode
+    public function getNode() : ?FragmentNode
     {
+        $attributes = $this->attributes->resolveAttributes( true );
+
+        if ( empty( \array_filter( $attributes ) ) ) {
+            return null;
+        }
+
         $fragmentNode = new FragmentNode();
-        $attributes   = $this->attributes->resolveAttributes( true );
         $firstKey     = \array_key_first( $attributes );
         $lastKey      = \array_key_last( $attributes );
 

@@ -43,15 +43,21 @@ final class StyleSystemExtension extends Latte\Extension
                     return $node;
                 }
 
+                $attributes = new NodeAttributes( $node );
+
+                if ( $attributes()->has( 'role', 'list' ) ) {
+                    $attributes()->class->add( 'list', true );
+                }
+
                 if ( $this->matchTag( $node, 'ol', 'ul' ) ) {
                     if ( $node->parent instanceof ElementNode && $this->matchTag( $node->parent, 'nav', 'menu' ) ) {
                         dump( 'Skipped node:', $node );
                         return $node;
                     }
-                    $attributes = new NodeAttributes( $node );
                     $attributes()->class->add( 'list', true );
-                    $node->attributes = $attributes->getNode();
                 }
+
+                $node->attributes = $attributes->getNode();
 
                 return $node;
             },
