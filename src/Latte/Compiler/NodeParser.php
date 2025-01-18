@@ -5,11 +5,10 @@ namespace Core\View\Latte\Compiler;
 // : NodeCompiler 2.0
 
 use InvalidArgumentException;
-use Latte\Compiler\{Node, NodeHelpers, Nodes\Html\AttributeNode, Position, PrintContext};
+use Latte\Compiler\{Node, NodeHelpers, Nodes\Html\AttributeNode, PrintContext};
 use Latte\Compiler\Nodes\Html\ElementNode;
 use Latte\Compiler\Nodes\TextNode;
 use Latte\Essential\Nodes\PrintNode;
-use Stringable;
 
 final class NodeParser
 {
@@ -61,7 +60,7 @@ final class NodeParser
         $content = [];
         $level++;
 
-        foreach ( $from->content->getIterator() as $index => $node ) {
+        foreach ( $from->content?->getIterator() ?? [] as $index => $node ) {
             if ( $node instanceof TextNode ) {
                 $value = NodeHelpers::toText( $node );
                 if ( ! \trim( $value ) ) {
