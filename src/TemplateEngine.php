@@ -149,10 +149,7 @@ class TemplateEngine implements TemplateEngineInterface
      */
     final protected function cacheDirectory( bool $purgeCacheDirectory = false ) : bool|string
     {
-        $cacheDirectory = $this->pathfinder->getFileInfo(
-            path      : $this->cacheDirectory,
-            assertive : true,
-        );
+        $cacheDirectory = $this->pathfinder->getFileInfo( $this->cacheDirectory );
 
         if ( $purgeCacheDirectory ) {
             return $cacheDirectory->remove();
