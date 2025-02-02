@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Core\View\Interface;
 
-use Core\PathfinderInterface;
+use Core\Interface\PathfinderInterface;
 use Core\View\Parameters;
 use Psr\Log\LoggerInterface;
 

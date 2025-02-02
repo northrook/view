@@ -23,11 +23,11 @@ final readonly class NodeAttributes
         // dump( $attributeFragmentNode );
         $this->attributes = new Attributes();
 
-        foreach ( $attributeFragmentNode as $index => $attribute ) {
+        foreach ( $attributeFragmentNode as $attribute ) {
             if ( $attribute instanceof AttributeNode ) {
                 $name  = NodeHelpers::toText( $attribute->name );
                 $value = NodeHelpers::toText( $attribute->value );
-                $this->attributes->set( $name, $value );
+                $this->attributes->set( (string) $name, $value );
             }
         }
         // dump( $this->attributes );
@@ -47,8 +47,8 @@ final readonly class NodeAttributes
         }
 
         $fragmentNode = new FragmentNode();
-        $firstKey     = \array_key_first( $attributes );
-        $lastKey      = \array_key_last( $attributes );
+        // $firstKey     = \array_key_first( $attributes );
+        // $lastKey      = \array_key_last( $attributes );
 
         // dump( $attributes );
         foreach ( $attributes as $name => $value ) {

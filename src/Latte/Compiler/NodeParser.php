@@ -2,8 +2,6 @@
 
 namespace Core\View\Latte\Compiler;
 
-// : NodeCompiler 2.0
-
 use InvalidArgumentException;
 use Latte\Compiler\{Node, NodeHelpers, Nodes\Html\AttributeNode, PrintContext};
 use Latte\Compiler\Nodes\Html\ElementNode;
@@ -61,9 +59,10 @@ final class NodeParser
         $level++;
 
         foreach ( $from->content?->getIterator() ?? [] as $index => $node ) {
+            \assert( \is_scalar( $index ) );
             if ( $node instanceof TextNode ) {
                 $value = NodeHelpers::toText( $node );
-                if ( ! \trim( $value ) ) {
+                if ( ! \trim( (string) $value ) ) {
                     continue;
                 }
                 $content[$index] = $value;

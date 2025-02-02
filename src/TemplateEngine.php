@@ -4,16 +4,15 @@ declare(strict_types=1);
 
 namespace Core\View;
 
-use BadMethodCallException;
-use Core\PathfinderInterface;
+use Core\Interface\PathfinderInterface;
 use Core\View\Exception\TemplateCompilerException;
 use Core\View\Latte\{PreformatterExtension, StyleSystemExtension};
 use Latte\{Engine, Loader, Loaders\FileLoader};
-use Support\{FileInfo};
+use Support\FileInfo;
 use Symfony\Component\DependencyInjection\Attribute\Lazy;
-use Core\View\Interface\{TemplateEngineInterface};
+use Core\View\Interface\TemplateEngineInterface;
 use Psr\Log\LoggerInterface;
-use RuntimeException;
+use RuntimeException, BadMethodCallException;
 use function String\hashKey;
 
 #[Lazy]

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Core\View;
 
+use Core\Interface\ActionInterface;
 use Core\Symfony\DependencyInjection\Autodiscover;
 use Core\View\Html\Attributes;
 use Core\View\Template\DocumentView\Body;
 use Psr\Log\LoggerInterface;
-use Support\Interface\ActionInterface;
 use Stringable;
 
 #[Autodiscover(

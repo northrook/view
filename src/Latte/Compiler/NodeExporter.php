@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Core\View\Latte\Compiler;
 
 use Support\Str;
-use const Support\EMPTY_STRING;
 use Stringable, LogicException;
+use const Support\EMPTY_STRING;
 
 final class NodeExporter
 {
@@ -165,7 +165,7 @@ final class NodeExporter
 
     public static function integer( ?int $int ) : string
     {
-        return null === $int ? 'null' : (string) $int;
+        return $int === null ? 'null' : (string) $int;
     }
 
     public static function cacheConstant( ?int $cache ) : string

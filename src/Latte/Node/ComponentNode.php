@@ -2,7 +2,6 @@
 
 namespace Core\View\Latte\Node;
 
-use Core\View\Html\Attributes;
 use Core\View\Latte\Compiler\{NodeExporter, NodeParser};
 use Latte\Compiler\Nodes\TextNode;
 use Latte\Compiler\PrintContext;

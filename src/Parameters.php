@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Core\View;
 
 use Core\Symfony\DependencyInjection\Autodiscover;
-use Support\Interface\ActionInterface;
+use Core\Interface\ActionInterface;
 
 /**
  * @author Martin Nielsen <mn@northrook.com>
