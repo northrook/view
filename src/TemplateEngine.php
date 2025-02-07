@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Core\View;
 
 use Core\Interface\PathfinderInterface;
+use Core\Pathfinder\Path;
 use Core\View\Exception\TemplateCompilerException;
 use Core\View\Latte\{PreformatterExtension, StyleSystemExtension};
 use Latte\{Engine, Loader, Loaders\FileLoader};
-use Support\FileInfo;
 use Symfony\Component\DependencyInjection\Attribute\Lazy;
 use Core\View\Interface\TemplateEngineInterface;
 use Psr\Log\LoggerInterface;
@@ -148,7 +148,7 @@ class TemplateEngine implements TemplateEngineInterface
      */
     final protected function cacheDirectory( bool $purgeCacheDirectory = false ) : bool|string
     {
-        $cacheDirectory = $this->pathfinder->getFileInfo( $this->cacheDirectory );
+        $cacheDirectory = $this->pathfinder->getPath( $this->cacheDirectory );
 
         if ( $purgeCacheDirectory ) {
             return $cacheDirectory->remove();
@@ -190,13 +190,13 @@ class TemplateEngine implements TemplateEngineInterface
                 throw new TemplateCompilerException( $message );
             }
 
-            $fileInfo = new FileInfo( "{$directory}/{$view}" );
+            $fileInfo = new Path( "{$directory}/{$view}" );
 
             return $fileInfo->getPathname();
         }
 
         foreach ( $this->templateDirectories as $directoryKey ) {
-            $fileInfo = $this->pathfinder->getFileInfo( "{$directoryKey}/{$view}" );
+            $fileInfo = $this->pathfinder->getPath( "{$directoryKey}/{$view}" );
 
             if ( $fileInfo && $fileInfo->isReadable() ) {
                 return $fileInfo->getPathname();

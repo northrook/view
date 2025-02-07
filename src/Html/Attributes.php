@@ -6,6 +6,7 @@ namespace Core\View\Html;
 
 use Core\View\Html\Attributes\{ClassAttribute, StyleAttribute};
 use Stringable, InvalidArgumentException, LogicException;
+use Support\Normalize;
 
 /**
  * @property-read ClassAttribute                                                                          $class
@@ -170,7 +171,7 @@ final class Attributes implements Stringable
         }
 
         // If the attribute is anything but false, consider it set
-        return false !== $attribute;
+        return $attribute !== false;
     }
 
     /**
@@ -262,7 +263,17 @@ final class Attributes implements Stringable
         foreach ( $attributes as $name => $value ) {
             $name = $this->name( $name );
 
-            if ( 'class' == $name || 'classes' == $name ) {
+            if ( $name === 'id' ) {
+                \assert(
+                    \is_string( $value ),
+                    "Attribute '{$name}' can only be string. ".\gettype( $value ).' provided.',
+                );
+                $this->attributes[$name] = Normalize::key( $value );
+
+                continue;
+            }
+
+            if ( $name == 'class' || $name == 'classes' ) {
                 if ( ! $value ) {
                     continue;
                 }
@@ -279,7 +290,7 @@ final class Attributes implements Stringable
                 continue;
             }
 
-            if ( 'style' == $name || 'styles' == $name ) {
+            if ( $name == 'style' || $name == 'styles' ) {
                 if ( ! $value ) {
                     continue;
                 }
@@ -298,7 +309,7 @@ final class Attributes implements Stringable
                 continue;
             }
 
-            if ( false === $override && $this->has( $name ) ) {
+            if ( $override === false && $this->has( $name ) ) {
                 continue;
             }
 

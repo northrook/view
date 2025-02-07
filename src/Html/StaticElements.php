@@ -25,39 +25,36 @@ trait StaticElements
 
     /**
      * @param ?string                                   $src
-     * @param false|string                              $inline
+     * @param ?string                                   $inline
      * @param null|array<array-key, string>|bool|string ...$attributes
      *
      * @return string
      */
     public static function script(
         ?string                   $src = null,
-        false|string              $inline = false,
+        ?string                   $inline = null,
         string|bool|array|null ...$attributes,
     ) : string {
         if ( $src && ! $inline ) {
             $attributes['src'] = Escape::url( $src );
-            return Tag::from( 'script' )->getOpeningTag( $attributes );
         }
-
-        if ( $inline ) {
+        else {
             unset( $attributes['src'] );
-            return (string) new Element( 'script', $attributes, $inline );
         }
 
-        throw new InvalidArgumentException();
+        return (string) new Element( 'script', $attributes, $inline );
     }
 
     /**
      * @param ?string                                   $href
-     * @param false|string                              $inline
+     * @param ?string                                   $inline
      * @param null|array<array-key, string>|bool|string ...$attributes
      *
      * @return string
      */
     public static function style(
         ?string                   $href = null,
-        false|string              $inline = false,
+        ?string                   $inline = null,
         string|bool|array|null ...$attributes,
     ) : string {
         if ( $href && ! $inline ) {

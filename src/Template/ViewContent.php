@@ -6,7 +6,6 @@ namespace Core\View\Template;
 
 use Core\View\Html\Element;
 use Override;
-use Stringable;
 
 /*
  Renders internal AST syntax:

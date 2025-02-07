@@ -23,6 +23,7 @@
     "php": ">=8.3",
     "ext-dom": "*",
     "ext-libxml": "*",
+    "northrook/core": "dev-main",
     "northrook/pathfinder": "dev-main",
     "northrook/core-symfony": "dev-main",
     "northrook/assets": "dev-main",
