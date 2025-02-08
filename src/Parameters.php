@@ -13,7 +13,7 @@ use Core\Interface\ActionInterface;
 #[Autodiscover(
     tag      : [
         'controller.service_arguments',
-        'core.service_locator',
+        'core.service_arguments',
     ],
     shared   : true,
     autowire : true,
