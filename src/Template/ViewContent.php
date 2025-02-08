@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Core\View\Template;
 
-use Core\View\Html\Element;
+use Core\View\Element;
 use Override;
 
 /*

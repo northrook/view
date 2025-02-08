@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace Core\View\Html\Attributes;
 
 use Core\View\Html\Attributes;
+use JetBrains\PhpStorm\Deprecated;
 use ValueError;
 
 /**
  * @internal
  */
+#[Deprecated]
 final class StyleAttribute
 {
     /**

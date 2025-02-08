@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace Core\View\Html;
 
 use InvalidArgumentException;
+use JetBrains\PhpStorm\Deprecated;
 use Support\Escape;
 
+#[Deprecated]
 trait StaticElements
 {
     /**

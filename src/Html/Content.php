@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Core\View\Html;
 
+use JetBrains\PhpStorm\Deprecated;
 use Stringable;
 use Support\{Normalize};
 
+#[Deprecated]
 final class Content implements Stringable
 {
     /** @var array<array-key, null|string|Stringable> */

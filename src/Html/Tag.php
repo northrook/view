@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace Core\View\Html;
 
+use JetBrains\PhpStorm\Deprecated;
 use Stringable;
 use BadMethodCallException;
 
 /**
  */
+#[Deprecated]
 final class Tag implements Stringable
 {
     public const array TAGS = [

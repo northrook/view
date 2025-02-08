@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Core\View\Template;
 
-use Core\View\Interface\ViewInterface;
+use Core\Interface\ViewInterface;
 use Latte\Runtime as Latte;
 use Stringable;
 

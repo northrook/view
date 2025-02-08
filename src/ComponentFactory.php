@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace Core\View;
 
-use Core\View\Interface\{ComponentFactoryInterface, ViewComponentInterface, ViewInterface};
+use Core\View\Interface\{ComponentFactoryInterface, ViewComponentInterface};
 use Core\View\ComponentFactory\{ComponentBag, ComponentProperties};
+use Core\Interface\ViewInterface;
 use Core\View\Attribute\ViewComponent;
 use Core\View\Component\AbstractComponent;
 use Core\View\Exception\ComponentNotFoundException;

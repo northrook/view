@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Core\View\Html;
 
 use Core\View\Html\Attributes\{ClassAttribute, StyleAttribute};
+use JetBrains\PhpStorm\Deprecated;
 use Stringable, InvalidArgumentException, LogicException;
 use Support\Normalize;
 
@@ -13,6 +14,7 @@ use Support\Normalize;
  * @property-read StyleAttribute                                                                          $style
  * @property-read array{id: ?string, class: string[], style: array<string, string>, ...<string, ?string>} $array
  */
+#[Deprecated]
 final class Attributes implements Stringable
 {
     // /** @var array{id: ?string, class: string[], style: array<string, string>, ...} */

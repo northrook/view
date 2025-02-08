@@ -9,11 +9,11 @@ use Core\Symfony\Console\Output;
 use Core\Symfony\DependencyInjection\Autodiscover;
 use Core\View\Interface\ViewComponentInterface;
 use Core\View\Component\AbstractComponent;
-use Core\View\Html\Tag;
+use Core\View\Element\Tag;
 use Northrook\Logger\Log;
 use Support\Reflect;
-use function Support\classBasename;
 use LogicException;
+use function Support\classBasename;
 
 /**
  * Classing annotated with {@see AbstractComponent} and implementing the {@see ViewComponentInterface}, will be autoconfigured as a `service`.

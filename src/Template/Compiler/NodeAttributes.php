@@ -2,7 +2,7 @@
 
 namespace Core\View\Template\Compiler;
 
-use Core\View\Html\Attributes;
+use Core\View\Element\Attributes;
 use Core\View\Template\ViewNode;
 use Latte\Compiler\NodeHelpers;
 use Latte\Compiler\Nodes\FragmentNode;

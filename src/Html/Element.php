@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Core\View\Html;
 
+use JetBrains\PhpStorm\Deprecated;
 use Stringable;
 
+#[Deprecated]
 class Element implements Stringable
 {
     use StaticElements;

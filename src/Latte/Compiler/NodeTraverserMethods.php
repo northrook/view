@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Core\View\Latte\Compiler;
 
-use Core\View\Html\Tag;
+use Core\View\Element\Tag;
 use Latte\Compiler\{Node, Nodes\FragmentNode, Nodes\TextNode, NodeTraverser};
 use Latte\Compiler\Nodes\Html\ElementNode;
 use Latte\Compiler\Nodes\Php\ExpressionNode;

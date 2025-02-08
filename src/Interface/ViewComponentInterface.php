@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Core\View\Interface;
 
+use Core\Interface\ViewInterface;
 use Latte\Compiler\Nodes\Html\ElementNode;
 use Latte\Compiler\Position;
 

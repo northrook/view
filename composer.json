@@ -27,7 +27,8 @@
     "northrook/pathfinder": "dev-main",
     "northrook/core-symfony": "dev-main",
     "northrook/assets": "dev-main",
-    "latte/latte": "@stable"
+    "latte/latte": "@stable",
+    "northrook/view-element": "dev-main"
   },
   "require-dev": {
     "phpstan/phpstan": "@stable",

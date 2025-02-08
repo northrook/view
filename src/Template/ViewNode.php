@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Core\View\Template;
 
-use Core\View\Html\Attributes;
+use Core\View\Element\Attributes;
 use Latte\Compiler\Nodes\{FragmentNode, Html\AttributeNode, TextNode};
 use Latte\Compiler\Nodes\Html\ElementNode;
 use Latte\Compiler\Position;

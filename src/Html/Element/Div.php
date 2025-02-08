@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace Core\View\Html\Element;
 
 use Core\View\Html\{Attributes, Element};
+use JetBrains\PhpStorm\Deprecated;
 use Stringable;
 
+
+#[Deprecated]
 final class Div extends Element
 {
     /**

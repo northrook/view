@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace Core\View\Component;
 
-use Core\View\Html\{Attributes};
 use Core\View\Attribute\ViewComponent;
 use Core\View\Interface\ViewComponentInterface;
 use Core\View\Latte\Node\StaticNode;
+use Core\View\ViewElement;
+use Core\View\Element\Attributes;
+use Core\View\Template\ViewNode;
 use Latte\Compiler\Nodes\FragmentNode;
 use Stringable;
-use Core\View\Template\{ViewElement, ViewNode};
 use Latte\Compiler\Nodes\Html\{ElementNode};
 use InvalidArgumentException;
 use Latte\Compiler\Position;
