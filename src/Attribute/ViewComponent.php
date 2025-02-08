@@ -153,7 +153,8 @@ final class ViewComponent extends Autodiscover
         foreach ( $this->nodeTags as $tag ) {
             if ( ! $tag || \preg_match( '#[^a-z]#', $tag[0] ) ) {
                 $reason = $tag ? null : 'Tags cannot be empty.';
-                $reason ??= ':' === $tag[0] ? 'Tags cannot start with a separator.'
+                $reason ??= $tag[0] === ':'
+                        ? 'Tags cannot start with a separator.'
                         : 'Tags must start with a letter.';
                 Output::error( 'Invalid component tag.', 'Value: '.$tag, $reason );
 

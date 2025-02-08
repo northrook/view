@@ -11,10 +11,15 @@ use Core\View\Component\AbstractComponent;
 use Core\View\Exception\ComponentNotFoundException;
 use Psr\Log\LoggerInterface;
 use Support\Str;
+use Symfony\Component\DependencyInjection\Attribute\{Autoconfigure};
 use Symfony\Component\DependencyInjection\ServiceLocator;
 use const Cache\AUTO;
 use InvalidArgumentException;
 
+#[Autoconfigure(
+    tags : ['monolog.logger' => ['channel' => 'view']],
+    lazy : true,
+)]
 class ComponentFactory implements ComponentFactoryInterface
 {
     /**

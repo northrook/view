@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Core\View\Latte;
 
-use Core\Symfony\DependencyInjection\Autodiscover;
 use Core\View\ComponentFactory;
 use Core\View\ComponentFactory\ComponentProperties;
 use Core\View\Latte\Compiler\NodeParser;
@@ -17,10 +16,10 @@ use Latte\Extension;
 use Override;
 use Psr\Log\LoggerInterface;
 use Exception;
+use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 
-#[Autodiscover(
-    tag      : ['monolog.logger' => ['channel' => 'view']],
-    autowire : true,
+#[Autoconfigure(
+    tags     : ['monolog.logger' => ['channel' => 'view']],
 )]
 final class ViewComponentExtension extends Extension
 {

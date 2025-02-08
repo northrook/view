@@ -12,6 +12,7 @@ use Core\Interface\ActionInterface;
  */
 #[Autodiscover(
     tag      : [
+        'monolog.logger' => ['channel' => 'view'],
         'controller.service_arguments',
         'core.service_arguments',
     ],
