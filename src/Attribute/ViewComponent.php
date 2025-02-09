@@ -13,7 +13,6 @@ use Core\View\Element\Tag;
 use Northrook\Logger\Log;
 use Support\Reflect;
 use LogicException;
-use function Support\classBasename;
 
 /**
  * Classing annotated with {@see AbstractComponent} and implementing the {@see ViewComponentInterface}, will be autoconfigured as a `service`.
@@ -95,11 +94,13 @@ final class ViewComponent extends Autodiscover
                 throw new LogicException( $message );
             }
 
-            $fromClassName = \strtolower( classBasename( $this->className ) );
-            if ( \str_ends_with( $fromClassName, 'component' ) ) {
-                $fromClassName = \substr( $fromClassName, 0, -\strlen( 'component' ) );
+            $namespaced = \explode( '\\', $this->className );
+            $className  = \strtolower( \end( $namespaced ) );
+
+            if ( \str_ends_with( $className, 'component' ) ) {
+                $className = \substr( $className, 0, -\strlen( 'component' ) );
             }
-            $this->name = $fromClassName;
+            $this->name = $className;
         }
         return \strtolower( $this::PREFIX.$this->name );
     }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Core\View\Html;
 
+use Core\View\Element\Attributes;
 use JetBrains\PhpStorm\Language;
 use DOMDocument;
 use Exception;

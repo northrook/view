@@ -13,7 +13,7 @@ final class RegisterComponentAssetsPass extends CompilerPass
 
     private readonly string $manifestID;
 
-    private readonly AssetManifest $assetManifest;
+    // private readonly AssetManifest $assetManifest;
 
     public function compile( ContainerBuilder $container ) : void
     {

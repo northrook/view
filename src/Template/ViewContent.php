@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Core\View\Template;
 
+use Core\Interface\View;
 use Core\View\Element;
 use Override;
 
@@ -16,6 +17,7 @@ use Override;
 
 final class ViewContent extends View
 {
+    /** @var array<array-key, mixed> */
     protected array $content = [];
 
     public function __construct() {}
@@ -121,7 +123,7 @@ final class ViewContent extends View
         $index = \strrpos( $node, ':' );
 
         // Treat parsed string variables as simple strings
-        if ( false !== $index && 'string' === $valueType && \str_starts_with( $node, '$' ) ) {
+        if ( $index !== false && $valueType === 'string' && \str_starts_with( $node, '$' ) ) {
             return (int) \substr( $node, $index++ );
         }
 

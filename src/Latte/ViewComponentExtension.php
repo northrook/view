@@ -19,7 +19,7 @@ use Exception;
 use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 
 #[Autoconfigure(
-    tags     : ['monolog.logger' => ['channel' => 'view']],
+    tags : ['monolog.logger' => ['channel' => 'view']],
 )]
 final class ViewComponentExtension extends Extension
 {
@@ -117,52 +117,52 @@ final class ViewComponentExtension extends Extension
         return ['component' => $this->factory];
     }
 
-    private function parseComponentPasses() : void
-    {
-        $staticComponents = [];
-        $nodeComponents   = [];
-
-        foreach ( $this->factory->getRegisteredComponents() as $component ) {
-            if ( $component->static ) {
-                $index = $component->priority ?: \count( $staticComponents );
-                if ( \array_key_exists( $component->priority, $staticComponents ) ) {
-                    $index += \count( $staticComponents );
-                    $this->logger?->warning(
-                        '{component} priority {priority} already defined. Auto-bumped to {bump} to prevent conflict.',
-                        [
-                            'component' => $component->name,
-                            'priority'  => $component->priority,
-                            'bump'      => $index,
-                        ],
-                    );
-                }
-                $staticComponents[$index] = $component;
-            }
-            else {
-                $index = $component->priority ?: \count( $nodeComponents );
-                if ( \array_key_exists( $component->priority, $nodeComponents ) ) {
-                    $this->logger?->warning(
-                        '{component} priority {priority} already defined. Auto-bumped to {bump} to prevent conflict.',
-                        [
-                            'component' => $component->name,
-                            'priority'  => $component->priority,
-                            'bump'      => $index,
-                        ],
-                    );
-                    $index += \count( $nodeComponents );
-                }
-                $nodeComponents[$index] = $component;
-            }
-        }
-        \ksort( $staticComponents );
-        \ksort( $nodeComponents );
-
-        foreach ( \array_reverse( $staticComponents ) as $component ) {
-            $this->staticComponents[$component->name] = $component;
-        }
-
-        foreach ( \array_reverse( $nodeComponents ) as $component ) {
-            $this->nodeComponents[$component->name] = $component;
-        }
-    }
+    // private function parseComponentPasses() : void
+    // {
+    //     $staticComponents = [];
+    //     $nodeComponents   = [];
+    //
+    //     foreach ( $this->factory->getRegisteredComponents() as $component ) {
+    //         if ( $component->static ) {
+    //             $index = $component->priority ?: \count( $staticComponents );
+    //             if ( \array_key_exists( $component->priority, $staticComponents ) ) {
+    //                 $index += \count( $staticComponents );
+    //                 $this->logger?->warning(
+    //                     '{component} priority {priority} already defined. Auto-bumped to {bump} to prevent conflict.',
+    //                     [
+    //                         'component' => $component->name,
+    //                         'priority'  => $component->priority,
+    //                         'bump'      => $index,
+    //                     ],
+    //                 );
+    //             }
+    //             $staticComponents[$index] = $component;
+    //         }
+    //         else {
+    //             $index = $component->priority ?: \count( $nodeComponents );
+    //             if ( \array_key_exists( $component->priority, $nodeComponents ) ) {
+    //                 $this->logger?->warning(
+    //                     '{component} priority {priority} already defined. Auto-bumped to {bump} to prevent conflict.',
+    //                     [
+    //                         'component' => $component->name,
+    //                         'priority'  => $component->priority,
+    //                         'bump'      => $index,
+    //                     ],
+    //                 );
+    //                 $index += \count( $nodeComponents );
+    //             }
+    //             $nodeComponents[$index] = $component;
+    //         }
+    //     }
+    //     \ksort( $staticComponents );
+    //     \ksort( $nodeComponents );
+    //
+    //     foreach ( \array_reverse( $staticComponents ) as $component ) {
+    //         $this->staticComponents[$component->name] = $component;
+    //     }
+    //
+    //     foreach ( \array_reverse( $nodeComponents ) as $component ) {
+    //         $this->nodeComponents[$component->name] = $component;
+    //     }
+    // }
 }

@@ -7,7 +7,7 @@ namespace Core\View\Component;
 use Core\View\Attribute\ViewComponent;
 use Core\View\Interface\ViewComponentInterface;
 use Core\View\Latte\Node\StaticNode;
-use Core\View\ViewElement;
+use Core\View\Element;
 use Core\View\Element\Attributes;
 use Core\View\Template\ViewNode;
 use Latte\Compiler\Nodes\FragmentNode;
@@ -22,7 +22,7 @@ use ReflectionClass;
 use BadMethodCallException;
 
 /**
- * @method static ViewElement view()
+ * @method static Element view()
  */
 abstract class AbstractComponent implements ViewComponentInterface
 {
@@ -36,7 +36,7 @@ abstract class AbstractComponent implements ViewComponentInterface
 
     public readonly string $uniqueID;
 
-    public readonly ViewElement $view;
+    public readonly Element $view;
 
     public readonly Attributes $attributes;
 
@@ -48,12 +48,12 @@ abstract class AbstractComponent implements ViewComponentInterface
         return $this->render();
     }
 
-    public function getHtml( bool $string = false ) : string|Stringable
+    public function getHtml( bool $string = false ) : Stringable
     {
         return $this->view->getHtml();
     }
 
-    abstract public function getView() : ViewElement;
+    abstract public function getView() : Element;
 
     public function getElementNode(
         Position     $position,
@@ -81,7 +81,7 @@ abstract class AbstractComponent implements ViewComponentInterface
         ?string $uniqueId = null,
     ) : ViewComponentInterface {
         $this->name       = $this::componentName();
-        $this->view       = new ViewElement();
+        $this->view       = new Element();
         $this->attributes = $this->view->attributes;
         $this->prepareArguments( $arguments );
         $this->componentUniqueID( $uniqueId ?? \serialize( [$arguments] ) );

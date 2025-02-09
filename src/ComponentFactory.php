@@ -46,9 +46,9 @@ class ComponentFactory implements ComponentFactoryInterface
     /**
      * Renders a component at runtime.
      *
-     * @param class-string|string  $component
-     * @param array<string, mixed> $arguments
-     * @param ?int                 $cache
+     * @param class-string|string                                          $component
+     * @param array<string, null|array<array-key, string|string[]>|string> $arguments
+     * @param ?int                                                         $cache
      *
      * @return ViewComponentInterface
      */
@@ -99,10 +99,8 @@ class ComponentFactory implements ComponentFactoryInterface
         $component = $this->getComponentServiceID( $component );
 
         if ( ! $component || ! $this->components->has( $component ) ) {
-            throw new ComponentNotFoundException(
-                (string) $component,
-                'Not found in the Component Container.',
-            );
+            $message = "The component '{$component}' not found in the Component Container.";
+            throw new ComponentNotFoundException( $component, $message );
         }
 
         return $this->components->get( $component );
@@ -132,9 +130,9 @@ class ComponentFactory implements ComponentFactoryInterface
     /**
      * @param string $from class, name, or tag
      *
-     * @return null|string
+     * @return string
      */
-    final public function getComponentServiceID( string $from ) : ?string
+    final public function getComponentServiceID( string $from ) : string
     {
         if (
             \str_contains( $from, '\\' )
