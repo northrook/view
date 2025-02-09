@@ -12,7 +12,7 @@ use Latte\{Engine, Loader, Loaders\FileLoader};
 use Symfony\Component\DependencyInjection\Attribute\{Autoconfigure};
 use Core\View\Interface\TemplateEngineInterface;
 use Psr\Log\LoggerInterface;
-use RuntimeException, BadMethodCallException;
+use BadMethodCallException;
 use function String\hashKey;
 
 #[Autoconfigure(
@@ -75,9 +75,11 @@ class TemplateEngine implements TemplateEngineInterface
         return $render;
     }
 
-    final public function clearTemplateCache() : bool
+    final public function clearTemplateCache() : self
     {
-        return $this->cacheDirectory( true );
+        $this->pathfinder->getPath( $this->cacheDirectory )->remove();
+
+        return $this;
     }
 
     final public function pruneTemplateCache() : array
@@ -145,24 +147,17 @@ class TemplateEngine implements TemplateEngineInterface
     // :::: Internal
 
     /**
-     * @param bool $purgeCacheDirectory
-     *
-     * @return ($purgeCacheDirectory is true ? bool : string)
+     * @return string
      */
-    final protected function cacheDirectory( bool $purgeCacheDirectory = false ) : bool|string
+    final protected function cacheDirectory() : string
     {
         $cacheDirectory = $this->pathfinder->getPath( $this->cacheDirectory );
-
-        if ( $purgeCacheDirectory ) {
-            return $cacheDirectory->remove();
-        }
 
         if ( ! $cacheDirectory->exists() ) {
             $cacheDirectory->mkdir();
         }
 
-        return $cacheDirectory->getRealPath()
-                ?: throw new RuntimeException( 'Cache directory does not exist.' );
+        return $cacheDirectory->getRealPath();
     }
 
     final protected function resolveTemplate( string $view ) : string

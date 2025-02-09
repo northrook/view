@@ -43,9 +43,9 @@ interface TemplateEngineInterface
      *
      * ⚠️ This forces a recompilation of each template on-demand.
      *
-     * @return bool
+     * @return self
      */
-    public function clearTemplateCache() : bool;
+    public function clearTemplateCache() : self;
 
     /**
      * Removes unnecessary cached template files.
