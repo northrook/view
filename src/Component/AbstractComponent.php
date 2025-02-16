@@ -11,15 +11,11 @@ use Core\View\Element;
 use Core\View\Element\Attributes;
 use Core\View\Template\ViewNode;
 use Latte\Compiler\Nodes\FragmentNode;
-use Stringable;
-use Latte\Compiler\Nodes\Html\{ElementNode};
-use InvalidArgumentException;
+use Latte\Compiler\Nodes\Html\ElementNode;
 use Latte\Compiler\Position;
 use Northrook\Logger\Log;
-use Override;
+use Override, Stringable, ReflectionClass, BadMethodCallException, InvalidArgumentException;
 use function Cache\memoize;
-use ReflectionClass;
-use BadMethodCallException;
 
 /**
  * @method static Element view()

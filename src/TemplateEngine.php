@@ -196,7 +196,7 @@ class TemplateEngine implements TemplateEngineInterface
         foreach ( $this->templateDirectories as $directoryKey ) {
             $fileInfo = $this->pathfinder->getPath( "{$directoryKey}/{$view}" );
 
-            if ( $fileInfo && $fileInfo->isReadable() ) {
+            if ( $fileInfo->isReadable() ) {
                 return $fileInfo->getPathname();
             }
         }

@@ -9,7 +9,6 @@ use Symfony\Component\DependencyInjection\{
     Definition,
     Reference
 };
-use Core\Assets\AssetManifest;
 use Core\Symfony\Console\ListReport;
 use Core\Symfony\DependencyInjection\CompilerPass;
 use Core\View\Attribute\ViewComponent;
@@ -27,8 +26,6 @@ final class RegisterViewComponentsPass extends CompilerPass
     protected readonly Definition $locatorDefinition;
 
     protected readonly Definition $factoryDefinition;
-
-    public function __construct( protected readonly ?AssetManifest $assetManifest = null ) {}
 
     /**
      * @param ContainerBuilder $container
@@ -70,7 +67,7 @@ final class RegisterViewComponentsPass extends CompilerPass
         $viewComponentAttributes = $reflectionClass->getAttributes( ViewComponent::class );
 
         /** @var ViewComponent $viewComponent */
-        $viewComponent = $viewComponentAttributes[0]?->newInstance();
+        $viewComponent = $viewComponentAttributes[0]->newInstance();
         $viewComponent->setClassName( $className );
 
         return $viewComponent;
