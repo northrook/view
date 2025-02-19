@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Core\View\Interface;
 
-use Core\Interface\PathfinderInterface;
+use Core\Pathfinder;
 use Core\View\Parameters;
 use Psr\Log\LoggerInterface;
 
@@ -13,14 +13,14 @@ interface TemplateEngineInterface
     /**
      * @param string               $cacheDirectory full path or `parameter.key`
      * @param ?Parameters          $parameters
-     * @param PathfinderInterface  $pathfinder
+     * @param Pathfinder           $pathfinder
      * @param null|LoggerInterface $logger
      */
     public function __construct(
-        string              $cacheDirectory,
-        ?Parameters         $parameters,
-        PathfinderInterface $pathfinder,
-        ?LoggerInterface    $logger,
+        string           $cacheDirectory,
+        ?Parameters      $parameters,
+        Pathfinder       $pathfinder,
+        ?LoggerInterface $logger,
     );
 
     /**

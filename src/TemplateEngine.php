@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Core\View;
 
+use Core\Pathfinder;
 use Core\Pathfinder\Path;
-use Core\Interface\PathfinderInterface;
 use Core\View\Exception\TemplateCompilerException;
 use Core\View\Latte\{PreformatterExtension, StyleSystemExtension};
 use Latte\{Engine, Loader, Loaders\FileLoader};
@@ -29,7 +29,7 @@ class TemplateEngine implements TemplateEngineInterface
     /**
      * @param string               $cacheDirectory
      * @param Parameters           $parameters
-     * @param PathfinderInterface  $pathfinder
+     * @param Pathfinder  $pathfinder
      * @param null|LoggerInterface $logger
      * @param string[]             $templateDirectories
      * @param \Latte\Extension[]   $engineExtensions
@@ -39,7 +39,7 @@ class TemplateEngine implements TemplateEngineInterface
     public function __construct(
         public string                          $cacheDirectory,
         ?Parameters                            $parameters,
-        protected readonly PathfinderInterface $pathfinder,
+        protected readonly Pathfinder $pathfinder,
         protected readonly ?LoggerInterface    $logger = null,
         protected readonly array               $templateDirectories = [],
         protected readonly array               $engineExtensions = [],
