@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Core\View\Latte\Compiler;
 
-use Support\Str;
 use Stringable, LogicException;
+use function Support\str_starts_with_any;
 use const Support\EMPTY_STRING;
 
 final class NodeExporter
@@ -123,7 +123,7 @@ final class NodeExporter
     {
         $value = \trim( $value, " \t\n\r\0\x0B'" );
 
-        if ( ! Str::startsWith( $value, ['$', 'LR\Filters'] ) ) {
+        if ( ! str_starts_with_any( $value, '$', 'LR\Filters' ) ) {
             $value = "'".\str_replace( "'", "\'", $value )."'";
         }
         return $value;

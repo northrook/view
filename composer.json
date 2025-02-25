@@ -24,17 +24,14 @@
     "ext-dom": "*",
     "ext-libxml": "*",
     "northrook/core": "dev-main",
+    "northrook/cache": "dev-main",
     "northrook/core-symfony": "dev-main",
     "northrook/pathfinder": "dev-main",
     "northrook/view-element": "dev-main",
     "latte/latte": "@stable"
   },
   "require-dev": {
-    "phpstan/phpstan": " @stable",
-    "northrook/php-cs": "dev-main",
-    "northrook/logger": "dev-main",
-    "jetbrains/phpstorm-attributes": "^1.2",
-    "symfony/cache": "^7.2",
-    "northrook/dev": "dev-main"
+    "northrook/dev": "dev-main",
+    "symfony/cache": "^7.2"
   }
 }

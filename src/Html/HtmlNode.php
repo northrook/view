@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Core\View\Html;
 
 use Core\View\Element\Attributes;
-use JetBrains\PhpStorm\Language;
+use JetBrains\PhpStorm\{Deprecated, Language};
 use DOMDocument;
 use Exception;
 use Northrook\Logger\Log;
@@ -14,6 +14,7 @@ use ErrorException;
 use DOMNodeList;
 use DOMNode;
 
+#[Deprecated]
 final class HtmlNode
 {
     public DOMDocument $dom;

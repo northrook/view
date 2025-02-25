@@ -8,7 +8,7 @@ use Core\View\Element\Tag;
 use Latte\Compiler\{Node, Nodes\FragmentNode, Nodes\TextNode, NodeTraverser};
 use Latte\Compiler\Nodes\Html\ElementNode;
 use Latte\Compiler\Nodes\Php\ExpressionNode;
-use Support\{Character, Normalize};
+use function Support\normalizeWhitespace;
 
 trait NodeTraverserMethods
 {
@@ -54,7 +54,7 @@ trait NodeTraverserMethods
                 continue;
             }
 
-            $firstNode = 0      === $index;
+            $firstNode = $index === 0;
             $lastNode  = $index === $lastIndex;
             $edgeNode  = ( $firstNode || $lastNode );
 
@@ -116,7 +116,7 @@ trait NodeTraverserMethods
         // dump( $nodeTag);
         // if ( Tag::isContent( $nodeTag ) ) {
         // }
-        $textNode->content = Normalize::whitespace( $textNode->content );
+        $textNode->content = normalizeWhitespace( $textNode->content );
 
         if ( ! ( $previousTag || $nextTag ) || ! $textNode->content ) {
             return;
@@ -129,7 +129,10 @@ trait NodeTraverserMethods
             $textNode->content = "{$textNode->content} ";
         }
 
-        if ( $previousTag && ! Character::isPunctuation( $textNode->content[0] ) ) {
+        if ( $previousTag ) {
+            dump( ['isPunctuation check here ' => $textNode->content] );
+            // && ! Character::isPunctuation( $textNode->content[0] )
+            // str_contains( '.,;!', $string ),
             // $textNode->content = "&nbsp;{$textNode->content}";
             $textNode->content = " {$textNode->content}";
         }

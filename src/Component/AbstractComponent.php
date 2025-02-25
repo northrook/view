@@ -15,7 +15,6 @@ use Latte\Compiler\Nodes\Html\ElementNode;
 use Latte\Compiler\Position;
 use Northrook\Logger\Log;
 use Override, Stringable, ReflectionClass, BadMethodCallException, InvalidArgumentException;
-use function Cache\memoize;
 
 /**
  * @method static Element view()
@@ -249,26 +248,26 @@ abstract class AbstractComponent implements ViewComponentInterface
     final public static function componentName() : string
     {
         $name = self::NAME ?? self::viewComponentAttribute()->name;
-        return memoize(
-            static function() use ( $name ) {
-                if ( ! $name || ! \preg_match( '/^[a-z0-9:]+$/', $name ) ) {
-                    $message = static::class." name '{$name}' must be lower-case alphanumeric.";
 
-                    if ( \is_numeric( $name[0] ) ) {
-                        $message = static::class." name '{$name}' cannot start with a number.";
-                    }
+        if ( ! $name ) {
+            throw new BadMethodCallException( static::class.' name is not defined.' );
+        }
 
-                    if ( \str_starts_with( $name, ':' ) || \str_ends_with( $name, ':' ) ) {
-                        $message = static::class." name '{$name}' must not start or end with a separator.";
-                    }
+        if ( ! \ctype_alnum( \str_replace( ':', '', $name ) ) ) {
+            $message = static::class." name '{$name}' must be lower-case alphanumeric.";
 
-                    throw new InvalidArgumentException( $message );
-                }
+            if ( \is_numeric( $name[0] ) ) {
+                $message = static::class." name '{$name}' cannot start with a number.";
+            }
 
-                return $name;
-            },
-            $name,
-        );
+            if ( \str_starts_with( $name, ':' ) || \str_ends_with( $name, ':' ) ) {
+                $message = static::class." name '{$name}' must not start or end with a separator.";
+            }
+
+            throw new InvalidArgumentException( $message );
+        }
+
+        return $name;
     }
 
     final public static function viewComponentAttribute() : ViewComponent

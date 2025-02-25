@@ -11,10 +11,10 @@ use Core\View\Attribute\ViewComponent;
 use Core\View\Component\AbstractComponent;
 use Core\View\Exception\ComponentNotFoundException;
 use Psr\Log\LoggerInterface;
-use Support\Str;
 use Symfony\Component\DependencyInjection\Attribute\{Autoconfigure};
 use Symfony\Component\DependencyInjection\ServiceLocator;
-use const Cache\AUTO;
+use function Support\str_start;
+use const Support\AUTO;
 use InvalidArgumentException;
 
 #[Autoconfigure(
@@ -142,7 +142,7 @@ class ComponentFactory implements ComponentFactoryInterface
             return $from::viewComponentAttribute()->serviceID;
         }
 
-        $from = Str::start( $from, ViewComponent::PREFIX );
+        $from = str_start( $from, ViewComponent::PREFIX );
 
         // If the provided $value matches an array name, return it
         if ( $this->components->has( $from ) ) {

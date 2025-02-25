@@ -13,7 +13,7 @@ use Symfony\Component\DependencyInjection\Attribute\{Autoconfigure};
 use Core\View\Interface\TemplateEngineInterface;
 use Psr\Log\LoggerInterface;
 use BadMethodCallException;
-use function String\hashKey;
+use function Support\hashKey;
 
 #[Autoconfigure(
     tags : ['monolog.logger' => ['channel' => 'view']],
@@ -29,7 +29,7 @@ class TemplateEngine implements TemplateEngineInterface
     /**
      * @param string               $cacheDirectory
      * @param Parameters           $parameters
-     * @param Pathfinder  $pathfinder
+     * @param Pathfinder           $pathfinder
      * @param null|LoggerInterface $logger
      * @param string[]             $templateDirectories
      * @param \Latte\Extension[]   $engineExtensions
@@ -37,14 +37,14 @@ class TemplateEngine implements TemplateEngineInterface
      * @param bool                 $debug
      */
     public function __construct(
-        public string                          $cacheDirectory,
-        ?Parameters                            $parameters,
-        protected readonly Pathfinder $pathfinder,
-        protected readonly ?LoggerInterface    $logger = null,
-        protected readonly array               $templateDirectories = [],
-        protected readonly array               $engineExtensions = [],
-        protected string                       $locale = 'en',
-        public bool                            $debug = true,
+        public string                       $cacheDirectory,
+        ?Parameters                         $parameters,
+        protected readonly Pathfinder       $pathfinder,
+        protected readonly ?LoggerInterface $logger = null,
+        protected readonly array            $templateDirectories = [],
+        protected readonly array            $engineExtensions = [],
+        protected string                    $locale = 'en',
+        public bool                         $debug = true,
     ) {
         $this->parameters = $parameters ?? new Parameters();
     }
