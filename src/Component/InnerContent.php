@@ -102,7 +102,7 @@ final class InnerContent implements Stringable
 
         /** @var string[] $content */
         if ( $tag ) {
-            $element = new Element( $tag, $attributes, ...$content );
+            $element = new Element( $tag, $content, ...$attributes );
 
             return $element->__toString();
         }
@@ -127,7 +127,7 @@ final class InnerContent implements Stringable
         $index = \strrpos( $node, ':' );
 
         // Treat parsed string variables as simple strings
-        if ( false !== $index && 'string' === $valueType && \str_starts_with( $node, '$' ) ) {
+        if ( $index !== false && $valueType === 'string' && \str_starts_with( $node, '$' ) ) {
             return (int) \substr( $node, $index + 1 );
         }
 
