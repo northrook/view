@@ -8,8 +8,8 @@ use Core\View\Element\Tag;
 use Latte\Compiler\{Node, Nodes\FragmentNode, Nodes\TextNode, NodeTraverser};
 use Latte\Compiler\Nodes\Html\ElementNode;
 use Latte\Compiler\Nodes\Php\ExpressionNode;
-use function Support\normalizeWhitespace;
-
+use Support\Character;
+use function Support\{isPunctuation, normalizeWhitespace};
 trait NodeTraverserMethods
 {
     final protected function matchTag( Node $node, string|Tag ...$tag ) : bool
@@ -129,8 +129,8 @@ trait NodeTraverserMethods
             $textNode->content = "{$textNode->content} ";
         }
 
-        if ( $previousTag ) {
-            dump( ['isPunctuation check here ' => $textNode->content] );
+        if ( $previousTag && ! isPunctuation( $textNode->content[0] ) ) {
+            // dump( ['isPunctuation check here ' => $textNode->content] );
             // && ! Character::isPunctuation( $textNode->content[0] )
             // str_contains( '.,;!', $string ),
             // $textNode->content = "&nbsp;{$textNode->content}";
