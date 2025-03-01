@@ -7,7 +7,7 @@ namespace Core\View\Latte;
 use Core\View\ComponentFactory;
 use Core\View\ComponentFactory\ComponentProperties;
 use Core\View\Latte\Compiler\NodeParser;
-use Core\View\Latte\Node\{ComponentNode};
+use Core\View\Latte\Node\{ComponentNode, ElementTagNode};
 use Latte\Compiler\{Node, NodeTraverser};
 use Latte\Compiler\Nodes\Html\ElementNode;
 use Latte\Compiler\Nodes\Php\ExpressionNode;
@@ -27,6 +27,13 @@ final class ViewComponentExtension extends Extension
         public readonly ComponentFactory  $factory,
         private readonly ?LoggerInterface $logger = null,
     ) {}
+
+    public function getTags() : array
+    {
+        return [
+            'div' => [ElementTagNode::class, 'create'],
+        ];
+    }
 
     #[Override]
     public function getPasses() : array
