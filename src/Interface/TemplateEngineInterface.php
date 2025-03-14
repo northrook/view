@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace Core\View\Interface;
 
+use Core\Interface\LazyService;
 use Core\Pathfinder;
 use Core\View\Parameters;
 use Psr\Log\LoggerInterface;
 
-interface TemplateEngineInterface
+interface TemplateEngineInterface extends LazyService
 {
     /**
      * @param string               $cacheDirectory full path or `parameter.key`

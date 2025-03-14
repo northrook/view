@@ -9,16 +9,11 @@ use Core\Pathfinder\Path;
 use Core\View\Exception\TemplateCompilerException;
 use Core\View\Latte\{PreformatterExtension, StyleSystemExtension};
 use Latte\{Engine, Loader, Loaders\FileLoader};
-use Symfony\Component\DependencyInjection\Attribute\{Autoconfigure};
 use Core\View\Interface\TemplateEngineInterface;
 use Psr\Log\LoggerInterface;
 use BadMethodCallException;
 use function Support\hashKey;
 
-#[Autoconfigure(
-    tags : ['monolog.logger' => ['channel' => 'view']],
-    lazy : true,
-)]
 class TemplateEngine implements TemplateEngineInterface
 {
     public readonly Parameters $parameters;

@@ -9,7 +9,6 @@ use Core\Symfony\Console\Output;
 use Core\Symfony\DependencyInjection\Autodiscover;
 use Core\View\Interface\ViewComponentInterface;
 use Core\View\Component\AbstractComponent;
-use Core\View\Element\Tag;
 use Northrook\Logger\Log;
 use Support\Reflect;
 use LogicException;
@@ -112,16 +111,8 @@ final class ViewComponent extends Autodiscover
      */
     private function setTags( array $tags ) : void
     {
-        // TODO : Will only match stand-alone tags if strictly specified
-
         foreach ( $tags as $tag ) {
-            $tag = \strtolower( \trim( $tag ) );
-
-            if ( ! \in_array( \strstr( $tag, ':', true ), Tag::TAGS, true ) ) {
-                Log::warning( 'Unknown tag: '.$tag );
-            }
-
-            if ( ! \preg_match( '/^[a-zA-Z][a-zA-Z0-9._:-]*$/', $tag ) ) {
+            if ( ! \ctype_alpha( \str_replace( [':', '{', '}'], '', $tag ) ) ) {
                 Log::error( 'Tag {tag} contains invalid characters.', ['tag' => $tag] );
             }
         }

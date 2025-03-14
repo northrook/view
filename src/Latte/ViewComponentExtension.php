@@ -16,11 +16,8 @@ use Latte\Extension;
 use Override;
 use Psr\Log\LoggerInterface;
 use Exception;
-use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
+use Symfony\Component\DependencyInjection\Attribute\{AutoconfigureTag};
 
-#[Autoconfigure(
-    tags : ['monolog.logger' => ['channel' => 'view']],
-)]
 final class ViewComponentExtension extends Extension
 {
     public function __construct(

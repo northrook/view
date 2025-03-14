@@ -131,7 +131,7 @@ abstract class AbstractComponent implements ViewComponentInterface
     /**
      * Process arguments passed to the {@see self::create()} method.
      *
-     * @param array<string, mixed> $arguments
+     * @param array{'tag': ?string,'attributes' : array<string, null|array<array-key, ?string>|bool|float|int|string>, 'content': null|string} $arguments
      *
      * @return void
      */

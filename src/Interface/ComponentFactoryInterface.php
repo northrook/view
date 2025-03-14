@@ -2,4 +2,6 @@
 
 namespace Core\View\Interface;
 
-interface ComponentFactoryInterface {}
+use Core\Interface\LazyService;
+
+interface ComponentFactoryInterface extends LazyService {}
