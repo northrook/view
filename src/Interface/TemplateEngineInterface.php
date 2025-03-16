@@ -6,22 +6,21 @@ namespace Core\View\Interface;
 
 use Core\Interface\LazyService;
 use Core\Pathfinder;
+use Core\Profiler\Interface\Profilable;
 use Core\View\Parameters;
-use Psr\Log\LoggerInterface;
+use Psr\Log\{LoggerAwareInterface};
 
-interface TemplateEngineInterface extends LazyService
+interface TemplateEngineInterface extends LazyService, LoggerAwareInterface, Profilable
 {
     /**
-     * @param string               $cacheDirectory full path or `parameter.key`
-     * @param ?Parameters          $parameters
-     * @param Pathfinder           $pathfinder
-     * @param null|LoggerInterface $logger
+     * @param string      $cacheDirectory full path or `parameter.key`
+     * @param ?Parameters $parameters
+     * @param Pathfinder  $pathfinder
      */
     public function __construct(
-        string           $cacheDirectory,
-        ?Parameters      $parameters,
-        Pathfinder       $pathfinder,
-        ?LoggerInterface $logger,
+        string      $cacheDirectory,
+        ?Parameters $parameters,
+        Pathfinder  $pathfinder,
     );
 
     /**

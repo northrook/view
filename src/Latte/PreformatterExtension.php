@@ -11,7 +11,6 @@ use Latte\Compiler\Nodes\{FragmentNode, TemplateNode, TextNode};
 use Latte\Compiler\Nodes\Html\ElementNode;
 use Latte\Compiler\Nodes\Php\ExpressionNode;
 use Core\View\Latte\Compiler\NodeTraverserMethods;
-use Psr\Log\LoggerInterface;
 
 final class PreformatterExtension extends Latte\Extension
 {
@@ -20,8 +19,6 @@ final class PreformatterExtension extends Latte\Extension
     private const array SKIP_TAGS = ['code', 'pre', 'script', 'style'];
 
     private const array SKIP_PARTIAL_TAGS = ['code:', 'pre:'];
-
-    public function __construct( private readonly ?LoggerInterface $logger = null ) {}
 
     #[Override]
     public function getPasses() : array

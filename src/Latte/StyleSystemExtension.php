@@ -12,13 +12,10 @@ use Latte\Compiler\Nodes\Html\ElementNode;
 use Latte\Compiler\Nodes\Php\ExpressionNode;
 use Latte\Compiler\Nodes\TemplateNode;
 use Override;
-use Psr\Log\LoggerInterface;
 
 final class StyleSystemExtension extends Latte\Extension
 {
     use NodeTraverserMethods;
-
-    public function __construct( private readonly ?LoggerInterface $logger = null ) {}
 
     #[Override]
     public function getPasses() : array

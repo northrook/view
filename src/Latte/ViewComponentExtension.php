@@ -16,7 +16,6 @@ use Latte\Extension;
 use Override;
 use Psr\Log\LoggerInterface;
 use Exception;
-use Symfony\Component\DependencyInjection\Attribute\{AutoconfigureTag};
 
 final class ViewComponentExtension extends Extension
 {

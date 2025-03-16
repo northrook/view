@@ -4,20 +4,23 @@ declare(strict_types=1);
 
 namespace Core\View;
 
-use Core\View\Interface\{ComponentFactoryInterface, ViewComponentInterface};
 use Core\View\ComponentFactory\{ComponentBag, ComponentProperties};
-use Core\Interface\ViewInterface;
+use Core\Profiler\Interface\Profilable;
+use Core\Profiler\ProfilerTrait;
+use Core\Interface\{LazyService, ViewInterface};
 use Core\View\Attribute\ViewComponent;
 use Core\View\Component\AbstractComponent;
 use Core\View\Exception\ComponentNotFoundException;
-use Psr\Log\LoggerInterface;
+use Psr\Log\{LoggerAwareInterface, LoggerAwareTrait};
 use Symfony\Component\DependencyInjection\ServiceLocator;
 use function Support\str_start;
 use const Support\AUTO;
 use InvalidArgumentException;
 
-class ComponentFactory implements ComponentFactoryInterface
+class ComponentFactory implements LazyService, Profilable, LoggerAwareInterface
 {
+    use ProfilerTrait, LoggerAwareTrait;
+
     /**
      * `[ component.name => uniqueId ]`.
      *
@@ -26,16 +29,14 @@ class ComponentFactory implements ComponentFactoryInterface
     private array $instantiated = [];
 
     /**
-     * @param ServiceLocator<ViewComponentInterface> $locator
-     * @param ComponentBag                           $components
-     * @param array<string, string>                  $tags
-     * @param ?LoggerInterface                       $logger
+     * @param ServiceLocator<AbstractComponent> $locator
+     * @param ComponentBag                      $components
+     * @param array<string, string>             $tags
      */
     public function __construct(
-        protected readonly ServiceLocator   $locator,
-        protected readonly ComponentBag     $components,
-        protected readonly array            $tags = [],
-        protected readonly ?LoggerInterface $logger = null,
+        protected readonly ServiceLocator $locator,
+        protected readonly ComponentBag   $components,
+        protected readonly array          $tags = [],
     ) {}
 
     /**
@@ -45,10 +46,12 @@ class ComponentFactory implements ComponentFactoryInterface
      * @param array<string, null|array<array-key, string|string[]>|string> $arguments
      * @param ?int                                                         $cache
      *
-     * @return ViewComponentInterface
+     * @return AbstractComponent
      */
     public function render( string $component, array $arguments = [], ?int $cache = AUTO ) : ViewInterface
     {
+        $this->profiler?->event( $component );
+
         $properties = $this->getComponentProperties( $component );
 
         $viewComponent = $this->getComponent( $component );
@@ -57,6 +60,7 @@ class ComponentFactory implements ComponentFactoryInterface
 
         $this->instantiated[$properties->name][] = $viewComponent->uniqueID;
 
+        $this->profiler?->stop( $component );
         return $viewComponent;
     }
 
@@ -67,9 +71,9 @@ class ComponentFactory implements ComponentFactoryInterface
      *
      * @param class-string|ComponentProperties|string $component
      *
-     * @return ViewComponentInterface
+     * @return AbstractComponent
      */
-    final public function getComponent( string|ComponentProperties $component ) : ViewComponentInterface
+    final public function getComponent( string|ComponentProperties $component ) : AbstractComponent
     {
         $serviceID = $this->getComponentServiceID( (string) $component );
 
@@ -81,7 +85,7 @@ class ComponentFactory implements ComponentFactoryInterface
         if ( $this->locator->has( $serviceID ) ) {
             $viewComponent = $this->locator->get( $serviceID );
 
-            \assert( $viewComponent instanceof ViewComponentInterface );
+            \assert( $viewComponent instanceof AbstractComponent );
 
             return clone $viewComponent;
         }

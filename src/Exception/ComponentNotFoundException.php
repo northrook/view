@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Core\View\Exception;
 
-use Core\View\Interface\ViewComponentInterface;
+use Core\View\Component\AbstractComponent;
 use InvalidArgumentException;
 use Throwable;
 
@@ -17,7 +17,7 @@ class ComponentNotFoundException extends InvalidArgumentException
         ?string                 $message = null,
         ?Throwable              $previous = null,
     ) {
-        $this->interface = ViewComponentInterface::class;
+        $this->interface = AbstractComponent::class;
 
         parent::__construct( $this->message( $message ), 500, $previous );
     }
@@ -29,7 +29,7 @@ class ComponentNotFoundException extends InvalidArgumentException
             ! \is_subclass_of(
                 $this->component,
                 $this->interface,
-            )       => "The component class '{$this->component}' does not extend the Abstract {$this->interface} class.",
+            )       => "The component class '{$this->component}' does not extend the {$this->interface} class.",
             default => "The {$this->component} Component was not found",
         };
     }

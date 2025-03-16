@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace Core\View\Component;
 
+use Core\Interface\ViewInterface;
+use Core\Symfony\DependencyInjection\SettingsAccessor;
 use Core\View\Attribute\ViewComponent;
-use Core\View\Interface\ViewComponentInterface;
 use Core\View\Latte\Node\StaticNode;
 use Core\View\Element;
 use Core\View\Element\Attributes;
@@ -14,13 +15,13 @@ use Latte\Compiler\Nodes\FragmentNode;
 use Latte\Compiler\Nodes\Html\ElementNode;
 use Latte\Compiler\Position;
 use Northrook\Logger\Log;
-use Override, Stringable, ReflectionClass, BadMethodCallException, InvalidArgumentException;
+use Stringable, ReflectionClass, BadMethodCallException, InvalidArgumentException;
+use function Support\key_hash;
 
-/**
- * @method static Element view()
- */
-abstract class AbstractComponent implements ViewComponentInterface
+abstract class AbstractComponent implements ViewInterface
 {
+    use SettingsAccessor;
+
     /** @var ?string Manually define a name for this component */
     protected const ?string NAME = null;
 
@@ -37,7 +38,6 @@ abstract class AbstractComponent implements ViewComponentInterface
 
     protected readonly InnerContent $innerContent;
 
-    #[Override]
     public function __toString() : string
     {
         return $this->render();
@@ -74,7 +74,7 @@ abstract class AbstractComponent implements ViewComponentInterface
         array   $arguments,
         array   $promote = [],
         ?string $uniqueId = null,
-    ) : ViewComponentInterface {
+    ) : self {
         $this->name       = $this::componentName();
         $this->view       = new Element();
         $this->attributes = $this->view->attributes;
@@ -157,7 +157,7 @@ abstract class AbstractComponent implements ViewComponentInterface
             $this->uniqueID = $set;
             return;
         }
-        $this->uniqueID = \hash( algo : 'xxh3', data : $set );
+        $this->uniqueID = key_hash( 'xxh64', $set );
     }
 
     /**

@@ -7,14 +7,13 @@ namespace Core\View\Attribute;
 use Attribute, Override;
 use Core\Symfony\Console\Output;
 use Core\Symfony\DependencyInjection\Autodiscover;
-use Core\View\Interface\ViewComponentInterface;
 use Core\View\Component\AbstractComponent;
 use Northrook\Logger\Log;
 use Support\Reflect;
 use LogicException;
 
 /**
- * Classing annotated with {@see AbstractComponent} and implementing the {@see ViewComponentInterface}, will be autoconfigured as a `service`.
+ * Classing annotated with {@see AbstractComponent} will be autoconfigured as a `service`.
  *
  * @used-by ComponentFactory, ComponentParser
  *
@@ -27,7 +26,7 @@ final class ViewComponent extends Autodiscover
 
     public const string LOCATOR_ID = 'view.component_locator';
 
-    /** @var class-string<ViewComponentInterface> */
+    /** @var class-string<AbstractComponent> */
     public readonly string $className;
 
     /** @var string[] */
@@ -36,7 +35,7 @@ final class ViewComponent extends Autodiscover
     public readonly string $name;
 
     /**
-     * Configure how this {@see ViewComponentInterface} is handled.
+     * Configure how this {@see AbstractComponent} is handled.
      *
      * ### `Tag`
      * Assign one or more HTML tags to trigger this component.
@@ -121,7 +120,7 @@ final class ViewComponent extends Autodiscover
     }
 
     /**
-     * @return array{name: string, class: class-string<ViewComponentInterface>, static: bool, priority: int, tags: string[], tagged: array<string, array<int, null|string>>}
+     * @return array{name: string, class: class-string<AbstractComponent>, static: bool, priority: int, tags: string[], tagged: array<string, array<int, null|string>>}
      */
     public function getProperties() : array
     {

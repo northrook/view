@@ -6,40 +6,41 @@ namespace Core\View;
 
 use Core\Pathfinder;
 use Core\Pathfinder\Path;
+use Core\Profiler\ProfilerTrait;
 use Core\View\Exception\TemplateCompilerException;
 use Core\View\Latte\{PreformatterExtension, StyleSystemExtension};
 use Latte\{Engine, Loader, Loaders\FileLoader};
 use Core\View\Interface\TemplateEngineInterface;
-use Psr\Log\LoggerInterface;
+use Psr\Log\LoggerAwareTrait;
 use BadMethodCallException;
-use function Support\hashKey;
+use function Support\{key_hash};
 
 class TemplateEngine implements TemplateEngineInterface
 {
+    use ProfilerTrait, LoggerAwareTrait;
+
     public readonly Parameters $parameters;
 
     /** @var array<string, Engine> */
     private array $engine = [];
 
     /**
-     * @param string               $cacheDirectory
-     * @param Parameters           $parameters
-     * @param Pathfinder           $pathfinder
-     * @param null|LoggerInterface $logger
-     * @param string[]             $templateDirectories
-     * @param \Latte\Extension[]   $engineExtensions
-     * @param string               $locale
-     * @param bool                 $debug
+     * @param string             $cacheDirectory
+     * @param Parameters         $parameters
+     * @param Pathfinder         $pathfinder
+     * @param string[]           $templateDirectories
+     * @param \Latte\Extension[] $engineExtensions
+     * @param string             $locale
+     * @param bool               $debug
      */
     public function __construct(
-        public string                       $cacheDirectory,
-        ?Parameters                         $parameters,
-        protected readonly Pathfinder       $pathfinder,
-        protected readonly ?LoggerInterface $logger = null,
-        protected readonly array            $templateDirectories = [],
-        protected readonly array            $engineExtensions = [],
-        protected string                    $locale = 'en',
-        public bool                         $debug = true,
+        public string                 $cacheDirectory,
+        ?Parameters                   $parameters,
+        protected readonly Pathfinder $pathfinder,
+        protected readonly array      $templateDirectories = [],
+        protected readonly array      $engineExtensions = [],
+        protected string              $locale = 'en',
+        public bool                   $debug = true,
     ) {
         $this->parameters = $parameters ?? new Parameters();
     }
@@ -50,6 +51,8 @@ class TemplateEngine implements TemplateEngineInterface
         bool         $cache = true,
         ?Loader      $loader = null,
     ) : string {
+        $this->profiler?->event( __METHOD__ );
+
         $engine = $this->getEngine( $loader );
 
         if ( ! $cache ) {
@@ -67,6 +70,7 @@ class TemplateEngine implements TemplateEngineInterface
             $engine->setTempDirectory( $this->cacheDirectory() );
         }
 
+        $this->profiler?->stop( __METHOD__ );
         return $render;
     }
 
@@ -91,7 +95,7 @@ class TemplateEngine implements TemplateEngineInterface
         bool    $components = true,
     ) : Engine {
         $loader ??= new FileLoader();
-        $cacheKey = hashKey( [$loader::class, $preformatter, $elements, $components], 'implode' );
+        $cacheKey = key_hash( 'xxh64', $loader::class, $preformatter, $elements, $components );
 
         if ( isset( $this->engine[$cacheKey] ) ) {
             $this->logger?->debug(
@@ -110,6 +114,7 @@ class TemplateEngine implements TemplateEngineInterface
         bool   $elements = true,
         bool   $components = true,
     ) : Engine {
+        $this->profiler?->event( __METHOD__ );
         // Initialize the Engine.
         $engine = new Engine();
 
@@ -136,6 +141,7 @@ class TemplateEngine implements TemplateEngineInterface
             ],
         );
 
+        $this->profiler?->stop( __METHOD__ );
         return $engine;
     }
 
