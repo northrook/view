@@ -73,7 +73,6 @@ final class ViewComponent extends Autodiscover
             serviceID : $serviceId ?? '',
             tag       : [
                 'view.component_locator',
-                'controller.service_arguments',
                 'monolog.logger' => ['channel' => 'view_component'],
             ],
             lazy      : false,
