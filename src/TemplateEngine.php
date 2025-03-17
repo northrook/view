@@ -6,27 +6,25 @@ namespace Core\View;
 
 use Core\Pathfinder;
 use Core\Pathfinder\Path;
-use Core\Profiler\ProfilerTrait;
+use Core\Profiler\{StopwatchProfiler};
 use Core\View\Exception\TemplateCompilerException;
 use Core\View\Latte\{PreformatterExtension, StyleSystemExtension};
 use Latte\{Engine, Loader, Loaders\FileLoader};
 use Core\View\Interface\TemplateEngineInterface;
 use Psr\Log\LoggerAwareTrait;
 use BadMethodCallException;
+use Symfony\Component\Stopwatch\Stopwatch;
 use function Support\{key_hash};
 
 class TemplateEngine implements TemplateEngineInterface
 {
-    use ProfilerTrait, LoggerAwareTrait;
-
-    public readonly Parameters $parameters;
+    use StopwatchProfiler, LoggerAwareTrait;
 
     /** @var array<string, Engine> */
     private array $engine = [];
 
     /**
      * @param string             $cacheDirectory
-     * @param Parameters         $parameters
      * @param Pathfinder         $pathfinder
      * @param string[]           $templateDirectories
      * @param \Latte\Extension[] $engineExtensions
@@ -35,14 +33,16 @@ class TemplateEngine implements TemplateEngineInterface
      */
     public function __construct(
         public string                 $cacheDirectory,
-        ?Parameters                   $parameters,
         protected readonly Pathfinder $pathfinder,
         protected readonly array      $templateDirectories = [],
         protected readonly array      $engineExtensions = [],
         protected string              $locale = 'en',
         public bool                   $debug = true,
-    ) {
-        $this->parameters = $parameters ?? new Parameters();
+    ) {}
+
+    final public function setProfiler( ?Stopwatch $stopwatch, ?string $category = 'View' ) : void
+    {
+        $this->assignProfiler( $stopwatch, $category );
     }
 
     final public function render(
@@ -61,8 +61,8 @@ class TemplateEngine implements TemplateEngineInterface
         }
 
         $render = $engine->renderToString(
-            $this->resolveTemplate( $view ),
-            $this->injectParameters( $parameters ),
+            $this->template( $view ),
+            $this->parameters( $parameters ),
         );
 
         if ( ! $cache ) {
@@ -119,13 +119,13 @@ class TemplateEngine implements TemplateEngineInterface
         $engine = new Engine();
 
         if ( $preformatter ) {
-            $engine->addExtension( new PreformatterExtension( $this->logger ) );
+            $engine->addExtension( new PreformatterExtension() );
         }
 
         // Add all registered extensions to the Engine.
         \array_map( [$engine, 'addExtension'], $this->engineExtensions );
 
-        $engine->addExtension( new StyleSystemExtension( $this->logger ) );
+        $engine->addExtension( new StyleSystemExtension() );
 
         $engine
             ->setTempDirectory( $this->cacheDirectory() )
@@ -161,7 +161,7 @@ class TemplateEngine implements TemplateEngineInterface
         return $cacheDirectory->getRealPath();
     }
 
-    final protected function resolveTemplate( string $view ) : string
+    final protected function template( string $view ) : string
     {
         // Return string views
         if ( ! \str_ends_with( $view, '.latte' ) ) {
@@ -213,22 +213,21 @@ class TemplateEngine implements TemplateEngineInterface
      *
      * @return array<array-key,mixed>|object
      */
-    final protected function injectParameters( object|array $parameters ) : object|array
+    final protected function parameters( object|array $parameters ) : object|array
     {
         if ( \is_object( $parameters ) ) {
             return $parameters;
         }
 
         foreach ( $parameters as $key => $value ) {
-            if ( $this->parameters->has( $key ) ) {
+            if ( \is_int( $key ) ) {
                 $this->logger?->warning(
-                    'Parameter {key} exists in {parameters}.',
-                    ['key' => $key, 'parameters' => $this->parameters],
+                    'Parameter key {key} should not be an integer.',
+                    ['key' => $key, 'parameters' => $parameters],
                 );
             }
-            $this->parameters->set( $key, $value );
         }
 
-        return $this->parameters->getParameters();
+        return $parameters;
     }
 }
