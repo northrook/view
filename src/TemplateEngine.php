@@ -51,7 +51,7 @@ class TemplateEngine implements TemplateEngineInterface
         bool         $cache = true,
         ?Loader      $loader = null,
     ) : string {
-        $this->profiler?->event( __METHOD__ );
+        $profiler = $this->profiler?->event( 'render' );
 
         $engine = $this->getEngine( $loader );
 
@@ -70,7 +70,7 @@ class TemplateEngine implements TemplateEngineInterface
             $engine->setTempDirectory( $this->cacheDirectory() );
         }
 
-        $this->profiler?->stop( __METHOD__ );
+        $profiler?->stop();
         return $render;
     }
 
@@ -114,7 +114,7 @@ class TemplateEngine implements TemplateEngineInterface
         bool   $elements = true,
         bool   $components = true,
     ) : Engine {
-        $this->profiler?->event( __METHOD__ );
+        $profiler = $this->profiler?->event( 'engine.start' );
         // Initialize the Engine.
         $engine = new Engine();
 
@@ -141,7 +141,7 @@ class TemplateEngine implements TemplateEngineInterface
             ],
         );
 
-        $this->profiler?->stop( __METHOD__ );
+        $profiler?->stop();
         return $engine;
     }
 
