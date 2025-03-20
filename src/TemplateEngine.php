@@ -14,6 +14,7 @@ use Core\View\Interface\TemplateEngineInterface;
 use Psr\Log\LoggerAwareTrait;
 use BadMethodCallException;
 use Symfony\Component\Stopwatch\Stopwatch;
+use LogicException;
 use function Support\{key_hash};
 
 class TemplateEngine implements TemplateEngineInterface
@@ -22,6 +23,9 @@ class TemplateEngine implements TemplateEngineInterface
 
     /** @var array<string, Engine> */
     private array $engine = [];
+
+    /** @var array<string, mixed>|object */
+    protected object|array $parameters = [];
 
     /**
      * @param string             $cacheDirectory
@@ -43,6 +47,50 @@ class TemplateEngine implements TemplateEngineInterface
     final public function setProfiler( ?Stopwatch $stopwatch, ?string $category = 'View' ) : void
     {
         $this->assignProfiler( $stopwatch, $category );
+    }
+
+    final public function useParameter( object $parameter ) : self
+    {
+        $this->parameters = $parameter;
+        return $this;
+    }
+
+    /**
+     * @param array<string, mixed>|string $parameter
+     * @param null|mixed                  $value
+     *
+     * @return self
+     */
+    final public function addParameter(
+        string|array $parameter,
+        mixed        $value = null,
+    ) : self {
+        if ( \is_string( $parameter ) ) {
+            $parameter = [$parameter => $value];
+        }
+
+        $this->assignParameters( $parameter );
+
+        return $this;
+    }
+
+    /**
+     * @param array<string, mixed>|string $parameter
+     * @param null|mixed                  $value
+     *
+     * @return self
+     */
+    final public function setParameter(
+        string|array $parameter,
+        mixed        $value = null,
+    ) : self {
+        if ( \is_string( $parameter ) ) {
+            $parameter = [$parameter => $value];
+        }
+
+        $this->assignParameters( $parameter );
+
+        return $this;
     }
 
     final public function render(
@@ -202,6 +250,36 @@ class TemplateEngine implements TemplateEngineInterface
             }
         }
         throw new TemplateCompilerException( 'Unable to load view: '.$view );
+    }
+
+    /**
+     * @param array<string, mixed> $parameters
+     * @param bool                 $overwrite
+     *
+     * @return void
+     */
+    private function assignParameters(
+        array $parameters,
+        bool  $overwrite = false,
+    ) : void {
+        if ( \is_object( $this->parameters ) ) {
+            $type    = $this->parameters::class;
+            $message = "The TemplateEngine is currently using a TemplateType: '{$type}'";
+            throw new LogicException( $message );
+        }
+
+        foreach ( $parameters as $name => $value ) {
+            \assert(
+                \is_string( $name ),
+                'Parameter keys must be string.',
+            );
+            if ( $overwrite ) {
+                $this->parameters[$name] = $value;
+            }
+            else {
+                $this->parameters[$name] ??= $value;
+            }
+        }
     }
 
     /**

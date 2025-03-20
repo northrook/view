@@ -50,8 +50,14 @@ abstract class AbstractComponent implements ViewInterface
 
     abstract public function getView() : Element;
 
+    /**
+     * @param null|Position    $position
+     * @param null|ElementNode $parent
+     *
+     * @return ElementNode
+     */
     public function getElementNode(
-        Position     $position,
+        ?Position    $position = null,
         ?ElementNode $parent = null,
     ) : ElementNode {
         $view = $this->getView();
@@ -70,6 +76,13 @@ abstract class AbstractComponent implements ViewInterface
         return $element;
     }
 
+    /**
+     * @param array{'tag': ?string,'attributes' : array<string, null|array<array-key, ?string>|bool|float|int|string>, 'content': null|string} $arguments
+     * @param array<string, ?string[]>                                                                                                         $promote
+     * @param null|string                                                                                                                      $uniqueId
+     *
+     * @return $this
+     */
     final public function create(
         array   $arguments,
         array   $promote = [],
