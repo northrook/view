@@ -17,13 +17,14 @@ use Stringable;
 use DOMText;
 use DOMAttr;
 use Exception;
-use function Support\{isDelimiter,
+use function Support\{
     key_hash,
     normalizeNewline,
     str_after,
     str_bisect,
     str_extract,
-    str_replace_each
+    str_replace_each,
+    str_starts_with_any
 };
 use const Support\{TAG_INLINE, TAG_SELF_CLOSING};
 
@@ -376,11 +377,11 @@ final class HtmlFormatter implements Printable
     // ::: PROTECT
 
     /**
-     * @param false|positive-int $indent
+     * @param bool $indent
      *
      * @return void
      */
-    public function print( false|int $indent = false ) : void
+    public function print( bool $indent = false ) : void
     {
         echo $this->toString( $indent );
     }
@@ -450,6 +451,7 @@ final class HtmlFormatter implements Printable
 
         /** @var string[] $content */
         if ( $tag ) {
+            // @phpstan-ignore-next-line
             $element = new Element( $tag, $content, ...$attributes );
 
             return $element->__toString();
@@ -491,10 +493,10 @@ final class HtmlFormatter implements Printable
      * @return void
      */
     private function appendByReference(
-        string $string,
-        array &  $content,
-        int    $key,
-        array  $ast,
+        string     $string,
+        array &      $content,
+        int|string $key,
+        array      $ast,
     ) : void {
         // Trim $value, and bail early if empty
         if ( ! $string = \trim( $string ) ) {
@@ -502,6 +504,7 @@ final class HtmlFormatter implements Printable
         }
 
         $ast = \array_values( $ast );
+        $key = (int) $key;
 
         $next = $ast[$key + 1] ?? null;
         $prev = $ast[$key - 1] ?? null;
@@ -522,12 +525,12 @@ final class HtmlFormatter implements Printable
             $string = "{$string} ";
         }
         elseif ( \is_string( $prevTag ) && Tag::isInline( $prevTag ) ) {
-            if ( ! isDelimiter( $string ) ) {
+            if ( ! str_starts_with_any( $string, ',', ';' ) ) {
                 $string = " {$string}";
             }
         }
-        if ( isset( $content[$index] ) ) {
-            $content[$index] .= " {$string}";
+        if ( isset( $content[$index] ) && \is_string( $content[$index] ) ) {
+            $content[$index] .= $string;
         }
         else {
             $content[$index] = $string;
@@ -536,11 +539,20 @@ final class HtmlFormatter implements Printable
 
     // :::::
 
+    /**
+     * @param null|string $html
+     *
+     * @return array<array-key, mixed>
+     */
     public function htmlToAst( ?string $html = null ) : array
     {
         if ( ! $html && isset( $this->html ) ) {
             $html = $this->html;
             unset( $this->html );
+        }
+
+        if ( ! $html ) {
+            return [];
         }
 
         if ( ! \str_starts_with( $html, '<html' ) && ! \str_ends_with( $html, '</html>' ) ) {
@@ -563,6 +575,11 @@ final class HtmlFormatter implements Printable
         return [];
     }
 
+    /**
+     * @param DOMNode $dom
+     *
+     * @return array<array-key, mixed>
+     */
     private function traverseNodes( DOMNode $dom ) : array
     {
         $ast = [];
