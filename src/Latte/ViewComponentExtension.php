@@ -14,15 +14,11 @@ use Core\View\Template\Compiler\Nodes\Php\ExpressionNode;
 use Core\View\Template\Compiler\Nodes\TemplateNode;
 use Core\View\Template\Extension;
 use Override;
-use Psr\Log\LoggerInterface;
 use Exception;
 
 final class ViewComponentExtension extends Extension
 {
-    public function __construct(
-        public readonly ComponentFactory  $factory,
-        private readonly ?LoggerInterface $logger = null,
-    ) {}
+    public function __construct( public readonly ComponentFactory $factory ) {}
 
     #[Override]
     public function getPasses() : array
