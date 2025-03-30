@@ -19,7 +19,7 @@ use DOMAttr;
 use Exception;
 use function Support\{
     key_hash,
-    normalizeNewline,
+    normalize_newline,
     str_after,
     str_bisect,
     str_extract,
@@ -139,20 +139,20 @@ final class HtmlFormatter implements Printable
             return null;
         }
 
-        return normalizeNewline( $this->html );
+        return normalize_newline( $this->html );
     }
 
     /**
      * @param string $string
      *
-     * @return Node[]
+     * @return HtmlNode[]
      */
     private function parseDocumentElements( string $string ) : array
     {
         $nodes = [];
 
         foreach ( $this->explode( $string ) as $key => $value ) {
-            $nodes[] = new Node( $key, $value );
+            $nodes[] = new HtmlNode( $key, $value );
         }
 
         return $nodes;

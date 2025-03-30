@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace Core\View\Latte\Compiler;
 
 use Core\View\Element\Tag;
-use Latte\Compiler\{Node, Nodes\FragmentNode, Nodes\TextNode, NodeTraverser};
-use Latte\Compiler\Nodes\Html\ElementNode;
-use Latte\Compiler\Nodes\Php\ExpressionNode;
-use function Support\{isPunctuation, normalizeWhitespace};
+use Core\View\Template\Compiler\{Node, NodeTraverser};
+use Core\View\Template\Compiler\Nodes\{FragmentNode, TextNode};
+use Core\View\Template\Compiler\Nodes\Html\ElementNode;
+use Core\View\Template\Compiler\Nodes\Php\ExpressionNode;
+use function Support\{is_punctuation, normalize_whitespace};
 
 trait NodeTraverserMethods
 {
@@ -116,7 +117,7 @@ trait NodeTraverserMethods
         // dump( $nodeTag);
         // if ( Tag::isContent( $nodeTag ) ) {
         // }
-        $textNode->content = normalizeWhitespace( $textNode->content );
+        $textNode->content = normalize_whitespace( $textNode->content );
 
         if ( ! ( $previousTag || $nextTag ) || ! $textNode->content ) {
             return;
@@ -129,7 +130,7 @@ trait NodeTraverserMethods
             $textNode->content = "{$textNode->content} ";
         }
 
-        if ( $previousTag && ! isPunctuation( $textNode->content[0] ) ) {
+        if ( $previousTag && ! is_punctuation( $textNode->content[0] ) ) {
             // dump( ['isPunctuation check here ' => $textNode->content] );
             // && ! Character::isPunctuation( $textNode->content[0] )
             // str_contains( '.,;!', $string ),

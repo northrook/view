@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Core\View\Latte\Compiler;
 
-use Latte\Compiler\{Node, PrintContext};
-use Latte\Essential\Nodes\PrintNode;
+use Core\View\Template\Compiler\{Node, PrintContext};
+use Core\View\Template\Compiler\Nodes\PrintNode;
 use Northrook\Logger\Log;
 use Support\Str;
 use const Support\EMPTY_STRING;

@@ -12,7 +12,7 @@ use function Support\{str_before, str_includes};
 /**
  * @internal
  */
-final class Node implements DataInterface, Stringable
+final class HtmlNode implements DataInterface, Stringable
 {
     public const string TYPE_INLINE = 'inline';
 

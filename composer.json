@@ -1,6 +1,6 @@
 {
   "name": "northrook/view",
-  "description": "An asset generator written in PHP. Creates optimised, public versions of assets from various sources.",
+  "description": "",
   "type": "library",
   "license": "MIT",
   "authors": [
@@ -25,11 +25,11 @@
     "ext-libxml": "*",
     "northrook/core": "dev-main",
     "northrook/cache": "dev-main",
+    "northrook/clerk": "dev-main",
     "northrook/core-symfony": "dev-main",
     "northrook/pathfinder": "dev-main",
     "northrook/view-element": "dev-main",
-    "latte/latte": "@stable",
-    "northrook/clerk": "dev-main"
+    "northrook/view-template": "dev-main"
   },
   "require-dev": {
     "northrook/dev": "dev-main",

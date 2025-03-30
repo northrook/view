@@ -3,10 +3,9 @@
 namespace Core\View\Template\Compiler;
 
 use Core\View\Element\Attributes;
+use Core\View\Template\Compiler\Nodes\FragmentNode;
+use Core\View\Template\Compiler\Nodes\Html\{AttributeNode, ElementNode};
 use Core\View\Template\ViewNode;
-use Latte\Compiler\NodeHelpers;
-use Latte\Compiler\Nodes\FragmentNode;
-use Latte\Compiler\Nodes\Html\{AttributeNode, ElementNode};
 
 final readonly class NodeAttributes
 {

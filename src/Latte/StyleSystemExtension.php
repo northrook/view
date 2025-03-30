@@ -5,15 +5,14 @@ declare(strict_types=1);
 namespace Core\View\Latte;
 
 use Core\View\Latte\Compiler\NodeTraverserMethods;
-use Core\View\Template\Compiler\NodeAttributes;
-use Latte;
-use Latte\Compiler\{Node, NodeTraverser};
-use Latte\Compiler\Nodes\Html\ElementNode;
-use Latte\Compiler\Nodes\Php\ExpressionNode;
-use Latte\Compiler\Nodes\TemplateNode;
+use Core\View\Template\Compiler\{Node, NodeAttributes, NodeTraverser};
+use Core\View\Template\Compiler\Nodes\Html\ElementNode;
+use Core\View\Template\Compiler\Nodes\Php\ExpressionNode;
+use Core\View\Template\Compiler\Nodes\TemplateNode;
+use Core\View\Template\Extension;
 use Override;
 
-final class StyleSystemExtension extends Latte\Extension
+final class StyleSystemExtension extends Extension
 {
     use NodeTraverserMethods;
 

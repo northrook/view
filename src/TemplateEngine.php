@@ -6,34 +6,32 @@ namespace Core\View;
 
 use Core\Pathfinder;
 use Core\Pathfinder\Path;
-use Core\Profiler\{StopwatchProfiler};
+use Core\Profiler\StopwatchProfiler;
 use Core\View\Exception\TemplateCompilerException;
+use Core\View\Template\{Engine, Extension};
 use Core\View\Latte\{PreformatterExtension, StyleSystemExtension};
-use Latte\{Engine, Loader, Loaders\FileLoader};
 use Core\View\Interface\TemplateEngineInterface;
+use Symfony\Component\Stopwatch\Stopwatch;
 use Psr\Log\LoggerAwareTrait;
 use BadMethodCallException;
-use Symfony\Component\Stopwatch\Stopwatch;
 use LogicException;
-use function Support\{key_hash};
 
 class TemplateEngine implements TemplateEngineInterface
 {
     use StopwatchProfiler, LoggerAwareTrait;
 
-    /** @var array<string, Engine> */
-    private array $engine = [];
+    private ?Engine $engine;
 
     /** @var array<string, mixed>|object */
     protected object|array $parameters = [];
 
     /**
-     * @param string             $cacheDirectory
-     * @param Pathfinder         $pathfinder
-     * @param string[]           $templateDirectories
-     * @param \Latte\Extension[] $engineExtensions
-     * @param string             $locale
-     * @param bool               $debug
+     * @param string      $cacheDirectory
+     * @param Pathfinder  $pathfinder
+     * @param string[]    $templateDirectories
+     * @param Extension[] $engineExtensions
+     * @param string      $locale
+     * @param bool        $debug
      */
     public function __construct(
         public string                 $cacheDirectory,
@@ -97,15 +95,14 @@ class TemplateEngine implements TemplateEngineInterface
         string       $view,
         object|array $parameters = [],
         bool         $cache = true,
-        ?Loader      $loader = null,
     ) : string {
         $profiler = $this->profiler?->event( 'render' );
 
-        $engine = $this->getEngine( $loader );
+        $engine = $this->getEngine();
 
         if ( ! $cache ) {
             // Temporarily clear the assigned cache directory
-            $engine->setTempDirectory( null );
+            $engine->setCacheDirectory( null );
         }
 
         $render = $engine->renderToString(
@@ -115,7 +112,7 @@ class TemplateEngine implements TemplateEngineInterface
 
         if ( ! $cache ) {
             // Reassign the cache directory
-            $engine->setTempDirectory( $this->cacheDirectory() );
+            $engine->setCacheDirectory( $this->cacheDirectory() );
         }
 
         $profiler?->stop();
@@ -136,39 +133,23 @@ class TemplateEngine implements TemplateEngineInterface
 
     // .. Engine
 
-    final public function getEngine(
-        ?Loader $loader = null,
-        bool    $preformatter = true,
-        bool    $elements = true,
-        bool    $components = true,
-    ) : Engine {
-        $loader ??= new FileLoader();
-        $cacheKey = key_hash( 'xxh64', $loader::class, $preformatter, $elements, $components );
-
-        if ( isset( $this->engine[$cacheKey] ) ) {
-            $this->logger?->debug(
-                'Engine {cacheKey} using {loader} returned from cache.',
-                ['cacheKey' => $cacheKey, 'loader' => $loader::class],
-            );
-        }
-
-        // Otherwise start and cache the main Engine
-        return $this->engine[$cacheKey] ??= $this->startEngine( $loader, $preformatter, $elements, $components );
+    final public function getEngine() : Engine
+    {
+        return $this->engine ??= $this->startEngine();
     }
 
     final protected function startEngine(
-        Loader $loader,
-        bool   $preformatter = true,
-        bool   $elements = true,
-        bool   $components = true,
+        // bool   $preformatter = true,
+        // bool   $elements = true,
+        // bool   $components = true,
     ) : Engine {
         $profiler = $this->profiler?->event( 'engine.start' );
         // Initialize the Engine.
-        $engine = new Engine();
+        $engine = new Engine( $this->cacheDirectory() );
 
-        if ( $preformatter ) {
-            $engine->addExtension( new PreformatterExtension() );
-        }
+        // if ( $preformatter ) {
+        $engine->addExtension( new PreformatterExtension() );
+        // }
 
         // Add all registered extensions to the Engine.
         \array_map( [$engine, 'addExtension'], $this->engineExtensions );
@@ -176,18 +157,8 @@ class TemplateEngine implements TemplateEngineInterface
         $engine->addExtension( new StyleSystemExtension() );
 
         $engine
-            ->setTempDirectory( $this->cacheDirectory() )
             ->setAutoRefresh( $this->debug )
-            ->setLoader( $loader )
             ->setLocale( $this->locale );
-
-        $this->logger?->info(
-            'Started Latte Engine {id} using '.\strchr( $loader::class, '\\' ),
-            [
-                'id'     => \spl_object_id( $engine ),
-                'engine' => $engine,
-            ],
-        );
 
         $profiler?->stop();
         return $engine;

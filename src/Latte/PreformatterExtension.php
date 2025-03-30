@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Core\View\Latte;
 
-use Override;
-use Latte;
-use Latte\Compiler\{Node, NodeTraverser};
-use Latte\Compiler\Nodes\{FragmentNode, TemplateNode, TextNode};
-use Latte\Compiler\Nodes\Html\ElementNode;
-use Latte\Compiler\Nodes\Php\ExpressionNode;
 use Core\View\Latte\Compiler\NodeTraverserMethods;
+use Core\View\Template\Compiler\{Node, NodeTraverser};
+use Core\View\Template\Compiler\Nodes\{FragmentNode, TemplateNode, TextNode};
+use Core\View\Template\Compiler\Nodes\Html\ElementNode;
+use Core\View\Template\Compiler\Nodes\Php\ExpressionNode;
+use Core\View\Template\Extension;
+use Override;
 
-final class PreformatterExtension extends Latte\Extension
+final class PreformatterExtension extends Extension
 {
     use NodeTraverserMethods;
 

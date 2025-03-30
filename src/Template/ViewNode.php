@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Core\View\Template;
 
 use Core\View\Element\Attributes;
-use Latte\Compiler\Nodes\{FragmentNode, Html\AttributeNode, TextNode};
-use Latte\Compiler\Nodes\Html\ElementNode;
-use Latte\Compiler\Position;
+use Core\View\Template\Compiler\Nodes\{FragmentNode, TextNode};
+use Core\View\Template\Compiler\Nodes\Html\{AttributeNode, ElementNode};
+use Core\View\Template\Compiler\Position;
 use Stringable;
 
 final class ViewNode

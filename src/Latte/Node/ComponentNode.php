@@ -2,9 +2,10 @@
 
 namespace Core\View\Latte\Node;
 
-use Core\View\Latte\Compiler\{NodeExporter, NodeParser};
-use Latte\Compiler\Nodes\TextNode;
-use Latte\Compiler\PrintContext;
+use Core\View\Latte\Compiler\NodeExporter;
+use Core\View\Latte\Compiler\NodeParser;
+use Core\View\Template\Compiler\Nodes\TextNode;
+use Core\View\Template\Compiler\PrintContext;
 use const Support\AUTO;
 
 final class ComponentNode extends TextNode

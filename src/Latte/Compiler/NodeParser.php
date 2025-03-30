@@ -2,11 +2,10 @@
 
 namespace Core\View\Latte\Compiler;
 
+use Core\View\Template\Compiler\{Node, NodeHelpers, PrintContext};
+use Core\View\Template\Compiler\Nodes\{PrintNode, TextNode};
+use Core\View\Template\Compiler\Nodes\Html\{AttributeNode, ElementNode};
 use InvalidArgumentException;
-use Latte\Compiler\{Node, NodeHelpers, Nodes\Html\AttributeNode, PrintContext};
-use Latte\Compiler\Nodes\Html\ElementNode;
-use Latte\Compiler\Nodes\TextNode;
-use Latte\Essential\Nodes\PrintNode;
 
 final class NodeParser
 {
