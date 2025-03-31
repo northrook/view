@@ -13,7 +13,7 @@ use Core\View\Element\Attributes;
 use Core\View\Template\Compiler\Nodes\FragmentNode;
 use Core\View\Template\Compiler\Nodes\Html\ElementNode;
 use Core\View\Template\Compiler\Position;
-use Core\View\Template\ViewNode;
+use Core\View\Template\Support\NewNode;
 use Northrook\Logger\Log;
 use Stringable, ReflectionClass, BadMethodCallException, InvalidArgumentException;
 use function Support\key_hash;
@@ -62,11 +62,11 @@ abstract class AbstractComponent implements ViewInterface
     ) : ElementNode {
         $view = $this->getView();
 
-        $element = ViewNode::element(
+        $element = NewNode::element(
             name       : $view->tag->getTagName(),
             position   : $position,
             parent     : $parent,
-            attributes : $view->attributes,
+            attributes : $view->attributes->array,
         );
 
         \assert( $element->content instanceof FragmentNode );

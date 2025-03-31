@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Core\View\Latte;
+namespace Core\View\Template;
 
 use Core\View\ComponentFactory;
 use Core\View\ComponentFactory\ComponentProperties;
@@ -12,7 +12,6 @@ use Core\View\Template\Compiler\{Node, NodeTraverser};
 use Core\View\Template\Compiler\Nodes\Html\ElementNode;
 use Core\View\Template\Compiler\Nodes\Php\ExpressionNode;
 use Core\View\Template\Compiler\Nodes\TemplateNode;
-use Core\View\Template\Extension;
 use Override;
 use Exception;
 
