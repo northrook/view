@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Core\View\Component;
+namespace Core\View\Template\Component;
 
 use Core\View\Element;
 use Northrook\Logger\Log;

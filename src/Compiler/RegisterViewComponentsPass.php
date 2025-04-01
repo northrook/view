@@ -7,7 +7,7 @@ namespace Core\View\Compiler;
 use Symfony\Component\DependencyInjection\{
     ContainerBuilder,
     Definition,
-    Reference
+    Reference,
 };
 use Core\Symfony\Console\ListReport;
 use Core\Symfony\DependencyInjection\CompilerPass;
@@ -15,7 +15,7 @@ use Core\View\Attribute\ViewComponent;
 use Core\View\ComponentFactory;
 use Core\View\ComponentFactory\ComponentBag;
 use ReflectionClass, LogicException;
-use Support\{PhpStormMeta};
+use Support\PhpStormMeta;
 
 final class RegisterViewComponentsPass extends CompilerPass
 {

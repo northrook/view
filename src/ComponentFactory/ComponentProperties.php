@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Core\View\ComponentFactory;
 
-use Core\View\Component\AbstractComponent;
+use Core\View\Template\AbstractComponent;
 use Core\Interface\DataObject;
 use Stringable;
 
@@ -15,12 +15,12 @@ use Stringable;
 final readonly class ComponentProperties extends DataObject implements Stringable
 {
     /**
-     * @param string                          $name
-     * @param class-string<AbstractComponent> $class
-     * @param bool                            $static
-     * @param int                             $priority
-     * @param string[]                        $tags
-     * @param array<string, ?string[]>        $tagged
+     * @param string                                               $name
+     * @param class-string<\Core\View\Template\AbstractComponent>  $class
+     * @param bool                                                 $static
+     * @param int                                                  $priority
+     * @param string[]                                             $tags
+     * @param array<string, ?string[]>                             $tagged
      */
     public function __construct(
         public string $name,

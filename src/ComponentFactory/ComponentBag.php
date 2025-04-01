@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Core\View\ComponentFactory;
 
-use Core\View\Component\AbstractComponent;
+use Core\View\Template\AbstractComponent;
 use Core\View\Exception\ComponentNotFoundException;
 
 /**
@@ -13,7 +13,7 @@ use Core\View\Exception\ComponentNotFoundException;
 final class ComponentBag
 {
     /**
-     * @param array<string, array{name: string, class: class-string<AbstractComponent>, static: bool, priority: int, tags: string[], tagged: string[][]}|ComponentProperties> $components
+     * @param array<string, array{name: string, class: class-string<AbstractComponent>, static: bool, priority: int, tags: string[], tagged: string[][]}|ComponentProperties>  $components
      */
     public function __construct( private array $components = [] ) {}
 

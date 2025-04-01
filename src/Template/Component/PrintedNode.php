@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Core\View\Latte\Compiler;
+namespace Core\View\Template\Component;
 
 use Core\View\Template\Compiler\{Node, PrintContext};
 use Core\View\Template\Compiler\Nodes\PrintNode;
 use Northrook\Logger\Log;
 use Support\Str;
-use const Support\EMPTY_STRING;
 use Stringable, Exception;
+use const Support\EMPTY_STRING;
 
 final class PrintedNode implements Stringable
 {
@@ -41,7 +41,7 @@ final class PrintedNode implements Stringable
 
     private function parsePrintNode() : void
     {
-        $this->value = \trim( \preg_replace( '#echo (.+) /\*.+?;#', '$1 ', $this->print() ) );
+        $this->value = \trim( (string) \preg_replace( '#echo (.+) /\*.+?;#', '$1 ', $this->print() ) );
         // dump( $this->value );
 
         // We may want to capture the whole {$variable ?: $withAny ?? [$rules]}
@@ -61,7 +61,7 @@ final class PrintedNode implements Stringable
         try {
             $node    ??= $this->node;
             $context ??= $this->context;
-            return $node->print( $context );
+            return $node->print( $context ?? new PrintContext() );
         }
         catch ( Exception $exception ) {
             Log::exception( $exception );

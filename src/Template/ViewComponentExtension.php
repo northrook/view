@@ -6,8 +6,8 @@ namespace Core\View\Template;
 
 use Core\View\ComponentFactory;
 use Core\View\ComponentFactory\ComponentProperties;
-use Core\View\Latte\Compiler\NodeParser;
-use Core\View\Latte\Node\ComponentNode;
+use Core\View\Template\Component\NodeParser;
+use Core\View\Template\Component\Node\ComponentNode;
 use Core\View\Template\Compiler\{Node, NodeTraverser};
 use Core\View\Template\Compiler\Nodes\Html\ElementNode;
 use Core\View\Template\Compiler\Nodes\Php\ExpressionNode;

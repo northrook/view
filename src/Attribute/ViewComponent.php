@@ -7,7 +7,7 @@ namespace Core\View\Attribute;
 use Attribute, Override;
 use Core\Symfony\Console\Output;
 use Core\Symfony\DependencyInjection\Autodiscover;
-use Core\View\Component\AbstractComponent;
+use Core\View\Template\AbstractComponent;
 use Northrook\Logger\Log;
 use Support\Reflect;
 use LogicException;

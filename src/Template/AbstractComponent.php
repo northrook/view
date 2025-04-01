@@ -2,12 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Core\View\Component;
+namespace Core\View\Template;
 
 use Core\Interface\ViewInterface;
 use Core\Symfony\DependencyInjection\SettingsAccessor;
 use Core\View\Attribute\ViewComponent;
-use Core\View\Latte\Node\StaticNode;
+use Core\View\Template\Component\InnerContent;
+use Core\View\Template\Component\Node\StaticNode;
 use Core\View\Element;
 use Core\View\Element\Attributes;
 use Core\View\Template\Compiler\Nodes\FragmentNode;
@@ -66,7 +67,7 @@ abstract class AbstractComponent implements ViewInterface
             name       : $view->tag->getTagName(),
             position   : $position,
             parent     : $parent,
-            attributes : $view->attributes->array,
+            attributes : $view->attributes,
         );
 
         \assert( $element->content instanceof FragmentNode );

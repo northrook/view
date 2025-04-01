@@ -9,7 +9,7 @@ use Core\Profiler\Interface\Profilable;
 use Core\Profiler\ProfilerTrait;
 use Core\Interface\{LazyService, ViewInterface};
 use Core\View\Attribute\ViewComponent;
-use Core\View\Component\AbstractComponent;
+use Core\View\Template\AbstractComponent;
 use Core\View\Exception\ComponentNotFoundException;
 use Psr\Log\{LoggerAwareInterface, LoggerAwareTrait};
 use Symfony\Component\DependencyInjection\ServiceLocator;

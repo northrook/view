@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Core\View\Latte\Node;
+namespace Core\View\Template\Component\Node;
 
 use Core\View\Template\Compiler\Nodes\TextNode;
 

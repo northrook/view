@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Core\View\Latte\Compiler;
+namespace Core\View\Template\Component;
 
 use Stringable, LogicException;
 use function Support\str_starts_with_any;

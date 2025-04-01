@@ -1,9 +1,8 @@
 <?php
 
-namespace Core\View\Latte\Node;
+namespace Core\View\Template\Component\Node;
 
-use Core\View\Latte\Compiler\NodeExporter;
-use Core\View\Latte\Compiler\NodeParser;
+use Core\View\Template\Component\{NodeExporter, NodeParser};
 use Core\View\Template\Compiler\Nodes\TextNode;
 use Core\View\Template\Compiler\PrintContext;
 use const Support\AUTO;
@@ -24,7 +23,7 @@ final class ComponentNode extends TextNode
      */
     public function __construct(
         string           $name,
-        array|NodeParser $arguments = [],
+        array|NodeParser $arguments,
         ?int             $cache = AUTO,
     ) {
         if ( $arguments instanceof NodeParser ) {

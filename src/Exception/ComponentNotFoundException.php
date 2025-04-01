@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Core\View\Exception;
 
-use Core\View\Component\AbstractComponent;
+use Core\View\Template\AbstractComponent;
 use InvalidArgumentException;
 use Throwable;
 

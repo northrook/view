@@ -1,6 +1,6 @@
 <?php
 
-namespace Core\View\Latte\Compiler;
+namespace Core\View\Template\Component;
 
 use Core\View\Template\Compiler\{Node, NodeHelpers, PrintContext};
 use Core\View\Template\Compiler\Nodes\{PrintNode, TextNode};
