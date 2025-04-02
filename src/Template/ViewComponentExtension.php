@@ -8,10 +8,10 @@ use Core\View\ComponentFactory;
 use Core\View\ComponentFactory\ComponentProperties;
 use Core\View\Template\Component\NodeParser;
 use Core\View\Template\Component\Node\ComponentNode;
+use Core\View\Template\Compiler\Nodes\{ComponentNode as NewComponentNode, TemplateNode};
 use Core\View\Template\Compiler\{Node, NodeTraverser};
 use Core\View\Template\Compiler\Nodes\Html\ElementNode;
 use Core\View\Template\Compiler\Nodes\Php\ExpressionNode;
-use Core\View\Template\Compiler\Nodes\TemplateNode;
 use Override;
 use Exception;
 
@@ -63,10 +63,14 @@ final class ViewComponentExtension extends Extension
         ( new NodeTraverser() )->traverse(
             $template,
             // null,
-            function( Node $node ) use ( $component ) : int|Node {
+            function( Node &$node ) use ( $component ) : int|Node {
                 // Skip expression nodes, as a component cannot exist there
                 if ( $node instanceof ExpressionNode ) {
                     return NodeTraverser::DontTraverseChildren;
+                }
+                if ( $node instanceof NewComponentNode ) {
+                    dump( [__METHOD__.'::NewComponentNode' => $node] );
+                    // return NodeTraverser::DontTraverseChildren;
                 }
 
                 // Components are only called from ElementNodes
@@ -97,7 +101,11 @@ final class ViewComponentExtension extends Extension
 
                     try {
                         if ( $build instanceof Component ) {
-                            $node =  $build->getComponentNode( $node->position );
+                            $component_node = $build->getComponentNode( $node->position );
+                            // dump( [ $component_node::class => $component_node instanceof NewComponentNode ] );
+
+                            $node = $component_node;
+                            return NodeTraverser::DontTraverseChildren;
                         }
 
                         return $build->getElementNode( $node->position, $node->parent );

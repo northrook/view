@@ -9,7 +9,7 @@ use Core\Profiler\Interface\Profilable;
 use Core\Profiler\ProfilerTrait;
 use Core\Interface\{LazyService};
 use Core\View\Attribute\ViewComponent;
-use Core\View\Template\{AbstractComponent, Component};
+use Core\View\Template\{AbstractComponent, Component, Engine};
 use Core\View\Exception\ComponentNotFoundException;
 use Psr\Log\{LoggerAwareInterface, LoggerAwareTrait};
 use Symfony\Component\DependencyInjection\ServiceLocator;
@@ -29,11 +29,13 @@ class ComponentFactory implements LazyService, Profilable, LoggerAwareInterface
     private array $instantiated = [];
 
     /**
+     * @param Engine                            $engine
      * @param ServiceLocator<AbstractComponent> $locator
      * @param ComponentBag                      $components
      * @param array<string, string>             $tags
      */
     public function __construct(
+        protected readonly Engine         $engine,
         protected readonly ServiceLocator $locator,
         protected readonly ComponentBag   $components,
         protected readonly array          $tags = [],
@@ -59,14 +61,8 @@ class ComponentFactory implements LazyService, Profilable, LoggerAwareInterface
 
         $viewComponent = $this->getComponent( $component );
 
+        // @phpstan-ignore-next-line
         $viewComponent->create( $arguments, $properties->tagged );
-
-        if ( $viewComponent instanceof Component ) {
-            dump( $viewComponent );
-            // $viewComponent->setDependencies(
-            //
-            // );
-        }
 
         $this->instantiated[$properties->name][] = $viewComponent->uniqueID;
 
@@ -92,18 +88,26 @@ class ComponentFactory implements LazyService, Profilable, LoggerAwareInterface
             throw new InvalidArgumentException( $message );
         }
 
-        if ( $this->locator->has( $serviceID ) ) {
-            $viewComponent = $this->locator->get( $serviceID );
+        if ( ! $this->locator->has( $serviceID ) ) {
+            throw new ComponentNotFoundException( $serviceID, 'Not found in the Component Container.' );
+        }
+        $viewComponent = $this->locator->get( $serviceID );
 
-            \assert(
-                $viewComponent instanceof AbstractComponent
-                    || $viewComponent instanceof Component,
-            );
+        \assert(
+            $viewComponent instanceof AbstractComponent
+                || $viewComponent instanceof Component,
+        );
 
-            return clone $viewComponent;
+        if ( $viewComponent instanceof Component ) {
+            return clone $viewComponent
+                ->setDependencies(
+                    $this->engine,
+                    $this->profiler,
+                    $this->logger,
+                );
         }
 
-        throw new ComponentNotFoundException( $serviceID, 'Not found in the Component Container.' );
+        return clone $viewComponent;
     }
 
     final public function getComponentProperties( string $component ) : ComponentProperties
