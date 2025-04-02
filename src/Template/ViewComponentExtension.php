@@ -81,6 +81,13 @@ final class ViewComponentExtension extends Extension
                 // View Engine Parser for Latte
                 $parser = new NodeParser( $node );
 
+                dump(
+                    [
+                        $component->name => $component->targetTag( $node->name ),
+                        [$component, $parser, $node],
+                    ],
+                );
+
                 if ( $component->static ) {
                     $build = $this->factory->getComponent( $component );
                     $build->create(
