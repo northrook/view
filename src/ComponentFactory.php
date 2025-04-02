@@ -9,7 +9,7 @@ use Core\Profiler\Interface\Profilable;
 use Core\Profiler\ProfilerTrait;
 use Core\Interface\{LazyService, ViewInterface};
 use Core\View\Attribute\ViewComponent;
-use Core\View\Template\AbstractComponent;
+use Core\View\Template\{AbstractComponent, Component};
 use Core\View\Exception\ComponentNotFoundException;
 use Psr\Log\{LoggerAwareInterface, LoggerAwareTrait};
 use Symfony\Component\DependencyInjection\ServiceLocator;
@@ -46,7 +46,7 @@ class ComponentFactory implements LazyService, Profilable, LoggerAwareInterface
      * @param array<string, null|array<array-key, string|string[]>|string> $arguments
      * @param ?int                                                         $cache
      *
-     * @return AbstractComponent
+     * @return AbstractComponent|Component
      */
     public function render( string $component, array $arguments = [], ?int $cache = AUTO ) : ViewInterface
     {
@@ -57,6 +57,13 @@ class ComponentFactory implements LazyService, Profilable, LoggerAwareInterface
         $viewComponent = $this->getComponent( $component );
 
         $viewComponent->create( $arguments, $properties->tagged );
+
+        if ( $viewComponent  instanceof Component ) {
+            dump( $viewComponent );
+            // $viewComponent->setDependencies(
+            //
+            // );
+        }
 
         $this->instantiated[$properties->name][] = $viewComponent->uniqueID;
 
@@ -71,9 +78,9 @@ class ComponentFactory implements LazyService, Profilable, LoggerAwareInterface
      *
      * @param class-string|ComponentProperties|string $component
      *
-     * @return AbstractComponent
+     * @return AbstractComponent|Component
      */
-    final public function getComponent( string|ComponentProperties $component ) : AbstractComponent
+    final public function getComponent( string|ComponentProperties $component ) : AbstractComponent|Component
     {
         $serviceID = $this->getComponentServiceID( (string) $component );
 
@@ -85,7 +92,10 @@ class ComponentFactory implements LazyService, Profilable, LoggerAwareInterface
         if ( $this->locator->has( $serviceID ) ) {
             $viewComponent = $this->locator->get( $serviceID );
 
-            \assert( $viewComponent instanceof AbstractComponent );
+            \assert(
+                $viewComponent instanceof AbstractComponent
+                    || $viewComponent instanceof Component,
+            );
 
             return clone $viewComponent;
         }
