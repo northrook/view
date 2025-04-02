@@ -7,7 +7,7 @@ namespace Core\View;
 use Core\View\ComponentFactory\{ComponentBag, ComponentProperties};
 use Core\Profiler\Interface\Profilable;
 use Core\Profiler\ProfilerTrait;
-use Core\Interface\{LazyService, ViewInterface};
+use Core\Interface\{LazyService};
 use Core\View\Attribute\ViewComponent;
 use Core\View\Template\{AbstractComponent, Component};
 use Core\View\Exception\ComponentNotFoundException;
@@ -48,8 +48,11 @@ class ComponentFactory implements LazyService, Profilable, LoggerAwareInterface
      *
      * @return AbstractComponent|Component
      */
-    public function render( string $component, array $arguments = [], ?int $cache = AUTO ) : ViewInterface
-    {
+    public function render(
+        string $component,
+        array  $arguments = [],
+        ?int   $cache = AUTO,
+    ) : AbstractComponent|Component {
         $this->profiler?->event( $component );
 
         $properties = $this->getComponentProperties( $component );
@@ -58,7 +61,7 @@ class ComponentFactory implements LazyService, Profilable, LoggerAwareInterface
 
         $viewComponent->create( $arguments, $properties->tagged );
 
-        if ( $viewComponent  instanceof Component ) {
+        if ( $viewComponent instanceof Component ) {
             dump( $viewComponent );
             // $viewComponent->setDependencies(
             //

@@ -96,6 +96,10 @@ final class ViewComponentExtension extends Extension
                     );
 
                     try {
+                        if ( $build instanceof Component ) {
+                            $node =  $build->getComponentNode( $node->position );
+                        }
+
                         return $build->getElementNode( $node->position, $node->parent );
                     }
                     catch ( Exception $e ) {
