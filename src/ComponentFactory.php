@@ -188,6 +188,14 @@ class ComponentFactory implements LazyService, Profilable, LoggerAwareInterface
         return $this->components->all();
     }
 
+    /**
+     * @return array<string, string>
+     */
+    final public function getTags() : array
+    {
+        return $this->tags;
+    }
+
     // .. validation
 
     /**
