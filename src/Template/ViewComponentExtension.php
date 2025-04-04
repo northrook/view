@@ -38,6 +38,13 @@ final class ViewComponentExtension extends Extension
     }
 
     // &
+
+    /**
+     * @param Node $node
+     *
+     * @return Node|NodeTraverser::DontTraverseChildren
+     * @throws Exception\CompileException
+     */
     public function traverseNode( Node $node ) : Node|int
     {
         // Skip expression nodes, as a component cannot exist there
@@ -55,7 +62,6 @@ final class ViewComponentExtension extends Extension
             return $node;
         }
 
-        // dump( $componentName, $node->parent );
         $parser     = new NodeParser( $node );
         $properties = $this->factory->getComponentProperties( $componentName );
         $component  = $this->factory->getComponent( $componentName );
