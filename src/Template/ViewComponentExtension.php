@@ -82,7 +82,7 @@ final class ViewComponentExtension extends Extension
         // @phpstan-ignore-next-line
         $component->create( $node, $properties->tagged );
 
-        return $component->getComponentNode( $node );
+        return $component->getComponentNode( $node, $properties->tagged );
     }
 
     /**

@@ -94,8 +94,6 @@ class ComponentFactory implements LazyService, Profilable, LoggerAwareInterface
 
         $viewComponent = $this->locator->get( $serviceID );
 
-        // \assert( $viewComponent instanceof Component );
-
         return clone $viewComponent
             ->setDependencies(
                 $this->engine,
