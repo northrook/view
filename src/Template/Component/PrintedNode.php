@@ -9,7 +9,6 @@ use Core\View\Template\Compiler\Nodes\PrintNode;
 use Northrook\Logger\Log;
 use Support\Str;
 use Stringable, Exception;
-use const Support\EMPTY_STRING;
 
 final class PrintedNode implements Stringable
 {

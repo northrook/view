@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace Core\View\Template;
 
 use Core\View\ComponentFactory;
-use Core\View\Template\Component\NodeParser;
-use Core\View\Template\Component\Node\ComponentNode;
 use Core\View\Template\Compiler\Nodes\{ComponentNode as NewComponentNode, TemplateNode};
 use Core\View\Template\Compiler\{Node, NodeTraverser};
 use Core\View\Template\Compiler\Nodes\Html\ElementNode;
@@ -20,6 +18,16 @@ final class ViewComponentExtension extends Extension
 
     public function __construct( public readonly ComponentFactory $factory ) {}
 
+    public function managedAnchor( string $value ) : string
+    {
+        $this->logger?->notice(
+            '{method} handled {value}.',
+            ['method' => __METHOD__, 'value' => $value],
+        );
+
+        return $value;
+    }
+
     #[Override]
     public function getProviders() : array
     {
@@ -27,10 +35,16 @@ final class ViewComponentExtension extends Extension
     }
 
     #[Override]
+    public function getFunctions() : array
+    {
+        return ['anchor' => [$this, 'managedAnchor']];
+    }
+
+    #[Override]
     public function getPasses() : array
     {
         return [
-            fn( TemplateNode $template ) => $this->traverse(
+            'view-components' => fn( TemplateNode $template ) => Node::traverse(
                 $template,
                 [$this, 'traverseNode'],
             ),
@@ -42,14 +56,14 @@ final class ViewComponentExtension extends Extension
     /**
      * @param Node $node
      *
-     * @return Node|NodeTraverser::DontTraverseChildren
+     * @return Node|NodeTraverser::CONTINUE
      * @throws Exception\CompileException
      */
     public function traverseNode( Node $node ) : Node|int
     {
         // Skip expression nodes, as a component cannot exist there
         if ( $node instanceof ExpressionNode || $node instanceof NewComponentNode ) {
-            return NodeTraverser::DontTraverseChildren;
+            return NodeTraverser::CONTINUE;
         }
 
         if ( ! $componentName = $this->matchTag( $node ) ) {
@@ -62,17 +76,11 @@ final class ViewComponentExtension extends Extension
             return $node;
         }
 
-        $parser     = new NodeParser( $node );
-        $properties = $this->factory->getComponentProperties( $componentName );
         $component  = $this->factory->getComponent( $componentName );
-        $arguments  = ComponentNode::nodeArguments( $parser );
+        $properties = $this->factory->getComponentProperties( $componentName );
 
         // @phpstan-ignore-next-line
-        $component->create( $arguments, $properties->tagged );
-
-        if ( ! $component instanceof Component ) {
-            return $component->getElementNode( $node->position, $node->parent );
-        }
+        $component->create( $node, $properties->tagged );
 
         return $component->getComponentNode( $node );
     }

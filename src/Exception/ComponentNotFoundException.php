@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Core\View\Exception;
 
-use Core\View\Template\AbstractComponent;
+use Core\View\Template\Component;
 use InvalidArgumentException;
 use Throwable;
 
@@ -17,7 +17,7 @@ class ComponentNotFoundException extends InvalidArgumentException
         ?string                 $message = null,
         ?Throwable              $previous = null,
     ) {
-        $this->interface = AbstractComponent::class;
+        $this->interface = Component::class;
 
         parent::__construct( $this->message( $message ), 500, $previous );
     }

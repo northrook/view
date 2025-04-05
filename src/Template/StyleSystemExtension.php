@@ -19,43 +19,45 @@ final class StyleSystemExtension extends Extension
     public function getPasses() : array
     {
         return [
-            'inject-system-attributes' => [$this, 'templateNodeParser'],
+            'style-system' => fn( TemplateNode $template ) => Node::traverse(
+                $template,
+                [$this, 'traverseNode'],
+            ),
         ];
     }
 
-    public function templateNodeParser( TemplateNode $template ) : void
+    /**
+     * @param Node $node
+     *
+     * @return Node|NodeTraverser::CONTINUE
+     */
+    public function traverseNode( Node $node ) : Node|int
     {
-        ( new NodeTraverser() )->traverse(
-            $template,
-            // [$this, 'prepare'],
-            function( Node $node ) : int|Node {
-                // Skip expression nodes, as a component cannot exist there
-                if ( $node instanceof ExpressionNode ) {
-                    return NodeTraverser::DontTraverseChildren;
-                }
-                // Components are only called from ElementNodes
-                if ( ! $node instanceof ElementNode ) {
-                    return $node;
-                }
+        // Skip expression nodes, as a component cannot exist there
+        if ( $node instanceof ExpressionNode ) {
+            return NodeTraverser::CONTINUE;
+        }
+        // Components are only called from ElementNodes
+        if ( ! $node instanceof ElementNode ) {
+            return $node;
+        }
 
-                $attributes = new NodeAttributes( $node );
+        $attributes = new NodeAttributes( $node );
 
-                if ( $attributes()->has( 'role', 'list' ) ) {
-                    $attributes()->class->add( 'list', true );
-                }
+        if ( $attributes()->has( 'role', 'list' ) ) {
+            $attributes()->class->add( 'list', true );
+        }
 
-                if ( $this->matchTag( $node, 'ol', 'ul' ) ) {
-                    if ( $node->parent instanceof ElementNode && $this->matchTag( $node->parent, 'nav', 'menu' ) ) {
-                        dump( 'Skipped node:', $node );
-                        return $node;
-                    }
-                    $attributes()->class->add( 'list', true );
-                }
-
-                $node->attributes = $attributes->getNode();
-
+        if ( $this->matchTag( $node, 'ol', 'ul' ) ) {
+            if ( $node->parent instanceof ElementNode && $this->matchTag( $node->parent, 'nav', 'menu' ) ) {
+                dump( 'Skipped node:', $node );
                 return $node;
-            },
-        );
+            }
+            $attributes()->class->add( 'list', true );
+        }
+
+        $node->attributes = $attributes->getNode();
+
+        return $node;
     }
 }

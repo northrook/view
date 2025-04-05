@@ -9,7 +9,7 @@ use Core\Profiler\Interface\Profilable;
 use Core\Profiler\ProfilerTrait;
 use Core\Interface\{LazyService};
 use Core\View\Attribute\ViewComponent;
-use Core\View\Template\{AbstractComponent, Component, Engine};
+use Core\View\Template\{Component, Engine};
 use Core\View\Exception\ComponentNotFoundException;
 use Psr\Log\{LoggerAwareInterface, LoggerAwareTrait};
 use Symfony\Component\DependencyInjection\ServiceLocator;
@@ -29,10 +29,10 @@ class ComponentFactory implements LazyService, Profilable, LoggerAwareInterface
     private array $instantiated = [];
 
     /**
-     * @param Engine                            $engine
-     * @param ServiceLocator<AbstractComponent> $locator
-     * @param ComponentBag                      $components
-     * @param array<string, string>             $tags
+     * @param Engine                    $engine
+     * @param ServiceLocator<Component> $locator
+     * @param ComponentBag              $components
+     * @param array<string, string>     $tags
      */
     public function __construct(
         protected readonly Engine         $engine,
@@ -48,13 +48,13 @@ class ComponentFactory implements LazyService, Profilable, LoggerAwareInterface
      * @param array<string, null|array<array-key, string|string[]>|string> $arguments
      * @param ?int                                                         $cache
      *
-     * @return AbstractComponent|Component
+     * @return Component
      */
     public function render(
         string $component,
         array  $arguments = [],
         ?int   $cache = AUTO,
-    ) : AbstractComponent|Component {
+    ) : Component {
         $this->profiler?->event( $component );
 
         $properties = $this->getComponentProperties( $component );
@@ -77,9 +77,9 @@ class ComponentFactory implements LazyService, Profilable, LoggerAwareInterface
      *
      * @param class-string|ComponentProperties|string $component
      *
-     * @return AbstractComponent|Component
+     * @return Component
      */
-    final public function getComponent( string|ComponentProperties $component ) : AbstractComponent|Component
+    final public function getComponent( string|ComponentProperties $component ) : Component
     {
         $serviceID = $this->getComponentServiceID( (string) $component );
 
@@ -91,24 +91,18 @@ class ComponentFactory implements LazyService, Profilable, LoggerAwareInterface
         if ( ! $this->locator->has( $serviceID ) ) {
             throw new ComponentNotFoundException( $serviceID, 'Not found in the Component Container.' );
         }
+
         $viewComponent = $this->locator->get( $serviceID );
 
-        \assert(
-            $viewComponent instanceof AbstractComponent
-                || $viewComponent instanceof Component,
-        );
+        // \assert( $viewComponent instanceof Component );
 
-        if ( $viewComponent instanceof Component ) {
-            return clone $viewComponent
-                ->setDependencies(
-                    $this->engine,
-                    AUTO,
-                    $this->profiler,
-                    $this->logger,
-                );
-        }
-
-        return clone $viewComponent;
+        return clone $viewComponent
+            ->setDependencies(
+                $this->engine,
+                AUTO,
+                $this->profiler,
+                $this->logger,
+            );
     }
 
     final public function getComponentProperties( string $component ) : ComponentProperties
@@ -135,7 +129,7 @@ class ComponentFactory implements LazyService, Profilable, LoggerAwareInterface
             return $this->components->get( $from )->name;
         }
 
-        if ( \class_exists( $from ) && \is_subclass_of( $from, AbstractComponent::class ) ) {
+        if ( \class_exists( $from ) && \is_subclass_of( $from, Component::class ) ) {
             return $from::viewComponentAttribute()->name;
         }
 
@@ -154,7 +148,7 @@ class ComponentFactory implements LazyService, Profilable, LoggerAwareInterface
         if (
             \str_contains( $from, '\\' )
             && \class_exists( $from )
-            && \is_subclass_of( $from, AbstractComponent::class )
+            && \is_subclass_of( $from, Component::class )
         ) {
             return $from::viewComponentAttribute()->serviceID;
         }

@@ -6,7 +6,6 @@ namespace Core\View\Template\Component;
 
 use Stringable, LogicException;
 use function Support\str_starts_with_any;
-use const Support\EMPTY_STRING;
 
 final class NodeExporter
 {
