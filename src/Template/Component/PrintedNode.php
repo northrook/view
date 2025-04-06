@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Core\View\Template\Component;
 
+use JetBrains\PhpStorm\Language;
 use Core\View\Template\Compiler\{Node, PrintContext};
 use Core\View\Template\Compiler\Nodes\PrintNode;
 use Northrook\Logger\Log;
-use Support\Str;
 use Stringable, Exception;
 
 final class PrintedNode implements Stringable
@@ -45,8 +45,8 @@ final class PrintedNode implements Stringable
 
         // We may want to capture the whole {$variable ?: $withAny ?? [$rules]}
         // Parse and ensure it has a null-coalescing fallback
-        $this->variable     = Str::extract( '#\$(\w+)(?=\s*|:|\?|$)#', $this->value );
-        $this->expression   = Str::extract( '#\$(.+?)(?=\)|$)#', $this->value );
+        $this->variable     = $this->extract( '#\$(\w+)(?=\s*|:|\?|$)#', $this->value );
+        $this->expression   = $this->extract( '#\$(.+?)(?=\)|$)#', $this->value );
         $this->isExpression = true;
     }
 
@@ -66,5 +66,17 @@ final class PrintedNode implements Stringable
             Log::exception( $exception );
         }
         return EMPTY_STRING;
+    }
+
+    private function extract(
+            #[Language( 'RegExp' )]
+            string $pattern,
+            string $string,
+    ) : ?string {
+        if ( \preg_match_all( $pattern, $string, $matches, PREG_SET_ORDER ) === false ) {
+            return null;
+        }
+
+        return $matches[0][0] ?? null;
     }
 }
