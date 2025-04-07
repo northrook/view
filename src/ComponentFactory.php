@@ -97,7 +97,6 @@ class ComponentFactory implements LazyService, Profilable, LoggerAwareInterface
         return clone $viewComponent
             ->setDependencies(
                 $this->engine,
-                AUTO,
                 $this->profiler,
                 $this->logger,
             );
@@ -128,7 +127,7 @@ class ComponentFactory implements LazyService, Profilable, LoggerAwareInterface
         }
 
         if ( \class_exists( $from ) && \is_subclass_of( $from, Component::class ) ) {
-            return $from::viewComponentAttribute()->name;
+            return $from::getViewComponentAttribute()->name;
         }
 
         $serviceID = $this->tags[ComponentProperties::tag( $from )] ?? null;
@@ -148,7 +147,7 @@ class ComponentFactory implements LazyService, Profilable, LoggerAwareInterface
             && \class_exists( $from )
             && \is_subclass_of( $from, Component::class )
         ) {
-            return $from::viewComponentAttribute()->serviceID;
+            return $from::getViewComponentAttribute()->serviceID;
         }
 
         $from = str_start( $from, ViewComponent::PREFIX );
