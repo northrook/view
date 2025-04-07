@@ -2,10 +2,10 @@
 
 namespace Core\View\Template\Compiler\Nodes;
 
-use Core\View\ViewFactory;
-use Core\View\Template\Compiler\{NodeArgumentExporter, PrintContext};
+use Core\View\ComponentFactory;
+use Core\View\Template\Compiler\{ArgumentExporter, PrintContext};
 
-final class ViewProviderNode extends TextNode
+final class ComponentProviderNode extends TextNode
 {
     public readonly string $name;
 
@@ -21,8 +21,8 @@ final class ViewProviderNode extends TextNode
         string $name,
         array  $arguments = [],
     ) {
-        $export   = new NodeArgumentExporter();
-        $property = ViewFactory::PROPERTY;
+        $export   = new ArgumentExporter();
+        $property = ComponentFactory::PROPERTY;
 
         $this->name      = $export->string( $name );
         $this->arguments = $export->arguments( $arguments );
@@ -33,7 +33,7 @@ final class ViewProviderNode extends TextNode
                     component : {$this->name},
                     arguments : {$this->arguments},
                 );
-                VIEW,
+                VIEW.NEWLINE,
         );
     }
 

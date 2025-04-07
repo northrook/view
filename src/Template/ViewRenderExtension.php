@@ -2,7 +2,7 @@
 
 namespace Core\View\Template;
 
-use Core\View\{Template\Compiler\CompilerExtension, ViewFactory};
+use Core\View\{Template\Compiler\CompilerExtension, Template\Compiler\Nodes\ComponentProviderNode, ComponentFactory};
 use Core\View\Template\Compiler\Node;
 use Core\View\Template\Compiler\Nodes\Html\ElementNode;
 
@@ -11,7 +11,7 @@ final class ViewRenderExtension extends CompilerExtension
     /** @var array<string, string> */
     private array $matchTags;
 
-    public function __construct( private readonly ViewFactory $factory ) {}
+    public function __construct( private readonly ComponentFactory $factory ) {}
 
     public function getProviders() : array
     {
@@ -33,10 +33,17 @@ final class ViewRenderExtension extends CompilerExtension
             dump( "Existing 'component-id'." );
         }
 
-        dump( $componentName );
+        if ( $componentName === 'view.component.icon' ) {
+            $component = $this->factory->getComponent( $componentName );
+
+            $arguments        = $component->getArguments();
+            $arguments['tag'] = $node->name;
+
+            return new ComponentProviderNode( $componentName, $arguments );
+        }
 
         /**
-         * Replace matched {@see ElementNode} with {@see ViewProviderNode}.
+         * Replace matched {@see ElementNode} with {@see ComponentProviderNode}.
          *
          * Components will be rendered at runtime using:
          * ```

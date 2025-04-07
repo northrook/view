@@ -7,13 +7,13 @@ namespace Core\View\Template\Compiler;
 use Stringable, LogicException;
 use function Support\str_starts_with_any;
 
-final class NodeArgumentExporter
+final class ArgumentExporter
 {
     private string $value = EMPTY_STRING;
 
     /**
      * @param class-string $class
-     * @param              ...$arguments
+     * @param mixed        ...$arguments
      *
      * @return $this
      */
@@ -28,7 +28,7 @@ final class NodeArgumentExporter
     /**
      * @param class-string    $class
      * @param callable-string $method
-     * @param                 ...$args
+     * @param mixed           ...$args
      *
      * @return $this
      */
@@ -61,6 +61,12 @@ final class NodeArgumentExporter
         return $this;
     }
 
+    /**
+     * @param array                   $arguments
+     * @param array<array-key, mixed> $argument
+     *
+     * @return self
+     */
     private function handleCallArguments( array $arguments ) : self
     {
         foreach ( $arguments as $name => $argument ) {
@@ -95,12 +101,17 @@ final class NodeArgumentExporter
         return __FUNCTION__;
     }
 
+    /**
+     * @param array<array-key, mixed> $arguments
+     *
+     * @return string
+     */
     public static function arguments( array $arguments ) : string
     {
         $export = [];
 
         foreach ( $arguments as $name => $value ) {
-            $argument = \is_string( $name ) ? "'{$name}' =>" : '';
+            $argument = \is_string( $name ) ? "'{$name}' => " : '';
             $argument .= match ( \gettype( $value ) ) {
                 'string'  => self::string( $value ),
                 'array'   => self::array( $value ),
@@ -109,15 +120,15 @@ final class NodeArgumentExporter
                 default   => throw new LogicException(
                     'TODO : Handle unknown argument type '.\gettype(
                         $value,
-                    ).' for '.NodeArgumentExporter::class,
+                    ).' for '.__METHOD__,
                 ),
             };
             $export[] = $argument;
         }
 
-        $string = PHP_EOL.\implode( ', '.PHP_EOL, $export ).PHP_EOL;
+        $output = \implode( ', '.PHP_EOL, $export );
 
-        return "[ {$string} ]";
+        return $output ? "[ {$output} ]" : '[]';
     }
 
     public static function string( string $value ) : string
@@ -130,10 +141,13 @@ final class NodeArgumentExporter
         return $value;
     }
 
+    /**
+     * @param array<array-key, mixed> $argument
+     *
+     * @return string
+     */
     public static function array( array $argument ) : string
     {
-        // dump( $argument );
-
         if ( empty( $argument ) ) {
             return '[]';
         }
@@ -146,14 +160,23 @@ final class NodeArgumentExporter
             }
 
             if ( \is_string( $value ) ) {
-                $value = NodeArgumentExporter::string( $value );
+                $value = ArgumentExporter::string( $value );
             }
 
             if ( \is_array( $value ) ) {
                 $value = self::array( $value );
             }
 
-            $string .= "{$key} => {$value},".PHP_EOL;
+            if ( \is_string( $value ) ) {
+                $string .= "{$key} => {$value},".PHP_EOL;
+            }
+            else {
+                throw new LogicException(
+                    'TODO : Handle unknown argument type '.\gettype(
+                        $value,
+                    ).' for '.__METHOD__,
+                );
+            }
         }
 
         return $string.']';

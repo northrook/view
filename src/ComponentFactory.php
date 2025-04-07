@@ -4,22 +4,34 @@ declare(strict_types=1);
 
 namespace Core\View;
 
-use Core\View\ComponentFactory\{ComponentBag, ComponentProperties};
-use Core\Profiler\Interface\Profilable;
-use Core\Profiler\ProfilerTrait;
-use Core\Interface\{LazyService};
+use Core\View\ComponentFactory\{
+    ComponentBag,
+    ComponentProperties,
+};
 use Core\View\Attribute\ViewComponent;
-use Core\View\Template\{Component, Engine};
-use Core\View\Exception\ComponentNotFoundException;
-use Psr\Log\{LoggerAwareInterface, LoggerAwareTrait};
+use Core\View\Template\{
+    Component,
+    Engine,
+};
+use Core\Profiler\{
+    Interface\Profilable,
+    ProfilerTrait,
+};
 use Symfony\Component\DependencyInjection\ServiceLocator;
-use function Support\str_start;
-use const Support\AUTO;
+use Core\Interface\LazyService;
+use Psr\Log\{
+    LoggerAwareInterface,
+    LoggerAwareTrait,
+};
+use Core\View\Exception\ComponentNotFoundException;
 use InvalidArgumentException;
+use function Support\str_start;
 
 class ComponentFactory implements LazyService, Profilable, LoggerAwareInterface
 {
     use ProfilerTrait, LoggerAwareTrait;
+
+    public const string PROPERTY = 'view';
 
     /**
      * `[ component.name => uniqueId ]`.
@@ -42,44 +54,38 @@ class ComponentFactory implements LazyService, Profilable, LoggerAwareInterface
     ) {}
 
     /**
-     * Renders a component at runtime.
-     *
-     * @param class-string|string                                          $component
-     * @param array<string, null|array<array-key, string|string[]>|string> $arguments
-     * @param ?int                                                         $cache
+     * @param string               $component
+     * @param array<string, mixed> $arguments
      *
      * @return Component
      */
-    public function render(
+    final public function render(
         string $component,
-        array  $arguments = [],
-        ?int   $cache = AUTO,
+        array  $arguments,
     ) : Component {
-        $this->profiler?->event( $component );
-
+        $profiler   = $this->profiler?->event( $component );
         $properties = $this->getComponentProperties( $component );
 
-        $viewComponent = $this->getComponent( $component );
+        $component = $this->getComponent( $component );
+        $component->create(
+            $arguments,
+            $properties->tagged,
+        );
 
-        // @phpstan-ignore-next-line
-        $viewComponent->create( $arguments, $properties->tagged );
+        $this->instantiated[$properties->name][] = $component->uniqueID;
 
-        $this->instantiated[$properties->name][] = $viewComponent->uniqueID;
-
-        $this->profiler?->stop( $component );
-        return $viewComponent;
+        $profiler?->stop();
+        return $component;
     }
-
-    // :: retrieve
 
     /**
      * Begin the Build proccess of a component.
      *
-     * @param class-string|ComponentProperties|string $component
+     * @param class-string|string $component
      *
      * @return Component
      */
-    final public function getComponent( string|ComponentProperties $component ) : Component
+    final public function getComponent( string $component ) : Component
     {
         $serviceID = $this->getComponentServiceID( (string) $component );
 
@@ -97,8 +103,8 @@ class ComponentFactory implements LazyService, Profilable, LoggerAwareInterface
         return clone $viewComponent
             ->setDependencies(
                 $this->engine,
-                $this->profiler,
-                $this->logger,
+                // $this->profiler,
+                // $this->logger,
             );
     }
 
@@ -112,27 +118,6 @@ class ComponentFactory implements LazyService, Profilable, LoggerAwareInterface
         }
 
         return $this->components->get( $component );
-    }
-
-    /**
-     * @param string $from name or tag
-     *
-     * @return null|string
-     */
-    final public function getComponentName( string $from ) : ?string
-    {
-        // If the provided $value matches an array name, return it
-        if ( $this->components->has( $from ) ) {
-            return $this->components->get( $from )->name;
-        }
-
-        if ( \class_exists( $from ) && \is_subclass_of( $from, Component::class ) ) {
-            return $from::getViewComponentAttribute()->name;
-        }
-
-        $serviceID = $this->tags[ComponentProperties::tag( $from )] ?? null;
-
-        return $serviceID ? $this->getComponentName( $serviceID ) : null;
     }
 
     /**
@@ -165,6 +150,14 @@ class ComponentFactory implements LazyService, Profilable, LoggerAwareInterface
     }
 
     /**
+     * @return array<string, string>
+     */
+    final public function getTags() : array
+    {
+        return $this->tags;
+    }
+
+    /**
      * @return array<string, array<int, string>>
      */
     final public function getInstantiated() : array
@@ -179,16 +172,6 @@ class ComponentFactory implements LazyService, Profilable, LoggerAwareInterface
     {
         return $this->components->all();
     }
-
-    /**
-     * @return array<string, string>
-     */
-    final public function getTags() : array
-    {
-        return $this->tags;
-    }
-
-    // .. validation
 
     /**
      * Check if the provided string matches any {@see ComponentFactory::$components}.

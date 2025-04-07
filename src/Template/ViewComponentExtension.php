@@ -6,11 +6,13 @@ namespace Core\View\Template;
 
 use Core\View\ComponentFactory;
 use Core\View\Template\Compiler\Nodes\{ComponentNode as NewComponentNode, TemplateNode};
+use JetBrains\PhpStorm\Deprecated;
 use Core\View\Template\Compiler\{Node, NodeTraverser};
 use Core\View\Template\Compiler\Nodes\Html\ElementNode;
 use Core\View\Template\Compiler\Nodes\Php\ExpressionNode;
 use Override;
 
+#[Deprecated]
 final class ViewComponentExtension extends Extension
 {
     /** @var array<string, string> */
@@ -76,13 +78,15 @@ final class ViewComponentExtension extends Extension
             return $node;
         }
 
-        $component  = $this->factory->getComponent( $componentName );
-        $properties = $this->factory->getComponentProperties( $componentName );
+        return $node;
 
-        // @phpstan-ignore-next-line
-        $component->create( $node, $properties->tagged );
-
-        return $component->getComponentNode( $node, $properties->tagged );
+        // $component  = $this->factory->getComponent( $componentName );
+        // $properties = $this->factory->getComponentProperties( $componentName );
+        //
+        // // @phpstan-ignore-next-line
+        // $component->create( $node, $properties->tagged );
+        //
+        // return $component->getComponentNode( $node, $properties->tagged );
     }
 
     /**

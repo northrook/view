@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace Core\View\Template\Compiler;
 
 use Core\View\Template\Extension;
-use Core\View\Template\Compiler\{Nodes\Html\ElementNode, Nodes\Php\ExpressionNode};
-use Core\View\Template\Compiler\Nodes\TemplateNode;
+use Core\View\Template\Compiler\Nodes\{
+    TemplateNode,
+    Html\ElementNode,
+    Php\ExpressionNode,
+};
 use function Support\slug;
 
 abstract class CompilerExtension extends Extension
