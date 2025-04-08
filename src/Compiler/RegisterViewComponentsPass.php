@@ -7,13 +7,16 @@ namespace Core\View\Compiler;
 use Symfony\Component\DependencyInjection\{
     ContainerBuilder,
     Definition,
-    Reference,
+    Loader\Configurator\ReferenceConfigurator,
+    Reference
 };
 use Core\Symfony\Console\ListReport;
 use Core\Symfony\DependencyInjection\CompilerPass;
 use Core\View\Attribute\ViewComponent;
 use Core\View\ComponentFactory;
 use Core\View\ComponentFactory\ComponentBag;
+use Core\View\Template\Engine;
+use Psr\Log\LoggerInterface;
 use ReflectionClass, LogicException;
 use Support\PhpStormMeta;
 
@@ -26,6 +29,21 @@ final class RegisterViewComponentsPass extends CompilerPass
     protected readonly Definition $locatorDefinition;
 
     protected readonly Definition $factoryDefinition;
+
+    /**
+     * @param null|ReferenceConfigurator $engine    {@see Engine}
+     * @param null|ReferenceConfigurator $stopwatch {@see Stopwatch}
+     * @param null|ReferenceConfigurator $logger    {@see LoggerInterface}
+     */
+    public function __construct(
+        protected ?ReferenceConfigurator $engine = null,
+        protected ?ReferenceConfigurator $stopwatch = null,
+        protected ?ReferenceConfigurator $logger = null,
+    ) {
+        $this->engine?->nullOnInvalid();
+        $this->stopwatch?->nullOnInvalid();
+        $this->logger?->nullOnInvalid();
+    }
 
     /**
      * @param ContainerBuilder $container
@@ -92,9 +110,19 @@ final class RegisterViewComponentsPass extends CompilerPass
                 continue;
             }
 
-            $viewComponent = $this->definitionViewComponentAttribute(
-                $this->container->getDefinition( $serviceId ),
-            ) ?? throw new LogicException();
+            $serviceDefinition = $this->container->getDefinition( $serviceId );
+
+            $viewComponent = $this->definitionViewComponentAttribute( $serviceDefinition )
+                             ?? throw new LogicException();
+
+            $serviceDefinition->addMethodCall(
+                'setDependencies',
+                [
+                    new Reference( (string) $this->engine ),
+                    new Reference( (string) $this->stopwatch ),
+                    new Reference( (string) $this->logger ),
+                ],
+            );
 
             $properties = $viewComponent->getProperties();
 
