@@ -3,15 +3,12 @@
 namespace Core\View\Template\Compiler\Nodes;
 
 use Core\View\ComponentFactory;
-use Core\View\Template\Compiler\{ArgumentExporter, PrintContext};
+use Core\View\Template\Compiler\{PrintContext};
+use Support\PhpGenerator\Argument;
 
 final class ComponentProviderNode extends TextNode
 {
     public readonly string $name;
-
-    public readonly string $arguments;
-
-    public readonly string $cache;
 
     /**
      * @param string               $name
@@ -21,20 +18,43 @@ final class ComponentProviderNode extends TextNode
         string $name,
         array  $arguments = [],
     ) {
-        $export   = new ArgumentExporter();
         $property = ComponentFactory::PROPERTY;
 
-        $this->name      = $export->string( $name );
-        $this->arguments = $export->arguments( $arguments );
+        $this->name = $name;
 
-        parent::__construct(
-            <<<VIEW
-                echo \$this->global->{$property}->render(
-                    component : {$this->name},
-                    arguments : {$this->arguments},
-                );
-                VIEW.NEWLINE,
+        $arguments = $this->exportArguments(
+            ['component' => $this->name, ...$arguments],
         );
+
+        $view = "echo \$this->global->{$property}->render(\n";
+        $view .= \implode( "\n", $arguments );
+        $view .= "\n);\n";
+
+        parent::__construct( $view );
+    }
+
+    /**
+     * @param array<string, mixed> $array
+     *
+     * @return string[]
+     */
+    private function exportArguments( array $array ) : array
+    {
+        /** @var array<string, string> $array */
+        $arguments       = [];
+        $longestArgument = 0;
+
+        foreach ( $array as $argument => $value ) {
+            $longestArgument  = \max( $longestArgument, \strlen( $argument ) );
+            $array[$argument] = Argument::export( $value );
+        }
+
+        foreach ( $array as $argument => $properties ) {
+            $argument    = \str_pad( $argument, $longestArgument );
+            $arguments[] = TAB."{$argument} : {$properties},";
+        }
+
+        return $arguments;
     }
 
     public function print( PrintContext $context ) : string

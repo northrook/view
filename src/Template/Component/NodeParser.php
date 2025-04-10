@@ -2,11 +2,13 @@
 
 namespace Core\View\Template\Component;
 
+use JetBrains\PhpStorm\Deprecated;
 use Core\View\Template\Compiler\{Node, NodeHelpers, PrintContext};
 use Core\View\Template\Compiler\Nodes\{PrintNode, TextNode};
 use Core\View\Template\Compiler\Nodes\Html\{AttributeNode, ElementNode};
 use InvalidArgumentException;
 
+#[Deprecated]
 final class NodeParser
 {
     // Mostly debugging
@@ -20,6 +22,7 @@ final class NodeParser
         public readonly Node   $node,
         private readonly ?self $parent = null,
     ) {
+        trigger_deprecation( __NAMESPACE__, '_dev', 'Deprecated' );
         $this->elementProperties();
     }
 

@@ -12,13 +12,12 @@ use Stringable;
  * @internal
  * @author Martin Nielsen <mn@northrook.com>
  */
-final readonly class ComponentProperties extends DataObject implements Stringable
+final readonly class Properties extends DataObject implements Stringable
 {
     /**
      * @param string                   $name
      * @param class-string<Component>  $class
      * @param bool                     $static
-     * @param int                      $priority
      * @param string[]                 $tags
      * @param array<string, ?string[]> $tagged
      */
@@ -26,7 +25,6 @@ final readonly class ComponentProperties extends DataObject implements Stringabl
         public string $name,
         public string $class,
         public bool   $static,
-        public int    $priority = 0,
         public array  $tags = [],
         public array  $tagged = [],
     ) {}

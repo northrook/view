@@ -29,7 +29,8 @@
     "northrook/core-symfony": "dev-main",
     "northrook/pathfinder": "dev-main",
     "northrook/view-element": "dev-main",
-    "northrook/view-template": "dev-main"
+    "northrook/view-template": "dev-main",
+    "northrook/php-generator": "dev-main"
   },
   "require-dev": {
     "northrook/dev": "dev-main",

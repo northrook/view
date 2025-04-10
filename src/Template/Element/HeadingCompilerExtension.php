@@ -12,9 +12,11 @@ use Core\View\Template\{Compiler\Node,
     Compiler\CompilerExtension
 };
 use Core\View\Template\Compiler\Nodes\TextNode;
+use JetBrains\PhpStorm\Deprecated;
 use function Support\str_starts_with_any;
 use const Support\TAG_HEADING;
 
+#[Deprecated]
 final class HeadingCompilerExtension extends CompilerExtension
 {
     protected const string DEFAULT = 'h2';
@@ -24,7 +26,9 @@ final class HeadingCompilerExtension extends CompilerExtension
             'hero'  => 1,
             'title' => 1,
         ],
-    ) {}
+    ) {
+        trigger_deprecation( __NAMESPACE__, '_dev', 'Deprecated' );
+    }
 
     protected function node( ElementNode $node ) : Node
     {
@@ -59,7 +63,7 @@ final class HeadingCompilerExtension extends CompilerExtension
                 }
 
                 if ( \in_array( $child->name, ['p', 'small', 'subheading'], true )
-                     || str_starts_with_any( $child->name, 'icon:' ) 
+                     || str_starts_with_any( $child->name, 'icon:' )
                 ) {
                     $content['decorative'][] = $child;
                     $decorative[]            = $child;

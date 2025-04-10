@@ -4,21 +4,20 @@ declare(strict_types=1);
 
 namespace Core\View\Compiler;
 
+use Core\View\ComponentFactory;
+use Core\View\ComponentFactory\{ComponentBag, ViewComponent};
+use Core\Symfony\Console\ListReport;
+use Core\Symfony\DependencyInjection\CompilerPass;
 use Symfony\Component\DependencyInjection\{
     ContainerBuilder,
     Definition,
+    Reference,
     Loader\Configurator\ReferenceConfigurator,
-    Reference
 };
-use Core\Symfony\Console\ListReport;
-use Core\Symfony\DependencyInjection\CompilerPass;
-use Core\View\Attribute\ViewComponent;
-use Core\View\ComponentFactory;
-use Core\View\ComponentFactory\ComponentBag;
 use Core\View\Template\Engine;
 use Psr\Log\LoggerInterface;
-use ReflectionClass, LogicException;
 use Support\PhpStormMeta;
+use ReflectionClass, LogicException;
 
 final class RegisterViewComponentsPass extends CompilerPass
 {
@@ -84,7 +83,7 @@ final class RegisterViewComponentsPass extends CompilerPass
 
         $viewComponentAttributes = $reflectionClass->getAttributes( ViewComponent::class );
 
-        /** @var ViewComponent $viewComponent */
+        /** @var \Core\View\Template\ViewComponent $viewComponent */
         $viewComponent = $viewComponentAttributes[0]->newInstance();
         $viewComponent->setClassName( $className );
 

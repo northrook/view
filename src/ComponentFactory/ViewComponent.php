@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Core\View\Attribute;
+namespace Core\View\ComponentFactory;
 
 use Attribute, Override;
 use Core\Symfony\Console\Output;
@@ -47,19 +47,14 @@ final class ViewComponent extends Autodiscover
      * Components will by default be rendered at runtime,
      * but static components will render into the template cache as HTML.
      *
-     * ### `Priority`
-     * The higher the number, the earlier the Component is parsed.
-     *
      * @param string[] $tag       [optional]
      * @param bool     $static    [false]
-     * @param int      $priority  [0]
      * @param ?string  $name
      * @param ?string  $serviceId
      */
     public function __construct(
         string|array $tag = [],
         public bool  $static = false,
-        public int   $priority = 0,
         ?string      $name = null,
         ?string      $serviceId = null,
     ) {
@@ -119,17 +114,16 @@ final class ViewComponent extends Autodiscover
     }
 
     /**
-     * @return array{name: string, class: class-string<Component>, static: bool, priority: int, tags: string[], tagged: array<string, array<int, null|string>>}
+     * @return array{name: string, class: class-string<Component>, static: bool, tags: string[], tagged: array<string, array<int, null|string>>}
      */
     public function getProperties() : array
     {
         return [
-            'name'     => $this->name,
-            'class'    => $this->className,
-            'static'   => $this->static,
-            'priority' => $this->priority,
-            'tags'     => $this->componentNodeTags(),
-            'tagged'   => $this->taggedNodeTags(),
+            'name'   => $this->name,
+            'class'  => $this->className,
+            'static' => $this->static,
+            'tags'   => $this->componentNodeTags(),
+            'tagged' => $this->taggedNodeTags(),
         ];
     }
 
@@ -186,6 +180,12 @@ final class ViewComponent extends Autodiscover
             $tag  = $tags[0];
 
             foreach ( $tags as $position => $argument ) {
+                if ( $position === 0 ) {
+                    unset( $tags[$position] );
+
+                    continue;
+                }
+
                 if ( \str_contains( $argument, '{' ) ) {
                     $property = \trim( $argument, " \t\n\r\0\x0B{}" );
 
@@ -199,13 +199,10 @@ final class ViewComponent extends Autodiscover
                     continue;
                 }
 
-                if ( $position && ! Reflect::class( $this->className )->hasMethod( $argument ) ) {
+                if ( ! Reflect::class( $this->className )->hasMethod( $argument ) ) {
                     Output::error( "Method {$this->className}::{$argument}' not found in component '{$this->name}'" );
                 }
-
-                $tags[$position] = null;
             }
-
             $properties[$tag] = $tags;
         }
 

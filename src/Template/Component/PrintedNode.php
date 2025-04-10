@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace Core\View\Template\Component;
 
-use JetBrains\PhpStorm\Language;
+use JetBrains\PhpStorm\{Deprecated, Language};
 use Core\View\Template\Compiler\{Node, PrintContext};
 use Core\View\Template\Compiler\Nodes\PrintNode;
 use Northrook\Logger\Log;
 use Stringable, Exception;
 
+#[Deprecated]
 final class PrintedNode implements Stringable
 {
     public readonly string $value;
@@ -24,6 +25,7 @@ final class PrintedNode implements Stringable
         private readonly Node $node,
         private ?PrintContext $context = null,
     ) {
+        trigger_deprecation( __NAMESPACE__, '_dev', 'Deprecated' );
         $this->context ??= new PrintContext();
         match ( true ) {
             $node instanceof PrintNode => $this->parsePrintNode(),
@@ -69,9 +71,9 @@ final class PrintedNode implements Stringable
     }
 
     private function extract(
-            #[Language( 'RegExp' )]
-            string $pattern,
-            string $string,
+        #[Language( 'RegExp' )]
+        string $pattern,
+        string $string,
     ) : ?string {
         if ( \preg_match_all( $pattern, $string, $matches, PREG_SET_ORDER ) === false ) {
             return null;

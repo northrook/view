@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Core\View\ComponentFactory;
 
-use Core\View\Template\AbstractComponent;
+use Core\View\Template\Component;
 use Core\View\Exception\ComponentNotFoundException;
 
 /**
@@ -13,23 +13,23 @@ use Core\View\Exception\ComponentNotFoundException;
 final class ComponentBag
 {
     /**
-     * @param array<string, array{name: string, class: class-string<AbstractComponent>, static: bool, priority: int, tags: string[], tagged: string[][]}|ComponentProperties> $components
+     * @param array<string, array{name: string, class: class-string<Component>, static: bool, tags: string[], tagged: string[][]}|Properties> $components
      */
     public function __construct( private array $components = [] ) {}
 
     /**
      * Gets the service container parameters.
      *
-     * @return array<string, ComponentProperties>
+     * @return array<string, Properties>
      */
     public function all() : array
     {
         foreach ( $this->components as $component => $properties ) {
             if ( \is_array( $properties ) ) {
-                $this->components[$component] = new ComponentProperties( ...$properties );
+                $this->components[$component] = new Properties( ...$properties );
             }
         }
-        /** @var array<string, ComponentProperties> */
+        /** @var array<string, Properties> */
         return $this->components;
     }
 
@@ -38,18 +38,18 @@ final class ComponentBag
      *
      * @param string $component
      *
-     * @return ComponentProperties
+     * @return Properties
      * @throws ComponentNotFoundException
      */
-    public function get( string $component ) : ComponentProperties
+    public function get( string $component ) : Properties
     {
         $properties = $this->components[$component] ?? throw new ComponentNotFoundException( $component );
 
-        if ( $properties instanceof ComponentProperties ) {
+        if ( $properties instanceof Properties ) {
             return $properties;
         }
 
-        return $this->components[$component] = new ComponentProperties( ...$properties );
+        return $this->components[$component] = new Properties( ...$properties );
     }
 
     /**

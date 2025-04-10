@@ -5,17 +5,17 @@ declare(strict_types=1);
 namespace Core\View;
 
 use Core\View\ComponentFactory\{
+    ViewComponent,
     ComponentBag,
-    ComponentProperties,
+    Properties,
 };
-use Core\View\Attribute\ViewComponent;
 use Core\View\Template\{
     Component,
     Engine,
 };
 use Core\Profiler\{
     Interface\Profilable,
-    ProfilerTrait,
+    StopwatchProfiler,
 };
 use Symfony\Component\DependencyInjection\ServiceLocator;
 use Core\Interface\LazyService;
@@ -24,12 +24,13 @@ use Psr\Log\{
     LoggerAwareTrait,
 };
 use Core\View\Exception\ComponentNotFoundException;
+use Symfony\Component\Stopwatch\Stopwatch;
 use InvalidArgumentException;
 use function Support\str_start;
 
 class ComponentFactory implements LazyService, Profilable, LoggerAwareInterface
 {
-    use ProfilerTrait, LoggerAwareTrait;
+    use StopwatchProfiler, LoggerAwareTrait;
 
     public const string PROPERTY = 'view';
 
@@ -53,26 +54,37 @@ class ComponentFactory implements LazyService, Profilable, LoggerAwareInterface
         protected readonly array          $tags = [],
     ) {}
 
+    final public function setProfiler(
+        ?Stopwatch $stopwatch,
+        ?string    $category = 'View',
+    ) : void {
+        $this->assignProfiler( $stopwatch, $category );
+    }
+
     /**
      * @param string               $component
-     * @param array<string, mixed> $arguments
+     * @param array<string, mixed> $properties
+     * @param array<string, mixed> $attributes
+     * @param array<string, mixed> $content
      *
      * @return Component
      */
     final public function render(
         string $component,
-        array  $arguments,
+        array  $properties = [],
+        array  $attributes = [],
+        array  $content = [],
     ) : Component {
-        $profiler   = $this->profiler?->event( $component );
-        $properties = $this->getComponentProperties( $component );
+        $profiler = $this->profiler?->event( $component );
 
         $component = $this->getComponent( $component );
         $component->create(
-            $arguments,
-            $properties->tagged,
+            $properties,
+            $attributes,
+            $content,
         );
 
-        $this->instantiated[$properties->name][] = $component->uniqueID;
+        $this->instantiated[$component->name][] = $component->uniqueID;
 
         $profiler?->stop();
         return $component;
@@ -100,15 +112,10 @@ class ComponentFactory implements LazyService, Profilable, LoggerAwareInterface
 
         $viewComponent = $this->locator->get( $serviceID );
 
-        return clone $viewComponent
-            ->setDependencies(
-                $this->engine,
-                // $this->profiler,
-                // $this->logger,
-            );
+        return clone $viewComponent;
     }
 
-    final public function getComponentProperties( string $component ) : ComponentProperties
+    final public function getComponentProperties( string $component ) : Properties
     {
         $component = $this->getComponentServiceID( $component );
 
@@ -142,7 +149,7 @@ class ComponentFactory implements LazyService, Profilable, LoggerAwareInterface
             return $from;
         }
 
-        $tag = ComponentProperties::tag( $from );
+        $tag = Properties::tag( $from );
 
         return $this->tags[$tag] ?? throw new InvalidArgumentException(
             "Unable to resolve Component serviceID from '{$from}'.",
@@ -166,7 +173,7 @@ class ComponentFactory implements LazyService, Profilable, LoggerAwareInterface
     }
 
     /**
-     * @return ComponentProperties[]
+     * @return Properties[]
      */
     final public function getRegisteredComponents() : array
     {

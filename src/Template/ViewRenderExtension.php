@@ -33,14 +33,19 @@ final class ViewRenderExtension extends CompilerExtension
             dump( "Existing 'component-id'." );
         }
 
-        if ( $componentName === 'view.component.icon' ) {
-            $component = $this->factory->getComponent( $componentName );
+        $component  = $this->factory->getComponent( $componentName );
+        $properties = $this->factory->getComponentProperties( $componentName );
 
-            $arguments        = $component->getArguments();
-            $arguments['tag'] = $node->name;
+        $arguments = $component->getArguments( $node, $properties );
+        // dd( $arguments );
+        // $arguments[ 'tag' ] = $node->name;
 
-            return new ComponentProviderNode( $componentName, $arguments );
-        }
+        return new ComponentProviderNode( $componentName, $arguments );
+        // if ( $componentName === 'view.component.icon' ) {
+        // }
+        // else {
+        //     dump( [ $component, $arguments ] );
+        // }
 
         /**
          * Replace matched {@see ElementNode} with {@see ComponentProviderNode}.
