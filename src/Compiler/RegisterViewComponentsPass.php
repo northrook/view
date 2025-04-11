@@ -83,7 +83,7 @@ final class RegisterViewComponentsPass extends CompilerPass
 
         $viewComponentAttributes = $reflectionClass->getAttributes( ViewComponent::class );
 
-        /** @var \Core\View\Template\ViewComponent $viewComponent */
+        /** @var ViewComponent $viewComponent */
         $viewComponent = $viewComponentAttributes[0]->newInstance();
         $viewComponent->setClassName( $className );
 

@@ -37,15 +37,12 @@ final class ViewRenderExtension extends CompilerExtension
         $properties = $this->factory->getComponentProperties( $componentName );
 
         $arguments = $component->getArguments( $node, $properties );
+
+        // if ( $componentName === 'view.component.image' ) {
         // dd( $arguments );
-        // $arguments[ 'tag' ] = $node->name;
+        // }
 
         return new ComponentProviderNode( $componentName, $arguments );
-        // if ( $componentName === 'view.component.icon' ) {
-        // }
-        // else {
-        //     dump( [ $component, $arguments ] );
-        // }
 
         /**
          * Replace matched {@see ElementNode} with {@see ComponentProviderNode}.
@@ -59,7 +56,8 @@ final class ViewRenderExtension extends CompilerExtension
          * ```
          */
 
-        return $node;
+        // : Default return
+        // return $node;
     }
 
     /**
