@@ -617,7 +617,7 @@ final class HtmlFormatter implements Printable
             $attributes[$attribute->name] = $attribute->nodeValue;
         }
 
-        return Attributes::from( ...$attributes )->resolveAttributes( true );
+        return ( new Attributes( ...$attributes ) )->resolveAttributes( true );
     }
 
     // .. HTML String
