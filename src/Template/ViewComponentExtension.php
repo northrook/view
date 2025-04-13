@@ -6,7 +6,7 @@ use Core\View\{Template\Compiler\CompilerExtension, Template\Compiler\Nodes\Comp
 use Core\View\Template\Compiler\Node;
 use Core\View\Template\Compiler\Nodes\Html\ElementNode;
 
-final class ViewRenderExtension extends CompilerExtension
+final class ViewComponentExtension extends CompilerExtension
 {
     /** @var array<string, string> */
     private array $matchTags;
