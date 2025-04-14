@@ -13,11 +13,11 @@ use Core\View\Template\Compiler\{
 };
 
 /**
- * Renders a `<i ...$attributes><svg $get..></i>` element from the global {@see IconProviderInterface}.
+ * Renders a raw `<svg $get..>` element from the global {@see IconProviderInterface}.
  *
- *  {icon [$get] [...$attributes]}
+ * {svg [$get] [...$attributes]}
  */
-final class IconProviderNode extends StatementNode
+final class SvgProviderNode extends StatementNode
 {
     public ArrayNode $arguments;
 
@@ -46,7 +46,7 @@ final class IconProviderNode extends StatementNode
     public function print( PrintContext $context ) : string
     {
         return $context->format(
-            'echo $this->global->icon->getElement( %args );',
+            'echo $this->global->icon->getSvg( %args );',
             $this->arguments,
         );
     }
