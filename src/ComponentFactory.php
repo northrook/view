@@ -65,27 +65,31 @@ class ComponentFactory implements LazyService, Profilable, LoggerAwareInterface
      * @param string               $component
      * @param array<string, mixed> $properties
      * @param array<string, mixed> $attributes
+     * @param array                $actions
      * @param array<string, mixed> $content
      *
      * @return Component
      */
     final public function render(
-        string $component,
-        array  $properties = [],
-        array  $attributes = [],
-        array  $content = [],
+        string  $component,
+        array   $properties = [],
+        array   $attributes = [],
+        array   $actions = [],
+        ?string $content = null,
     ) : Component {
         $profiler = $this->profiler?->event( $component );
 
         $component = $this->getComponent( $component );
-        $component->setDependencies(
-            $this->engine,
-            $this->profiler,
-            $this->logger,
-        )
+        $component
+            ->setDependencies(
+                $this->engine,
+                $this->profiler,
+                $this->logger,
+            )
             ->create(
                 $properties,
                 $attributes,
+                $actions,
                 $content,
             );
 

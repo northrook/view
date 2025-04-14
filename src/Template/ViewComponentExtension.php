@@ -11,6 +11,8 @@ final class ViewComponentExtension extends CompilerExtension
     /** @var array<string, string> */
     private array $matchTags;
 
+    protected ?string $componentName = null;
+
     public function __construct( private readonly ComponentFactory $factory ) {}
 
     public function getProviders() : array
@@ -35,14 +37,7 @@ final class ViewComponentExtension extends CompilerExtension
 
         $component  = $this->factory->getComponent( $componentName );
         $properties = $this->factory->getComponentProperties( $componentName );
-
-        $arguments = $component->getArguments( $node, $properties );
-
-        // if ( $componentName === 'view.component.image' ) {
-        // dd( $arguments );
-        // }
-
-        return new ComponentProviderNode( $componentName, $arguments );
+        $arguments  = $component->getArguments( $node, $properties );
 
         /**
          * Replace matched {@see ElementNode} with {@see ComponentProviderNode}.
@@ -55,9 +50,7 @@ final class ViewComponentExtension extends CompilerExtension
          * );
          * ```
          */
-
-        // : Default return
-        // return $node;
+        return new ComponentProviderNode( $componentName, $arguments );
     }
 
     /**

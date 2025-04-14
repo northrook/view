@@ -230,7 +230,7 @@ class IconProviderService implements LazyService, Countable, LoggerAwareInterfac
     ) : ?View {
         $svg = $this->getSvg( $icon );
 
-        return $svg ? new Element( 'i', $svg, $attributes ) : null;
+        return $svg ? new Element( 'i', $svg, ...$attributes ) : null;
     }
 
     final public function getSvg( string $icon, mixed ...$attributes ) : ?View
