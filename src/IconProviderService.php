@@ -5,15 +5,15 @@ declare(strict_types=1);
 namespace Core\View;
 
 use Cache\CachePoolTrait;
-use Core\Interface\View;
+use Core\Interface\{LazyService, View};
 use Core\View\Element\Attributes;
 use Countable;
 use Psr\Cache\CacheItemPoolInterface;
-use Psr\Log\LoggerInterface;
+use Psr\Log\{LoggerAwareInterface, LoggerInterface};
 use function Support\key_hash;
 use const Support\AUTO;
 
-final class IconProviderService implements Countable
+class IconProviderService implements LazyService, Countable, LoggerAwareInterface
 {
     use CachePoolTrait;
 
@@ -166,11 +166,19 @@ final class IconProviderService implements Countable
         'viewbox' => '0 0 16 16',
     ];
 
-    public function __construct(
-        ?CacheItemPoolInterface             $cache = null,
-        protected readonly ?LoggerInterface $logger = null,
+    protected ?LoggerInterface $logger;
+
+    final public function __construct(
+        ?CacheItemPoolInterface $cache = null,
+        ?LoggerInterface        $logger = null,
     ) {
         $this->assignCacheAdapter( $cache, 'core.icons' );
+        $this->logger = $logger;
+    }
+
+    final public function setLogger( LoggerInterface $logger ) : void
+    {
+        $this->logger = $logger;
     }
 
     /**
@@ -184,7 +192,7 @@ final class IconProviderService implements Countable
      *
      * @return bool
      */
-    public function has(
+    final public function has(
         string  $icon,
         ?string $pack = AUTO,
         bool    $includeDefaults = true,
@@ -216,24 +224,19 @@ final class IconProviderService implements Countable
         return [$pack, $icon, $tail];
     }
 
-    public function getElement(
+    final public function getElement(
         string   $icon,
         mixed ...$attributes,
     ) : ?View {
         $svg = $this->getSvg( $icon );
 
-        if ( ! $svg ) {
-            return null;
-        }
-
-        return new Element( 'i', $svg, ...$attributes );
+        return $svg ? new Element( 'i', $svg, $attributes ) : null;
     }
 
-    public function getSvg(
-        string   $icon,
-        mixed ...$attributes,
-    ) : ?View {
+    final public function getSvg( string $icon, mixed ...$attributes ) : ?View
+    {
         [$pack, $icon, $tail] = $this->resolve( $icon );
+
         if ( ! $this->has( $icon, $pack ) ) {
             return null;
         }
@@ -253,13 +256,13 @@ final class IconProviderService implements Countable
 
         // order of frequent use - up is default
         if ( \in_array( $tail, ['right', 'down', 'left', 'up'], true ) ) {
-            $svg->attributes->class->add( "direction\:{$tail}" );
+            $svg->attributes->class->add( "direction:{$tail}" );
         }
 
         return $svg;
     }
 
-    public function count() : int
+    final public function count() : int
     {
         return \count( $this->icons ?? self::DEFAULT );
     }
@@ -289,7 +292,7 @@ final class IconProviderService implements Countable
 
         $svg = \trim( (string) \preg_replace( ['#\s+#m', '#>\s<#'], [' ', '><'], $vector['svg'] ) );
 
-        return new Element( 'svg', $svg, ...$attributes );
+        return new Element( 'svg', $svg, $attributes );
     }
 
     /**
@@ -300,7 +303,6 @@ final class IconProviderService implements Countable
      */
     private function getIconData( string $icon, ?string $pack ) : array
     {
-        return $this->icons[$icon]
-               ?? $this::DEFAULT[$icon];
+        return $this->icons[$icon] ?? $this::DEFAULT[$icon];
     }
 }
