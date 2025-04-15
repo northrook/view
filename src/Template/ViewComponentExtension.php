@@ -2,42 +2,48 @@
 
 namespace Core\View\Template;
 
-use Core\View\{Template\Compiler\CompilerExtension, Template\Compiler\Nodes\ComponentProviderNode, ComponentFactory};
+use Core\View\{ComponentFactory\Properties,
+    Template\Compiler\Nodes\ComponentProviderNode,
+    ComponentFactory,
+    Template\Compiler\Nodes\Php\ExpressionNode,
+    Template\Compiler\Nodes\TemplateNode,
+    Template\Compiler\NodeTraverser
+};
 use Core\View\Template\Compiler\Node;
 use Core\View\Template\Compiler\Nodes\Html\ElementNode;
+use function Support\slug;
 
-final class ViewComponentExtension extends CompilerExtension
+final class ViewComponentExtension extends Extension
 {
     /** @var array<string, string> */
-    private array $matchTags;
+    private readonly array $matchTags;
 
-    protected ?string $componentName = null;
-
-    public function __construct( private readonly ComponentFactory $factory ) {}
+    public function __construct(
+        private readonly ComponentFactory $factory,
+    ) {
+        $this->matchTags = $this->factory->getTags();
+    }
 
     public function getProviders() : array
     {
         return [$this->factory::PROPERTY => $this->factory]; // render( $component, $arguments );
     }
 
-    protected function conditions( ElementNode $node ) : bool
+    protected function parse( ElementNode $node, Properties $properties ) : Node
     {
-        return true;
-    }
-
-    protected function node( ElementNode $node ) : Node
-    {
-        if ( ! $componentName = $this->matchTag( $node ) ) {
-            return $node;
-        }
-
         if ( $node->getAttribute( 'component-id' ) ) {
             dump( "Existing 'component-id'." );
         }
 
-        $component  = $this->factory->getComponent( $componentName );
-        $properties = $this->factory->getComponentProperties( $componentName );
-        $arguments  = $component->getArguments( $node, $properties );
+        $component = $this->factory->getComponent( $properties->name );
+        $arguments = $component->getArguments( $node, $properties );
+
+        if ( $properties->static ) {
+            dump( $properties->name );
+        }
+
+        // .. return the ComponentProviderNode from $component->getNode
+        // :  allow for returning raw HTML (as stand-in for [static] elements like Code
 
         /**
          * Replace matched {@see ElementNode} with {@see ComponentProviderNode}.
@@ -50,7 +56,43 @@ final class ViewComponentExtension extends CompilerExtension
          * );
          * ```
          */
-        return new ComponentProviderNode( $componentName, $arguments );
+        return new ComponentProviderNode( $properties->name, $arguments );
+    }
+
+    public function getPasses() : array
+    {
+        return [slug( $this::class ) => $this->proccessTemplatePass( ... )];
+    }
+
+    private function proccessTemplatePass( TemplateNode $templateNode ) : void
+    {
+        ( new NodeTraverser() )->traverse(
+            node  : $templateNode,
+            enter : $this->traverseTemplate( ... ),
+        );
+    }
+
+    private function traverseTemplate( Node $node ) : Node|int
+    {
+        // Skip expression nodes, as a component cannot exist there
+        if ( $node instanceof ExpressionNode ) {
+            return NodeTraverser::CONTINUE;
+        }
+
+        // Only parse ElementNodes
+        if ( ! $node instanceof ElementNode ) {
+            return $node;
+        }
+
+        $componentName = $this->matchTag( $node );
+
+        if ( ! $componentName ) {
+            return $node;
+        }
+
+        $properties = $this->factory->getComponentProperties( $componentName );
+
+        return $this->parse( $node, $properties );
     }
 
     /**
@@ -60,8 +102,6 @@ final class ViewComponentExtension extends CompilerExtension
      */
     private function matchTag( ElementNode $node ) : false|string
     {
-        $this->matchTags ??= $this->factory->getTags();
-
         $tag = $node->name;
 
         if ( $separator = \strpos( $tag, ':' ) ) {

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Core\View\ComponentFactory;
 
 use Core\Interface\DataObject;
-use Core\View\Template\Component;
+use Core\View\Component;
 use Stringable;
 
 /**

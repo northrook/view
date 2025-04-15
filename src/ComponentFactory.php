@@ -10,7 +10,6 @@ use Core\View\ComponentFactory\{
     Properties,
 };
 use Core\View\Template\{
-    Component,
     Engine,
 };
 use Core\Profiler\{
@@ -65,7 +64,7 @@ class ComponentFactory implements LazyService, Profilable, LoggerAwareInterface
      * @param string               $component
      * @param array<string, mixed> $properties
      * @param array<string, mixed> $attributes
-     * @param array                $actions
+     * @param array<string, mixed> $actions
      * @param array<string, mixed> $content
      *
      * @return Component

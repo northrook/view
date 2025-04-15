@@ -1,8 +1,9 @@
 <?php
 
-namespace Core\View\Template;
+namespace Core\View;
 
 use Core\Profiler\ClerkProfiler;
+use Core\View\Template\{Engine, ViewComponentExtension};
 use Core\View\ComponentFactory\{Properties, ViewComponent};
 use Core\View\Element\Attributes;
 use Core\View\Template\Compiler\{NodeAttributes, NodeHelpers};
@@ -42,17 +43,6 @@ abstract class Component implements Stringable
 
     public readonly Attributes $attributes;
 
-    final public function __toString() : string
-    {
-        $this->clerkProfiler?->stop( "{$this->name}.{$this->uniqueID}" );
-        return $this->getString();
-    }
-
-    public function getString() : string
-    {
-        return $this->getTemplateString();
-    }
-
     final public function setDependencies(
         ?Engine                      $engine,
         null|Stopwatch|ClerkProfiler $profiler,
@@ -64,6 +54,19 @@ abstract class Component implements Stringable
 
         return $this;
     }
+
+    final public function __toString() : string
+    {
+        $this->clerkProfiler?->stop( "{$this->name}.{$this->uniqueID}" );
+        return $this->getString();
+    }
+
+    public function getString() : string
+    {
+        return $this->getTemplateString();
+    }
+
+    protected function onCreation( ?string &$content ) : void {}
 
     /**
      * @param array<string, mixed> $properties
@@ -134,8 +137,6 @@ abstract class Component implements Stringable
         return $this;
     }
 
-    protected function onCreation( ?string &$content ) : void {}
-
     final public static function getComponentName() : string
     {
         $name = self::NAME ?? self::getViewComponentAttribute()->name;
@@ -185,14 +186,17 @@ abstract class Component implements Stringable
     {
         $this->templateFilename ??= $this::getComponentName();
 
-        $filename = str_end( $this->templateFilename, '.latte' );
+        $filename  = str_end( $this->templateFilename, '.latte' );
+        $directory = self::TEMPLATE_DIRECTORY ?? ( new ReflectionClass( static::class ) )->getFileName();
 
-        $path = normalize_path(
-            self::TEMPLATE_DIRECTORY ?? ( new ReflectionClass( static::class ) )->getFileName(),
-        );
+        if ( ! $directory ) {
+            throw new LogicException( 'Template directory is not defined for '.static::class.'.' );
+        }
+
+        $path = normalize_path( $directory );
 
         if ( \str_ends_with( $path, '.php' ) ) {
-            $path = \strrchr( $path, DIR_SEP, true );
+            $path = \strrchr( $path, DIR_SEP, true ) ?: $path;
         }
 
         if ( \file_exists( "{$path}/{$filename}" ) ) {
@@ -260,6 +264,12 @@ abstract class Component implements Stringable
         return \hash( 'xxh32', $set );
     }
 
+    /**
+     * @param ElementNode $from
+     * @param Properties  $componentProperties
+     *
+     * @return array<string,mixed>
+     */
     public function getArguments(
         ElementNode $from,
         Properties  $componentProperties,
@@ -281,7 +291,6 @@ abstract class Component implements Stringable
             $value = $tagged[$position] ?? null;
             $value = match ( true ) {
                 \is_numeric( $value ) => (int) $value,
-                \is_bool( $value )    => (bool) $value,
                 default               => $value,
             };
 

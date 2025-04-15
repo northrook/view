@@ -7,7 +7,7 @@ namespace Core\View\ComponentFactory;
 use Attribute, Override;
 use Core\Symfony\Console\Output;
 use Core\Symfony\DependencyInjection\Autodiscover;
-use Core\View\Template\Component;
+use Core\View\Component;
 use Northrook\Logger\Log;
 use Support\Reflect;
 use LogicException;
@@ -114,7 +114,7 @@ final class ViewComponent extends Autodiscover
     }
 
     /**
-     * @return array{name: string, class: class-string<Component>, static: bool, tags: string[], tagged: array<string, array<int, null|string>>}
+     * @return array{name: string, class: class-string<\Core\View\Component>, static: bool, tags: string[], tagged: array<string, array<int, null|string>>}
      */
     public function getProperties() : array
     {

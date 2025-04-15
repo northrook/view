@@ -14,7 +14,10 @@ use function Support\slug;
 
 abstract class CompilerExtension extends Extension
 {
-    abstract protected function conditions( ElementNode $node ) : bool;
+    protected function conditions( ElementNode $node ) : bool
+    {
+        return true;
+    }
 
     abstract protected function node( ElementNode $node ) : Node;
 
