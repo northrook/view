@@ -65,7 +65,7 @@ class ComponentFactory implements LazyService, Profilable, LoggerAwareInterface
      * @param array<string, mixed> $properties
      * @param array<string, mixed> $attributes
      * @param array<string, mixed> $actions
-     * @param array<string, mixed> $content
+     * @param ?string              $content
      *
      * @return Component
      */
