@@ -6,7 +6,7 @@ use Core\Profiler\ClerkProfiler;
 use Core\View\Template\{Engine, ViewComponentExtension};
 use Core\View\ComponentFactory\{Properties, ViewComponent};
 use Core\View\Element\Attributes;
-use Core\View\Template\Compiler\{NodeAttributes, NodeHelpers};
+use Core\View\Template\Compiler\NodeAttributes;
 use Core\View\Template\Compiler\Nodes\Html\ElementNode;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
@@ -285,6 +285,10 @@ abstract class Component implements Stringable
         $tagged = \explode( ':', $from->name );
         $tag    = $tagged[0] ?? null;
 
+        if ( \property_exists( $this, 'tag' ) ) {
+            $this->tag = $tag;
+        }
+
         $arguments['properties']['tag'] = $tag;
 
         foreach ( $componentProperties->tagged[$tag] ?? [] as $position => $property ) {
@@ -320,11 +324,13 @@ abstract class Component implements Stringable
         $content = [];
 
         foreach ( $from->content ?? [] as $contentNode ) {
-            $content[] = NodeHelpers::toText( $contentNode );
+            $content[] = $contentNode;
+            // $content[] = NodeHelpers::toText( $contentNode );
             // dump( $contentNode );
         }
 
-        $arguments['content'] = \implode( '', $content );
+        $arguments['content'] = $content;
+        // $arguments['content'] = \implode( '', $content );
 
         $this->prepareArguments( ...$arguments );
 
@@ -348,9 +354,9 @@ abstract class Component implements Stringable
      * @return void
      */
     protected function prepareArguments(
-        array &   $properties,
-        array &   $attributes,
-        array &   $actions,
-        ?string & $content,
+        array & $properties,
+        array & $attributes,
+        array & $actions,
+        array & $content,
     ) : void {}
 }

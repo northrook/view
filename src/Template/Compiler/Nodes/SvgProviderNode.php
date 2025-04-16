@@ -11,6 +11,7 @@ use Core\View\Template\Compiler\{
     PrintContext,
     Tag
 };
+use const Support\AUTO;
 
 /**
  * Renders a raw `<svg $get..>` element from the global {@see IconProviderInterface}.
@@ -43,8 +44,9 @@ final class SvgProviderNode extends StatementNode
         return new self( $tag );
     }
 
-    public function print( PrintContext $context ) : string
+    public function print( ?PrintContext $context = AUTO ) : string
     {
+        $context ??= new PrintContext();
         return $context->format(
             'echo $this->global->icon->getSvg( %args );',
             $this->arguments,
