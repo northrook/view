@@ -3,6 +3,7 @@
 namespace Core\View;
 
 use Core\Profiler\ClerkProfiler;
+use Core\Symfony\DependencyInjection\SettingsAccessor;
 use Core\View\Template\{Engine, ViewComponentExtension};
 use Core\View\ComponentFactory\{Properties, ViewComponent};
 use Core\View\Element\Attributes;
@@ -24,6 +25,8 @@ use function Support\{match_property_type, normalize_path, slug, str_end};
  */
 abstract class Component implements Stringable
 {
+    use SettingsAccessor;
+
     /** @var ?string Manually define a name for this component */
     protected const ?string NAME = null;
 
