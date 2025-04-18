@@ -20,16 +20,20 @@ use const Support\AUTO;
  */
 final class IconProviderNode extends StatementNode
 {
+    protected readonly string $action;
+
     public ArrayNode $arguments;
 
     /**
-     * @param Tag $tag
+     * @param Tag    $tag
+     * @param string $action
      *
      * @throws CompileException
      */
     public function __construct( Tag $tag )
     {
         $tag->outputMode = $tag::OutputRemoveIndentation;
+        $this->action    = $tag->name === 'icon' ? 'get' : $tag->name;
         $this->arguments = $tag->parser->parseArguments();
     }
 
@@ -47,8 +51,16 @@ final class IconProviderNode extends StatementNode
     public function print( ?PrintContext $context = AUTO ) : string
     {
         $context ??= new PrintContext();
+
+        if ( $context->raw ) {
+            return $context->format(
+                "'. \$this->global->icon->{$this->action}( %args ) . '",
+                $this->arguments,
+            );
+        }
+
         return $context->format(
-            'echo $this->global->icon->getElement( %args );',
+            "echo \$this->global->icon->{$this->action}( %args );",
             $this->arguments,
         );
     }

@@ -69,7 +69,7 @@ abstract class Component implements Stringable
         return $this->getTemplateString();
     }
 
-    protected function onCreation( ?string &$content ) : void {}
+    protected function onCreation( null|string|array &$content ) : void {}
 
     /**
      * @param array<string, mixed> $properties
@@ -81,11 +81,11 @@ abstract class Component implements Stringable
      * @return $this
      */
     final public function create(
-        array   $properties = [],
-        array   $attributes = [],
-        array   $actions = [],
-        ?string $content = null,
-        ?string $uniqueId = null,
+        array             $properties = [],
+        array             $attributes = [],
+        array             $actions = [],
+        null|string|array $content = null,
+        ?string           $uniqueId = null,
     ) : self {
         // dump( get_defined_vars() );
         $this->name     = $this::getComponentName();
@@ -269,11 +269,41 @@ abstract class Component implements Stringable
 
     /**
      * @param ElementNode $from
-     * @param Properties  $componentProperties
+     * @param Properties  $properties
      *
      * @return array<string,mixed>
      */
-    public function getArguments(
+    final public function getNodeArguments(
+        ElementNode $from,
+        Properties  $properties,
+    ) : array {
+        $arguments = $this->resolveNodeArguments( $from, $properties );
+        $this->prepareNodeArguments( $from, ...$arguments );
+        return \array_filter( $arguments );
+    }
+
+    /**
+     * @param ElementNode $from
+     * @param Properties  $properties
+     *
+     * @return array<string,mixed>
+     */
+    final public function getStaticArguments(
+        ElementNode $from,
+        Properties  $properties,
+    ) : array {
+        return $this->prepareStaticArguments(
+            $from,
+            ...$this->resolveNodeArguments( $from, $properties ),
+        );
+    }
+
+    /**@param ElementNode  $from
+     * @param Properties  $componentProperties
+     *
+     * @return array{properties: array<string,mixed>, attributes: array<string,mixed>, actions: callable[]|string[], content: Node[]}
+     */
+    private function resolveNodeArguments(
         ElementNode $from,
         Properties  $componentProperties,
     ) : array {
@@ -327,36 +357,18 @@ abstract class Component implements Stringable
 
         foreach ( $from->content ?? [] as $contentNode ) {
             $content[] = $contentNode;
-            // $content[] = NodeHelpers::toText( $contentNode );
-            // dump( $contentNode );
         }
 
-        $this->prepareArguments(
-            $properties,
-            $attributes,
-            $actions,
-            $content,
-        );
-
-        $arguments = [
+        return [
             'properties' => $properties,
             'attributes' => $attributes,
             'actions'    => $actions,
             'content'    => $content,
         ];
-
-        // echo '<xmp>';
-        // print_r( $arguments );
-        // echo '</xmp>';
-        //
-        // dd(
-        //     $arguments,
-        //     \array_values( \array_filter( $arguments ) ),
-        // );
-        return \array_filter( $arguments );
     }
 
     /**
+     * @param ElementNode                           $parent
      * @param array<string, null|scalar>            $properties
      * @param array<string, null|scalar>            $attributes
      * @param callable-string[]|callable[]|string[] $actions
@@ -364,10 +376,32 @@ abstract class Component implements Stringable
      *
      * @return void
      */
-    protected function prepareArguments(
-        array & $properties,
-        array & $attributes,
-        array & $actions,
-        array & $content,
+    protected function prepareNodeArguments(
+        ElementNode $parent,
+        array &       $properties,
+        array &       $attributes,
+        array &       $actions,
+        array &       $content,
     ) : void {}
+
+    /**
+     * @param ElementNode                           $parent
+     * @param array<string, null|scalar>            $properties
+     * @param array<string, null|scalar>            $attributes
+     * @param callable-string[]|callable[]|string[] $actions
+     * @param Node[]                                $content
+     *
+     * @return array
+     */
+    protected function prepareStaticArguments(
+        ElementNode $parent,
+        array       $properties,
+        array       $attributes,
+        array       $actions,
+        array       $content,
+    ) : array {
+        throw new BadMethodCallException(
+                __METHOD__ . ' must be overwritten by the extending Component.',
+        );
+    }
 }

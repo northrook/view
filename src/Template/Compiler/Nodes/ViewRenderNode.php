@@ -10,13 +10,13 @@ final class ViewRenderNode extends StatementNode
 {
     /**
      * @param array<string, mixed> $arguments
-     * @param string               $provider
      * @param string               $action
+     * @param string               $provider
      */
     public function __construct(
         protected array           $arguments = [],
-        protected readonly string $provider = ComponentFactory::PROPERTY,
         protected readonly string $action = 'render',
+        protected readonly string $provider = ComponentFactory::PROPERTY,
     ) {}
 
     /**

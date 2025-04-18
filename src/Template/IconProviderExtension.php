@@ -21,7 +21,7 @@ final class IconProviderExtension extends CompilerExtension
     {
         return [
             'icon' => [IconProviderNode::class, 'create'],
-            'svg'  => [SvgProviderNode::class, 'create'],
+            'svg'  => [IconProviderNode::class, 'create'],
         ];
     }
 

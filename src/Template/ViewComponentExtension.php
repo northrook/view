@@ -36,10 +36,12 @@ final class ViewComponentExtension extends Extension
         }
 
         $component = $this->factory->getComponent( $properties->name );
-        $arguments = $component->getArguments( $node, $properties );
 
         if ( $properties->static ) {
-            dump( $properties->name );
+            return new ViewRenderNode(
+                $component->getStaticArguments( $node, $properties ),
+                action : 'element',
+            );
         }
 
         /**
@@ -53,7 +55,12 @@ final class ViewComponentExtension extends Extension
          * );
          * ```
          */
-        return new ViewRenderNode( ['component' => $properties->name, ...$arguments] );
+        return new ViewRenderNode(
+            [
+                'component' => $properties->name,
+                ...$component->getNodeArguments( $node, $properties ),
+            ],
+        );
     }
 
     public function getPasses() : array
