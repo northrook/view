@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace Core\View;
 
 use Core\Interface\{ActionInterface, View};
+use Core\View\Exception\RenderException;
 use Core\View\Template\Engine;
 use InvalidArgumentException;
 use Symfony\Component\DependencyInjection\ServiceLocator;
+use Throwable;
 
 class ViewFactory implements ActionInterface
 {
@@ -47,6 +49,38 @@ class ViewFactory implements ActionInterface
             throw new InvalidArgumentException( 'Cannot render non-view objects.' );
         }
         return new $render();
+    }
+
+    /**
+     * This could be used in a `Controller::action(..)` to render any View on-demand.
+     *
+     * Useful when handling Editor Syntax in a Factory as well.
+     *
+     * - Each View will have a Template Engine handling rendering.
+     * - Output will be cached.
+     *
+     * @template Render
+     *
+     * @param class-string<Render> $render
+     * @param mixed                ...$arguments
+     *
+     * @return Render
+     */
+    public function element( string $render, mixed ...$arguments ) : mixed
+    {
+        try {
+            if ( ! \is_subclass_of( $render, Element::class ) ) {
+                throw new InvalidArgumentException( 'Cannot render non-view objects.' );
+            }
+            // @phpstan-ignore-next-line
+            return new $render( ...$arguments );
+        }
+        catch ( Throwable $exception ) {
+            throw new RenderException(
+                $render,
+                previous : $exception,
+            );
+        }
     }
 
     // final public function render( string $view ) : View {}

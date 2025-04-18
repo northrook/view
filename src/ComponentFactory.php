@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Core\View;
 
+use Throwable;
 use Core\View\ComponentFactory\{
     ViewComponent,
     ComponentBag,
@@ -22,7 +23,7 @@ use Psr\Log\{
     LoggerAwareInterface,
     LoggerAwareTrait,
 };
-use Core\View\Exception\ComponentNotFoundException;
+use Core\View\Exception\{ComponentNotFoundException, RenderException};
 use Symfony\Component\Stopwatch\Stopwatch;
 use InvalidArgumentException;
 use function Support\str_start;
@@ -96,6 +97,33 @@ class ComponentFactory implements LazyService, Profilable, LoggerAwareInterface
 
         $profiler?->stop();
         return $component;
+    }
+
+    /**
+     * @template Render of Element
+     *
+     * @param class-string<Render> $render
+     * @param mixed                ...$arguments
+     *
+     * @return Render
+     */
+    final public function element(
+        string   $render,
+        mixed ...$arguments,
+    ) : mixed {
+        try {
+            if ( ! \is_subclass_of( $render, Element::class ) ) {
+                throw new InvalidArgumentException( 'Cannot render non-view objects.' );
+            }
+            // @phpstan-ignore-next-line
+            return new $render( ...$arguments );
+        }
+        catch ( Throwable $exception ) {
+            throw new RenderException(
+                $render,
+                previous : $exception,
+            );
+        }
     }
 
     /**
