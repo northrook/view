@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace Core\View\Template;
 
-use Core\View\Template\Compiler\{CompilerExtension, Node, Nodes\IconProviderNode, Nodes\SvgProviderNode};
 use Core\View\IconProviderService;
+use Core\View\Template\Compiler\{CompilerExtension, Node};
 use Core\View\Template\Compiler\Nodes\Html\ElementNode;
+use Core\View\Template\Compiler\Nodes\IconProviderNode;
 
 final class IconProviderExtension extends CompilerExtension
 {
