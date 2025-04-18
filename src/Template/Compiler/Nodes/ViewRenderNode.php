@@ -6,15 +6,17 @@ use Core\View\ComponentFactory;
 use Core\View\Template\Compiler\{Node, PrintContext};
 use Support\PhpGenerator\Argument;
 
-final class ComponentProviderNode extends StatementNode
+final class ViewRenderNode extends StatementNode
 {
     /**
-     * @param string               $name
      * @param array<string, mixed> $arguments
+     * @param string               $provider
+     * @param string               $action
      */
     public function __construct(
-        public readonly string $name,
-        protected array        $arguments = [],
+        protected array           $arguments = [],
+        protected readonly string $provider = ComponentFactory::PROPERTY,
+        protected readonly string $action = 'render',
     ) {}
 
     /**
@@ -22,15 +24,7 @@ final class ComponentProviderNode extends StatementNode
      */
     private function arguments() : string
     {
-        /** @var array<string, string> $array */
-        $array = [
-            'component' => $this->name,
-            ...$this->arguments,
-        ];
-        $arguments       = [];
-        $longestArgument = 0;
-
-        foreach ( $array as $argument => $value ) {
+        foreach ( $this->arguments as $argument => $value ) {
             if ( $argument === 'content' ) {
                 $content = [];
 
@@ -39,14 +33,18 @@ final class ComponentProviderNode extends StatementNode
                     $content[] = $node->print( new PrintContext( raw : true ) );
                 }
 
-                $array[$argument] = "'".\implode( '', $content )."'";
+                $this->arguments[$argument] = "'".\implode( '', $content )."'";
             }
             else {
-                $array[$argument] = Argument::export( $value );
+                $this->arguments[$argument] = Argument::export( $value );
             }
         }
 
-        foreach ( $array as $argument => $properties ) {
+        $arguments       = [];
+        $longestArgument = 0;
+
+        foreach ( $this->arguments as $argument => $properties ) {
+            \assert( \is_string( $properties ) );
             $argument    = \str_pad( $argument, $longestArgument );
             $arguments[] = TAB."{$argument} : {$properties},";
         }
@@ -56,9 +54,7 @@ final class ComponentProviderNode extends StatementNode
 
     public function print( ?PrintContext $context ) : string
     {
-        $property = ComponentFactory::PROPERTY;
-
-        $view = "echo \$this->global->{$property}->render(\n";
+        $view = "echo \$this->global->{$this->provider}->{$this->action}(\n";
         $view .= $this->arguments();
         $view .= "\n);\n";
         return $view;

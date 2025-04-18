@@ -4,7 +4,7 @@ namespace Core\View;
 
 use Core\Profiler\ClerkProfiler;
 use Core\Symfony\DependencyInjection\SettingsAccessor;
-use Core\View\Template\{Engine, ViewComponentExtension};
+use Core\View\Template\{Compiler\Node, Engine, ViewComponentExtension};
 use Core\View\ComponentFactory\{Properties, ViewComponent};
 use Core\View\Element\Attributes;
 use Core\View\Template\Compiler\NodeAttributes;
@@ -277,13 +277,6 @@ abstract class Component implements Stringable
         ElementNode $from,
         Properties  $componentProperties,
     ) : array {
-        $arguments = [
-            'properties' => [],
-            'attributes' => ( new NodeAttributes( $from ) )->getArray(),
-            'actions'    => [],
-            'content'    => null,
-        ];
-
         /** @var array<int, string> $tagged */
         $tagged = \explode( ':', $from->name );
         $tag    = $tagged[0] ?? null;
@@ -292,7 +285,7 @@ abstract class Component implements Stringable
             $this->tag = $tag;
         }
 
-        $arguments['properties']['tag'] = $tag;
+        $properties['tag'] = $tag;
 
         foreach ( $componentProperties->tagged[$tag] ?? [] as $position => $property ) {
             $value = $tagged[$position] ?? null;
@@ -321,9 +314,15 @@ abstract class Component implements Stringable
                 );
             }
 
-            $arguments['properties'][$property] = $value;
+            $properties[$property] = $value;
         }
 
+        $attributes = ( new NodeAttributes( $from ) )->getArray();
+
+        /** @var callable-string[]|callable[]|string[] $actions */
+        $actions = [];
+
+        /** @var Node[] $content */
         $content = [];
 
         foreach ( $from->content ?? [] as $contentNode ) {
@@ -332,10 +331,19 @@ abstract class Component implements Stringable
             // dump( $contentNode );
         }
 
-        $arguments['content'] = $content;
-        // $arguments['content'] = \implode( '', $content );
+        $this->prepareArguments(
+            $properties,
+            $attributes,
+            $actions,
+            $content,
+        );
 
-        $this->prepareArguments( ...$arguments );
+        $arguments = [
+            'properties' => $properties,
+            'attributes' => $attributes,
+            'actions'    => $actions,
+            'content'    => $content,
+        ];
 
         // echo '<xmp>';
         // print_r( $arguments );
@@ -352,7 +360,7 @@ abstract class Component implements Stringable
      * @param array<string, null|scalar>            $properties
      * @param array<string, null|scalar>            $attributes
      * @param callable-string[]|callable[]|string[] $actions
-     * @param ?string                               $content
+     * @param Node[]                                $content
      *
      * @return void
      */

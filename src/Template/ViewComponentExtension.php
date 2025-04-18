@@ -3,7 +3,7 @@
 namespace Core\View\Template;
 
 use Core\View\{ComponentFactory\Properties,
-    Template\Compiler\Nodes\ComponentProviderNode,
+    Template\Compiler\Nodes\ViewRenderNode,
     ComponentFactory,
     Template\Compiler\Nodes\Php\ExpressionNode,
     Template\Compiler\Nodes\TemplateNode,
@@ -42,21 +42,18 @@ final class ViewComponentExtension extends Extension
             dump( $properties->name );
         }
 
-        // .. return the ComponentProviderNode from $component->getNode
-        // :  allow for returning raw HTML (as stand-in for [static] elements like Code
-
         /**
-         * Replace matched {@see ElementNode} with {@see ComponentProviderNode}.
+         * Replace matched {@see ElementNode} with {@see ViewRenderNode}.
          *
          * Components will be rendered at runtime using:
          * ```
          * $this->global->view->render(
          *   component : 'component.name',
-         *   arguments : [ 'attributes' => ..., 'content' => ... ],
+         *   arguments: [ 'attributes' => ..., 'content' => ... ],
          * );
          * ```
          */
-        return new ComponentProviderNode( $properties->name, $arguments );
+        return new ViewRenderNode( ['component' => $properties->name, ...$arguments] );
     }
 
     public function getPasses() : array
