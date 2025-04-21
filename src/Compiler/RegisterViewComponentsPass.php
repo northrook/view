@@ -97,6 +97,7 @@ final class RegisterViewComponentsPass extends CompilerPass
         $serviceLocatorArguments = [];
         $componentProperties     = [];
         $componentTags           = [];
+        $componentDirectories    = [];
 
         foreach ( $this->taggedViewComponents() as $serviceId ) {
             //
@@ -127,7 +128,11 @@ final class RegisterViewComponentsPass extends CompilerPass
 
             $componentTags = \array_merge( $componentTags, $properties['tags'] );
 
-            $componentProperties[$serviceId]     = $viewComponent->getProperties();
+            $componentProperties[$serviceId] = $viewComponent->getProperties();
+            $componentDirectory              = $componentProperties['directory'] ?? null;
+            if ( $componentDirectory ) {
+                $componentDirectories[$componentDirectory] ??= $componentDirectory;
+            }
             $serviceLocatorArguments[$serviceId] = new Reference( $serviceId );
         }
 
@@ -138,6 +143,10 @@ final class RegisterViewComponentsPass extends CompilerPass
 
         $this->factoryDefinition->replaceArgument( '$components', $componentBag );
         $this->factoryDefinition->replaceArgument( '$tags', $componentTags );
+
+        foreach ( $componentDirectories as $directory ) {
+            $this->factoryDefinition->addMethodCall( 'addTemplateDirectory', [$directory] );
+        }
 
         $meta = new PhpStormMeta( $this->projectDirectory );
 

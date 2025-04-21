@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Core\View;
 
+use Core\View\Component\Properties;
 use Throwable;
 use Core\View\ComponentFactory\{
     ViewComponent,
     ComponentBag,
-    Properties,
 };
 use Core\View\Template\{
     Engine,
@@ -63,21 +63,18 @@ class ComponentFactory implements LazyService, Profilable, LoggerAwareInterface
 
     /**
      * @param string               $component
-     * @param array<string, mixed> $properties
-     * @param array<string, mixed> $attributes
-     * @param array<string, mixed> $actions
-     * @param ?string              $content
+     * @param array<string, mixed> $arguments
      *
      * @return Component
      */
     final public function render(
-        string  $component,
-        array   $properties = [],
-        array   $attributes = [],
-        array   $actions = [],
-        ?string $content = null,
+        string $component,
+        array  $arguments = [],
     ) : Component {
         $profiler = $this->profiler?->event( $component );
+
+        // TODO : Retrieve static uniqueId if available
+        $uniqueId = null;
 
         $component = $this->getComponent( $component );
         $component
@@ -86,14 +83,9 @@ class ComponentFactory implements LazyService, Profilable, LoggerAwareInterface
                 $this->profiler,
                 $this->logger,
             )
-            ->create(
-                $properties,
-                $attributes,
-                $actions,
-                $content,
-            );
+            ->create( $arguments, $uniqueId );
 
-        $this->instantiated[$component->name][] = $component->uniqueID;
+        $this->instantiated[$component->name][] = $component->uniqueId;
 
         $profiler?->stop();
         return $component;
@@ -175,7 +167,7 @@ class ComponentFactory implements LazyService, Profilable, LoggerAwareInterface
             && \class_exists( $from )
             && \is_subclass_of( $from, Component::class )
         ) {
-            return $from::getViewComponentAttribute()->serviceID;
+            return ViewComponent::from( $from )->serviceID;
         }
 
         $from = str_start( $from, ViewComponent::PREFIX );

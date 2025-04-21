@@ -9,8 +9,16 @@ use Core\Symfony\Console\Output;
 use Core\Symfony\DependencyInjection\Autodiscover;
 use Core\View\Component;
 use Northrook\Logger\Log;
+use ReflectionException;
 use Support\Reflect;
 use LogicException;
+use ReflectionClass;
+use InvalidArgumentException;
+use Throwable;
+use ValueError;
+use ReflectionAttribute;
+use RuntimeException;
+use function Support\normalize_path;
 
 /**
  * Classing annotated with {@see Component} will be autoconfigured as a `service`.
@@ -26,6 +34,9 @@ final class ViewComponent extends Autodiscover
 
     public const string LOCATOR_ID = 'view.component_locator';
 
+    /** @var array<string,ViewComponent> */
+    private static array $instances = [];
+
     /** @var class-string<Component> */
     public readonly string $className;
 
@@ -33,6 +44,8 @@ final class ViewComponent extends Autodiscover
     public readonly array $nodeTags;
 
     public readonly string $name;
+
+    public readonly string $directory;
 
     /**
      * Configure how this {@see AbstractComponent} is handled.
@@ -48,13 +61,11 @@ final class ViewComponent extends Autodiscover
      * but static components will render into the template cache as HTML.
      *
      * @param string[] $tag       [optional]
-     * @param bool     $static    [false]
      * @param ?string  $name
      * @param ?string  $serviceId
      */
     public function __construct(
         string|array $tag = [],
-        public bool  $static = false,
         ?string      $name = null,
         ?string      $serviceId = null,
     ) {
@@ -74,6 +85,47 @@ final class ViewComponent extends Autodiscover
             public    : false,
             autowire  : true,
         );
+    }
+
+    /**
+     * @return ViewComponent[]
+     */
+    public static function getInstances() : array
+    {
+        return self::$instances;
+    }
+
+    /**
+     * @param class-string<Component> $component
+     *
+     * @return self
+     */
+    public static function from( string $component ) : self
+    {
+        if ( \array_key_exists( $component, self::$instances ) ) {
+            return self::$instances[$component];
+        }
+
+        try {
+            $attribute = ( new ReflectionClass( $component ) )
+                ->getAttributes(
+                    self::class,
+                    ReflectionAttribute::IS_INSTANCEOF,
+                );
+        }
+        catch ( ReflectionException $exception ) {
+            throw new RuntimeException(
+                message  : "'{$component}' is missing the required ".self::class.' attribute.',
+                previous : $exception,
+            );
+        }
+
+        /** @var static $self */
+        $self = $attribute[0]->newInstance();
+        $self->setClassName( $component );
+        $self->directory = $self->getDirectory();
+
+        return self::$instances[$component] ??= $self;
     }
 
     #[Override]
@@ -113,17 +165,31 @@ final class ViewComponent extends Autodiscover
         $this->nodeTags = \array_values( $tags );
     }
 
+    private function getDirectory() : string
+    {
+        try {
+            $fileName = ( new ReflectionClass( $this->className ) )->getFileName() ?: throw new ValueError();
+            return normalize_path( \pathinfo( $fileName, PATHINFO_DIRNAME ) );
+        }
+        catch ( Throwable $exception ) {
+            throw new InvalidArgumentException(
+                message  : "Could not derive directory path from '{$this->className}'.\n {$exception->getMessage()}.",
+                previous : $exception,
+            );
+        }
+    }
+
     /**
-     * @return array{name: string, class: class-string<\Core\View\Component>, static: bool, tags: string[], tagged: array<string, array<int, null|string>>}
+     * @return array{name: string, class: class-string<Component>, directory: string, tags: string[], tagged: array<string, array<int, null|string>>}
      */
     public function getProperties() : array
     {
         return [
-            'name'   => $this->name,
-            'class'  => $this->className,
-            'static' => $this->static,
-            'tags'   => $this->componentNodeTags(),
-            'tagged' => $this->taggedNodeTags(),
+            'name'      => $this->name,
+            'class'     => $this->className,
+            'directory' => $this->directory,
+            'tags'      => $this->componentNodeTags(),
+            'tagged'    => $this->taggedNodeTags(),
         ];
     }
 

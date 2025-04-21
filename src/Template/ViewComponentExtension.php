@@ -2,7 +2,7 @@
 
 namespace Core\View\Template;
 
-use Core\View\{ComponentFactory\Properties,
+use Core\View\{Component\Properties,
     Template\Compiler\Nodes\ViewRenderNode,
     ComponentFactory,
     Template\Compiler\Nodes\Php\ExpressionNode,
@@ -37,12 +37,8 @@ final class ViewComponentExtension extends Extension
 
         $component = $this->factory->getComponent( $properties->name );
 
-        if ( $properties->static ) {
-            return new ViewRenderNode(
-                $component->getStaticArguments( $node, $properties ),
-                action : 'element',
-            );
-        }
+        $arguments = $component::getNodeArguments( $node, $properties );
+        $arguments->setComponent( $component );
 
         /**
          * Replace matched {@see ElementNode} with {@see ViewRenderNode}.
@@ -55,12 +51,7 @@ final class ViewComponentExtension extends Extension
          * );
          * ```
          */
-        return new ViewRenderNode(
-            [
-                'component' => $properties->name,
-                ...$component->getNodeArguments( $node, $properties ),
-            ],
-        );
+        return new ViewRenderNode( $arguments() );
     }
 
     public function getPasses() : array

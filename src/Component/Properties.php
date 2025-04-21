@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Core\View\ComponentFactory;
+namespace Core\View\Component;
 
 use Core\Interface\DataObject;
 use Core\View\Component;
@@ -17,14 +17,14 @@ final readonly class Properties extends DataObject implements Stringable
     /**
      * @param string                   $name
      * @param class-string<Component>  $class
-     * @param bool                     $static
+     * @param string                   $directory
      * @param string[]                 $tags
      * @param array<string, ?string[]> $tagged
      */
     public function __construct(
         public string $name,
         public string $class,
-        public bool   $static,
+        public string $directory,
         public array  $tags = [],
         public array  $tagged = [],
     ) {}

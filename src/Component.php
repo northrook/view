@@ -1,28 +1,26 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Core\View;
 
 use Core\Profiler\ClerkProfiler;
 use Core\Symfony\DependencyInjection\SettingsAccessor;
-use Core\View\Template\{Compiler\Node, Engine, ViewComponentExtension};
-use Core\View\ComponentFactory\{Properties, ViewComponent};
+use Core\View\Component\Arguments;
+use Core\View\Component\Properties;
+use Core\View\ComponentFactory\{ViewComponent};
 use Core\View\Element\Attributes;
-use Core\View\Template\Compiler\NodeAttributes;
-use Core\View\Template\Compiler\Nodes\Html\ElementNode;
-use InvalidArgumentException;
+use Core\View\Exception\RenderException;
+use Core\View\Template\{Compiler\Nodes\Html\ElementNode, Engine, ViewComponentExtension};
 use Psr\Log\LoggerInterface;
 use Stringable;
-use ReflectionClass;
-use BadMethodCallException;
-use LogicException;
 use Symfony\Component\Stopwatch\Stopwatch;
-use CompileError;
-use TypeError;
-use function Support\{match_property_type, normalize_path, slug, str_end};
+use Symfony\Contracts\Service\Attribute\Required;
+use BadMethodCallException;
+use InvalidArgumentException;
+use Exception;
+use RuntimeException;
 
-/**
- * @method self __invoke()
- */
 abstract class Component implements Stringable
 {
     use SettingsAccessor;
@@ -30,22 +28,35 @@ abstract class Component implements Stringable
     /** @var ?string Manually define a name for this component */
     protected const ?string NAME = null;
 
-    protected const ?string TEMPLATE_DIRECTORY = null;
-
     private ?Engine $engine = null;
 
-    protected ?string $templateFilename = null;
-
     private ?ClerkProfiler $clerkProfiler = null;
+
+    protected string $templateDirectory = 'component';
 
     protected ?LoggerInterface $logger = null;
 
     public readonly string $name;
 
-    public readonly string $uniqueID;
+    public readonly string $uniqueId;
 
     public readonly Attributes $attributes;
 
+    /**
+     * @return $this
+     */
+    abstract public function __invoke() : self;
+
+    final public static function getNodeArguments(
+        ElementNode $from,
+        Properties  $componentProperties,
+    ) : Arguments {
+        return new Arguments( $from, $componentProperties );
+    }
+
+    public static function prepareArguments( Arguments $arguments ) : void {}
+
+    #[Required]
     final public function setDependencies(
         ?Engine                      $engine,
         null|Stopwatch|ClerkProfiler $profiler,
@@ -58,91 +69,102 @@ abstract class Component implements Stringable
         return $this;
     }
 
-    final public function __toString() : string
-    {
-        $this->clerkProfiler?->stop( "{$this->name}.{$this->uniqueID}" );
-        return $this->getString();
-    }
-
-    public function getString() : string
-    {
-        return $this->getTemplateString();
-    }
-
-    protected function onCreation( null|string|array &$content ) : void {}
-
     /**
-     * @param array<string, mixed> $properties
-     * @param array<string, mixed> $attributes
-     * @param array<string, mixed> $actions
-     * @param ?string              $content
+     * @param array<string, mixed> $arguments
      * @param null|string          $uniqueId
      *
      * @return $this
      */
     final public function create(
-        array             $properties = [],
-        array             $attributes = [],
-        array             $actions = [],
-        null|string|array $content = null,
-        ?string           $uniqueId = null,
+        array   $arguments = [],
+        ?string $uniqueId = null,
     ) : self {
-        // dump( get_defined_vars() );
-        $this->name     = $this::getComponentName();
-        $this->uniqueID = $this->componentUniqueID( $uniqueId ?? \serialize( \get_defined_vars() ) );
-        $this->clerkProfiler?->event( "{$this->name}.{$this->uniqueID}" );
+        $this
+            ->initializeComponent( $uniqueId ?? \get_defined_vars() )
+            ->clerkProfiler?->event( "{$this->name}.{$this->uniqueId}" );
 
-        $this->attributes = new Attributes( ...$attributes );
-        $this->attributes->set( 'component-id', $this->uniqueID );
-
-        foreach ( $properties as $property => $value ) {
-            if ( \property_exists( $this, $property ) ) {
-                if ( ! isset( $this->{$property} ) ) {
-                    $this->{$property} = $value;
-                }
-                else {
-                    $this->{$property} = match ( \gettype( $this->{$property} ) ) {
-                        'boolean' => (bool) $value,
-                        'integer' => (int) $value,
-                        default   => $value,
-                    };
-                }
-
-                continue;
-            }
-
-            \assert( \is_string( $value ), 'All remaining arguments should be method calls at this point.' );
-
-            $method = 'do'.\ucfirst( $value );
-
-            if ( \method_exists( $this, $method ) ) {
-                $this->{$method}();
-            }
-            else {
-                $this->logger?->error(
-                    'The {component} was provided with undefined property {property}.',
-                    ['component' => $this->name, 'property' => $property],
-                );
-            }
+        if ( isset( $arguments['__attributes'] ) ) {
+            \assert( \is_array( $arguments['__attributes'] ) );
+            $this->attributes = new Attributes( ...$arguments['__attributes'] );
+            unset( $arguments['__attributes'] );
+        }
+        else {
+            $this->attributes = new Attributes();
         }
 
-        $this->onCreation( $content );
+        $this->attributes->set( 'component-id', $this->uniqueId );
 
-        foreach ( $actions as $action ) {
-            if ( \is_string( $action ) && \method_exists( $this, $action ) ) {
-                $this->{$action}();
-            }
-            if ( \is_callable( $action ) ) {
-                \call_user_func( $action, $this );
-            }
+        return $this->__invoke( ...$arguments );
+    }
+
+    final public function __toString() : string
+    {
+        $engine   = $this->getEngine();
+        $template = $this->getTemplatePath();
+
+        \assert( $engine->getLoader() instanceof Engine\Autoloader );
+
+        $string = $engine->getLoader()->templateExists( $template )
+                ? $engine->renderToString(
+                    name              : $template,
+                    parameters        : $this,
+                    // TOOD: DEBUG
+                    preserveCacheKey  : true,
+                    suppressExtension : ViewComponentExtension::class,
+                )
+                : $this->getString();
+
+        if ( ! $string ) {
+            throw new RenderException( $template );
         }
 
+        $this->clerkProfiler?->stop( "{$this->name}.{$this->uniqueId}" );
+        return \trim( $string );
+    }
+
+    protected function getString() : false|string
+    {
+        return false;
+    }
+
+    protected function getTemplateString() : string
+    {
+        return \trim(
+            $this->getEngine()->renderToString(
+                $this->getTemplatePath(),
+                $this->getTemplateParameters(),
+                // TOOD: DEBUG
+                preserveCacheKey  : true,
+                suppressExtension : ViewComponentExtension::class,
+            ),
+        );
+    }
+
+    protected function getTemplatePath() : string
+    {
+        return $this->templateDirectory.DIR_SEP.$this->name;
+    }
+
+    /**
+     * @return array<string, mixed>|object
+     */
+    protected function getTemplateParameters() : array|object
+    {
         return $this;
+    }
+
+    final protected function getEngine() : Engine
+    {
+        if ( $this->engine === null ) {
+            $this->logger?->notice( 'Returning internal fallback Engine.' );
+        }
+
+        return $this->engine ??= new Engine( cache : false );
     }
 
     final public static function getComponentName() : string
     {
-        $name = self::NAME ?? self::getViewComponentAttribute()->name;
+        $name = static::NAME ?? ViewComponent::from( static::class )->name;
 
         if ( ! $name ) {
             throw new BadMethodCallException( static::class.' name is not defined.' );
@@ -165,243 +187,62 @@ abstract class Component implements Stringable
         return $name;
     }
 
-    final public static function getViewComponentAttribute() : ViewComponent
-    {
-        $viewComponentAttributes = ( new ReflectionClass( static::class ) )->getAttributes( ViewComponent::class );
-
-        if ( empty( $viewComponentAttributes ) ) {
-            $message = 'This Component is missing the required '.ViewComponent::class.' attribute.';
-            throw new BadMethodCallException( $message );
-        }
-
-        $viewAttribute = $viewComponentAttributes[0]->newInstance();
-        $viewAttribute->setClassName( static::class );
-
-        return $viewAttribute;
-    }
-
     /**
-     * @param ?string $filename
+     * @param array<array-key,mixed>|string $uniqueId
      *
-     * @return string
+     * @return self
      */
-    final protected function getTemplatePath( ?string $filename = null ) : string
+    private function initializeComponent( string|array $uniqueId ) : self
     {
-        $this->templateFilename ??= $this::getComponentName();
-
-        $filename  = str_end( $this->templateFilename, '.latte' );
-        $directory = self::TEMPLATE_DIRECTORY ?? ( new ReflectionClass( static::class ) )->getFileName();
-
-        if ( ! $directory ) {
-            throw new LogicException( 'Template directory is not defined for '.static::class.'.' );
-        }
-
-        $path = normalize_path( $directory );
-
-        if ( \str_ends_with( $path, '.php' ) ) {
-            $path = \strrchr( $path, DIR_SEP, true ) ?: $path;
-        }
-
-        if ( \file_exists( "{$path}/{$filename}" ) ) {
-            return "{$path}/{$filename}";
-        }
-
-        $directory = ( \strrchr( $path, DIR_SEP.'src', true ) ?: $path ).DIR_SEP.'templates';
-        $namespace = slug( \strrchr( $this::class, '\\', true ) ?: "component.{$this->name}", '.' );
-
-        if ( \file_exists( "{$directory}/component/{$filename}" ) ) {
-            $this->getEngine()->addTemplateDirectory( $directory, $namespace );
-            return "component/{$filename}";
-        }
-
-        throw new LogicException(
-            'Unable to resolve template directory for component '.static::class.'.',
-        );
-    }
-
-    final protected function getEngine() : Engine
-    {
-        return $this->engine ??= new Engine( cache : false );
-    }
-
-    protected function getTemplate() : string
-    {
-        return $this->getTemplatePath();
-    }
-
-    protected function getTemplateString() : string
-    {
-        return \trim(
-            $this->getEngine()->renderToString(
-                $this->getTemplatePath(),
-                $this->getParameters(),
-                // TOOD: DEBUG
-                preserveCacheKey  : true,
-                suppressExtension : ViewComponentExtension::class,
-            ),
-        );
-    }
-
-    /**
-     * @return array<string, mixed>|object
-     */
-    protected function getParameters() : array|object
-    {
-        return $this;
-    }
-
-    private function componentUniqueID( string $set ) : string
-    {
-        // Set a predefined hash
-        if ( \strlen( $set ) === 8 ) {
-            if ( \ctype_alnum( $set ) || \strtolower( $set ) === $set ) {
-                return $set;
-            }
-
-            $this->logger?->error(
-                'Invalid component unique ID {set}. Expected 8 characters of alphanumeric, lowercase.',
-                ['set' => $set],
+        if ( $this->engine === null ) {
+            $this->logger?->warning(
+                '{component} initialized before setDependencies has been called.',
+                ['component' => $this::class],
             );
         }
 
-        return \hash( 'xxh32', $set );
-    }
+        $this->name = $this->getComponentName();
 
-    /**
-     * @param ElementNode $from
-     * @param Properties  $properties
-     *
-     * @return array<string,mixed>
-     */
-    final public function getNodeArguments(
-        ElementNode $from,
-        Properties  $properties,
-    ) : array {
-        $arguments = $this->resolveNodeArguments( $from, $properties );
-        $this->prepareNodeArguments( $from, ...$arguments );
-        return \array_filter( $arguments );
-    }
-
-    /**
-     * @param ElementNode $from
-     * @param Properties  $properties
-     *
-     * @return array<string,mixed>
-     */
-    final public function getStaticArguments(
-        ElementNode $from,
-        Properties  $properties,
-    ) : array {
-        return $this->prepareStaticArguments(
-            $from,
-            ...$this->resolveNodeArguments( $from, $properties ),
-        );
-    }
-
-    /**@param ElementNode  $from
-     * @param Properties  $componentProperties
-     *
-     * @return array{properties: array<string,mixed>, attributes: array<string,mixed>, actions: callable[]|string[], content: Node[]}
-     */
-    private function resolveNodeArguments(
-        ElementNode $from,
-        Properties  $componentProperties,
-    ) : array {
-        /** @var array<int, string> $tagged */
-        $tagged = \explode( ':', $from->name );
-        $tag    = $tagged[0] ?? null;
-
-        if ( \property_exists( $this, 'tag' ) ) {
-            $this->tag = $tag;
-        }
-
-        $properties['tag'] = $tag;
-
-        foreach ( $componentProperties->tagged[$tag] ?? [] as $position => $property ) {
-            $value = $tagged[$position] ?? null;
-            $value = match ( true ) {
-                \is_numeric( $value ) => (int) $value,
-                default               => $value,
-            };
-
-            if ( ! \property_exists( $this, $property ) ) {
-                throw new CompileError(
-                    \sprintf(
-                        'Property "%s" does not exist in %s.',
-                        $property,
-                        $this::class,
-                    ),
-                );
+        if ( \is_array( $uniqueId ) ) {
+            try {
+                $uniqueId = \serialize( [$this::class => \spl_object_id( $this ), ...$uniqueId] );
             }
-
-            if ( ! match_property_type( $this, $property, from : $value ) ) {
-                throw new TypeError(
-                    \sprintf(
-                        'Invalid property type: "%s" does not allow %s.',
-                        $this::class."->{$property}",
-                        \gettype( $value ),
-                    ),
-                );
+            catch ( Exception $e ) {
+                throw new RuntimeException( $e->getMessage() );
             }
-
-            $properties[$property] = $value;
         }
 
-        $attributes = ( new NodeAttributes( $from ) )->getArray();
-
-        /** @var callable-string[]|callable[]|string[] $actions */
-        $actions = [];
-
-        /** @var Node[] $content */
-        $content = [];
-
-        foreach ( $from->content ?? [] as $contentNode ) {
-            $content[] = $contentNode;
+        // Set a predefined hash
+        if ( \strlen( $uniqueId ) === 8 ) {
+            \assert(
+                \ctype_alnum( $uniqueId ) && \strtolower( $uniqueId ) === $uniqueId,
+                "Invalid component unique ID '{$uniqueId}'. Expected 8 characters of alphanumeric, lowercase.",
+            );
+            $this->uniqueId = $uniqueId;
+        }
+        else {
+            $this->uniqueId = \hash( 'xxh32', $uniqueId );
         }
 
-        return [
-            'properties' => $properties,
-            'attributes' => $attributes,
-            'actions'    => $actions,
-            'content'    => $content,
-        ];
+        return $this;
     }
 
     /**
-     * @param ElementNode                           $parent
-     * @param array<string, null|scalar>            $properties
-     * @param array<string, null|scalar>            $attributes
-     * @param callable-string[]|callable[]|string[] $actions
-     * @param Node[]                                $content
+     * @param array<string, mixed> $actions
      *
-     * @return void
+     * @return self
      */
-    protected function prepareNodeArguments(
-        ElementNode $parent,
-        array &       $properties,
-        array &       $attributes,
-        array &       $actions,
-        array &       $content,
-    ) : void {}
+    private function actionCalls( array $actions ) : self
+    {
+        foreach ( $actions as $action ) {
+            if ( \is_string( $action ) && \method_exists( $this, $action ) ) {
+                $this->{$action}();
+            }
+            if ( \is_callable( $action ) ) {
+                \call_user_func( $action, $this );
+            }
+        }
 
-    /**
-     * @param ElementNode                           $parent
-     * @param array<string, null|scalar>            $properties
-     * @param array<string, null|scalar>            $attributes
-     * @param callable-string[]|callable[]|string[] $actions
-     * @param Node[]                                $content
-     *
-     * @return array
-     */
-    protected function prepareStaticArguments(
-        ElementNode $parent,
-        array       $properties,
-        array       $attributes,
-        array       $actions,
-        array       $content,
-    ) : array {
-        throw new BadMethodCallException(
-                __METHOD__ . ' must be overwritten by the extending Component.',
-        );
+        return $this;
     }
 }
