@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Core\View\ComponentFactory;
 
 use Core\View\Component;
+use Core\View\Component\Properties;
 use Core\View\Exception\ComponentNotFoundException;
 
 /**
