@@ -6,8 +6,7 @@ namespace Core\View;
 
 use Core\Profiler\ClerkProfiler;
 use Core\Symfony\DependencyInjection\SettingsAccessor;
-use Core\View\Component\Arguments;
-use Core\View\Component\Properties;
+use Core\View\Component\{Arguments, Properties};
 use Core\View\ComponentFactory\{ViewComponent};
 use Core\View\Element\Attributes;
 use Core\View\Exception\RenderException;
@@ -21,6 +20,11 @@ use InvalidArgumentException;
 use Exception;
 use RuntimeException;
 
+/**
+ * Base class for a view component.
+ *
+ * @require-method self __invoke()
+ */
 abstract class Component implements Stringable
 {
     use SettingsAccessor;
@@ -41,11 +45,6 @@ abstract class Component implements Stringable
     public readonly string $uniqueId;
 
     public readonly Attributes $attributes;
-
-    /**
-     * @return $this
-     */
-    abstract public function __invoke() : self;
 
     final public static function getNodeArguments(
         ElementNode $from,

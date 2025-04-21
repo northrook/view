@@ -1,7 +1,10 @@
+rules:
+	- Northrook\PHPStan\RequiresMethodRule
 parameters:
 	level: 9
 	paths:
 		- src
+		- index.php
 	treatPhpDocTypesAsCertain: false
 	reportUnmatchedIgnoredErrors: false
 	ignoreErrors:
