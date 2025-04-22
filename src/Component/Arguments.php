@@ -74,6 +74,13 @@ final class Arguments
         $arguments = [];
 
         foreach ( $this->componentArguments() as $argument => $default ) {
+            try {
+                $default = $default->getDefaultValue();
+            }
+            catch ( ReflectionException $e ) {
+                $default = null;
+            }
+
             $arguments[$argument] = $this->pull( $argument, $default );
         }
 
