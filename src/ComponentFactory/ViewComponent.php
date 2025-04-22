@@ -10,7 +10,6 @@ use Core\Symfony\DependencyInjection\Autodiscover;
 use Core\View\Component;
 use Northrook\Logger\Log;
 use ReflectionException;
-use Support\Reflect;
 use LogicException;
 use ReflectionClass;
 use InvalidArgumentException;
@@ -123,7 +122,7 @@ final class ViewComponent extends Autodiscover
         /** @var static $self */
         $self = $attribute[0]->newInstance();
         $self->setClassName( $component );
-        $self->directory = $self->getDirectory();
+        $self->getDirectory();
 
         return self::$instances[$component] ??= $self;
     }
@@ -167,9 +166,22 @@ final class ViewComponent extends Autodiscover
 
     private function getDirectory() : string
     {
+        if ( isset( $this->directory ) ) {
+            return $this->directory;
+        }
+
         try {
-            $fileName = ( new ReflectionClass( $this->className ) )->getFileName() ?: throw new ValueError();
-            return normalize_path( \pathinfo( $fileName, PATHINFO_DIRNAME ) );
+            $reflect   = ( new ReflectionClass( $this->className ) );
+            $fileName  = $reflect->getFileName() ?: throw new ValueError();
+            $classDir  = normalize_path( \pathinfo( $fileName, PATHINFO_DIRNAME ) );
+            $directory = $reflect->getConstant( 'TEMPLATE_DIRECTORY' ) ?? '';
+
+            if ( \str_ends_with( $classDir, 'src' ) ) {
+                $classDir = \substr( $classDir, 0, -\strlen( 'src' ) );
+            }
+
+            \assert( \is_string( $directory ) );
+            return $this->directory = normalize_path( [$classDir, $directory] );
         }
         catch ( Throwable $exception ) {
             throw new InvalidArgumentException(
@@ -187,7 +199,7 @@ final class ViewComponent extends Autodiscover
         return [
             'name'      => $this->name,
             'class'     => $this->className,
-            'directory' => $this->directory,
+            'directory' => $this->getDirectory(),
             'tags'      => $this->componentNodeTags(),
             'tagged'    => $this->taggedNodeTags(),
         ];
@@ -241,6 +253,8 @@ final class ViewComponent extends Autodiscover
     {
         $properties = [];
 
+        dump( $this->nodeTags );
+
         foreach ( $this->nodeTags as $tag ) {
             $tags = \explode( ':', $tag );
             $tag  = $tags[0];
@@ -252,22 +266,23 @@ final class ViewComponent extends Autodiscover
                     continue;
                 }
 
-                if ( \str_contains( $argument, '{' ) ) {
-                    $property = \trim( $argument, " \t\n\r\0\x0B{}" );
+                $property        = \trim( $argument, " \t\n\r\0\x0B{}" );
+                $tags[$position] = $property;
+                // if ( \str_contains( $argument, '{' ) ) {
+                //
+                //     // if ( Reflect::class( $this->className )->hasProperty( $property ) ) {
+                //     //     $tags[ $position ] = $property;
+                //     // }
+                //     // else {
+                //     //     Output::error( "Property '{$property}' not found in component '{$this->name}'" );
+                //     // }
+                //
+                //     continue;
+                // }
 
-                    if ( Reflect::class( $this->className )->hasProperty( $property ) ) {
-                        $tags[$position] = $property;
-                    }
-                    else {
-                        Output::error( "Property '{$property}' not found in component '{$this->name}'" );
-                    }
-
-                    continue;
-                }
-
-                if ( ! Reflect::class( $this->className )->hasMethod( $argument ) ) {
-                    Output::error( "Method {$this->className}::{$argument}' not found in component '{$this->name}'" );
-                }
+                // if ( !Reflect::class( $this->className )->hasMethod( $argument ) ) {
+                //     Output::error( "Method {$this->className}::{$argument}' not found in component '{$this->name}'" );
+                // }
             }
             $properties[$tag] = $tags;
         }

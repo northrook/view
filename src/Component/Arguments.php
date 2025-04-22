@@ -3,14 +3,13 @@
 namespace Core\View\Component;
 
 use CompileError;
+use Core\Exception\RequiredMethodException;
 use Core\View\Component;
-use Core\View\Component\Properties;
 use Core\View\Element\Attributes;
 use Core\View\Template\Compiler\NodeAttributes;
 use Core\View\Template\Compiler\Nodes\Html\ElementNode;
 use ReflectionClass;
-use TypeError;
-use function Support\match_property_type;
+use ReflectionParameter;
 use ReflectionException;
 
 final class Arguments
@@ -44,8 +43,6 @@ final class Arguments
         $this->node       = $node;
         $this->parent     = $node->parent;
         $this->attributes = ( new NodeAttributes( $node ) )->attributes;
-
-        $this->promoteTaggedProperties();
     }
 
     /**
@@ -55,8 +52,9 @@ final class Arguments
      */
     public function __invoke() : array
     {
+        $this->promoteTaggedProperties();
         return [
-            'component' => $this->component->name,
+            'component' => $this->component::getComponentName(),
             'arguments' => $this->getArray(),
         ];
     }
@@ -114,26 +112,26 @@ final class Arguments
     }
 
     /**
-     * @return string[]
+     * @return array<string,ReflectionParameter>
      */
     private function componentArguments() : array
     {
-        $reflect = new ReflectionClass( $this->component );
-
-        $__invoke = $reflect->getMethod( '__invoke' );
+        try {
+            $reflect  = new ReflectionClass( $this->component );
+            $__invoke = $reflect->getMethod( '__invoke' );
+        }
+        catch ( ReflectionException $exception ) {
+            throw new RequiredMethodException(
+                method   : '__invoke',
+                class    : $this->component::class,
+                previous : $exception,
+            );
+        }
 
         $arguments = [];
 
-        foreach ( $__invoke->getParameters() as $parameter ) {
-            $argument = $parameter->getName();
-            try {
-                $value = $parameter->getDefaultValue();
-            }
-            catch ( ReflectionException ) {
-                $value = null;
-            }
-
-            $arguments[$argument] = $value;
+        foreach ( $__invoke->getParameters() as $argument ) {
+            $arguments[$argument->name] = $argument;
         }
 
         return $arguments;
@@ -145,32 +143,35 @@ final class Arguments
         $tagged = \explode( ':', $this->node->name );
         $tag    = $tagged[0] ?? null;
 
-        foreach ( $this->properties->tagged[$tag] ?? [] as $position => $property ) {
+        $arguments = $this->componentArguments();
+        $promote   = $this->properties->tagged[$tag] ?? [];
+
+        foreach ( $promote as $position => $property ) {
             $value = $tagged[$position] ?? null;
             $value = match ( true ) {
                 \is_numeric( $value ) => (int) $value,
                 default               => $value,
             };
 
-            if ( ! \property_exists( $this->component, $property ) ) {
+            if ( ! \array_key_exists( $property, $arguments ) ) {
                 throw new CompileError(
                     \sprintf(
                         'Property "%s" does not exist in %s.',
                         $property,
-                        $this::class,
+                        $this->component::class,
                     ),
                 );
             }
 
-            if ( ! match_property_type( $this->component, $property, from : $value ) ) {
-                throw new TypeError(
-                    \sprintf(
-                        'Invalid property type: "%s" does not allow %s.',
-                        $this::class."->{$property}",
-                        \gettype( $value ),
-                    ),
-                );
-            }
+            // if ( !match_property_type( $this->component, $property, from : $value ) ) {
+            //     throw new TypeError(
+            //             \sprintf(
+            //                     'Invalid property type: "%s" does not allow %s.',
+            //                     $this->component::class . "->{$property}",
+            //                     \gettype( $value ),
+            //             ),
+            //     );
+            // }
 
             $this->add( $property, $value );
         }

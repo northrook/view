@@ -25,15 +25,14 @@ final class IconProviderNode extends StatementNode
     public ArrayNode $arguments;
 
     /**
-     * @param Tag    $tag
-     * @param string $action
+     * @param Tag $tag
      *
      * @throws CompileException
      */
     public function __construct( Tag $tag )
     {
         $tag->outputMode = $tag::OutputRemoveIndentation;
-        $this->action    = $tag->name === 'icon' ? 'get' : $tag->name;
+        $this->action    = 'get'.\ucfirst( $tag->name );
         $this->arguments = $tag->parser->parseArguments();
     }
 

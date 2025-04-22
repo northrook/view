@@ -32,11 +32,11 @@ abstract class Component implements Stringable
     /** @var ?string Manually define a name for this component */
     protected const ?string NAME = null;
 
+    public const string TEMPLATE_DIRECTORY = 'templates/component';
+
     private ?Engine $engine = null;
 
     private ?ClerkProfiler $clerkProfiler = null;
-
-    protected string $templateDirectory = 'component';
 
     protected ?LoggerInterface $logger = null;
 
@@ -93,6 +93,11 @@ abstract class Component implements Stringable
 
         $this->attributes->set( 'component-id', $this->uniqueId );
 
+        \assert(
+            \method_exists( $this, '__invoke' ),
+            "Required method '".$this::class."::__invoke()' does not exist.",
+        );
+
         return $this->__invoke( ...$arguments );
     }
 
@@ -141,7 +146,7 @@ abstract class Component implements Stringable
 
     protected function getTemplatePath() : string
     {
-        return $this->templateDirectory.DIR_SEP.$this->name;
+        return $this->name;
     }
 
     /**

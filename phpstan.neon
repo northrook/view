@@ -4,6 +4,7 @@ parameters:
 	level: 9
 	paths:
 		- src
+		- vendor
 		- index.php
 	treatPhpDocTypesAsCertain: false
 	reportUnmatchedIgnoredErrors: false

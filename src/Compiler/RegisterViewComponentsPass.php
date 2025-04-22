@@ -25,9 +25,13 @@ final class RegisterViewComponentsPass extends CompilerPass
 
     private readonly string $factoryID;
 
+    private readonly string $engineID;
+
     protected readonly Definition $locatorDefinition;
 
     protected readonly Definition $factoryDefinition;
+
+    protected readonly Definition $engineDefinition;
 
     /**
      * @param null|ReferenceConfigurator $engine    {@see Engine}
@@ -53,6 +57,7 @@ final class RegisterViewComponentsPass extends CompilerPass
     {
         $this->locatorID = ViewComponent::LOCATOR_ID;
         $this->factoryID = ComponentFactory::class;
+        $this->engineID  = 'core.view.engine';
 
         if ( $this->validateRequiredServices( $container ) ) {
             return;
@@ -127,12 +132,11 @@ final class RegisterViewComponentsPass extends CompilerPass
             $properties = $viewComponent->getProperties();
 
             $componentTags = \array_merge( $componentTags, $properties['tags'] );
-
-            $componentProperties[$serviceId] = $viewComponent->getProperties();
-            $componentDirectory              = $componentProperties['directory'] ?? null;
-            if ( $componentDirectory ) {
+            if ( $componentDirectory = ( $properties['directory'] ?? false ) ) {
                 $componentDirectories[$componentDirectory] ??= $componentDirectory;
             }
+
+            $componentProperties[$serviceId]     = $properties;
             $serviceLocatorArguments[$serviceId] = new Reference( $serviceId );
         }
 
@@ -145,7 +149,8 @@ final class RegisterViewComponentsPass extends CompilerPass
         $this->factoryDefinition->replaceArgument( '$tags', $componentTags );
 
         foreach ( $componentDirectories as $directory ) {
-            $this->factoryDefinition->addMethodCall( 'addTemplateDirectory', [$directory] );
+            dump( $directory );
+            $this->engineDefinition->addMethodCall( 'addTemplateDirectory', [$directory] );
         }
 
         $meta = new PhpStormMeta( $this->projectDirectory );
@@ -190,6 +195,14 @@ final class RegisterViewComponentsPass extends CompilerPass
         }
 
         $this->factoryDefinition = $container->getDefinition( $this->factoryID );
+
+        if ( ! $container->hasDefinition( $this->engineID ) ) {
+            $message = $this::class." cannot find required '{$this->engineID}' definition.";
+            $this->console->error( $message );
+            return true;
+        }
+
+        $this->engineDefinition = $container->getDefinition( $this->engineID );
 
         return false;
     }
