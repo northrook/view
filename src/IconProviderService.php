@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Core\View;
 
 use Cache\CachePoolTrait;
-use Core\Interface\{LazyService, View};
+use Core\Interface\{LazyService};
 use Core\View\Element\Attributes;
 use Countable;
 use Psr\Cache\CacheItemPoolInterface;
@@ -224,16 +224,16 @@ class IconProviderService implements LazyService, Countable, LoggerAwareInterfac
         return [$pack, $icon, $tail];
     }
 
-    final public function getElement(
+    final public function getIcon(
         string   $icon,
         mixed ...$attributes,
-    ) : ?View {
+    ) : ?Element {
         $svg = $this->getSvg( $icon );
 
         return $svg ? new Element( 'i', $svg, ...$attributes ) : null;
     }
 
-    final public function getSvg( string $icon, mixed ...$attributes ) : ?View
+    final public function getSvg( string $icon, mixed ...$attributes ) : ?Element
     {
         [$pack, $icon, $tail] = $this->resolve( $icon );
 
@@ -254,7 +254,7 @@ class IconProviderService implements LazyService, Countable, LoggerAwareInterfac
             return null;
         }
 
-        // order of frequent use - up is default
+        // In order of frequent use - up is default
         if ( \in_array( $tail, ['right', 'down', 'left', 'up'], true ) ) {
             $svg->attributes->class->add( "direction:{$tail}" );
         }
