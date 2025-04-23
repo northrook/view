@@ -62,21 +62,26 @@ class ComponentFactory implements LazyService, Profilable, LoggerAwareInterface
     }
 
     /**
-     * @param string               $component
+     * @param string               $__component
+     * @param array<string, mixed> $__attributes
      * @param array<string, mixed> $arguments
      *
      * @return Component
      */
     final public function render(
-        string $component,
-        array  $arguments = [],
+        string   $__component,
+        array    $__attributes = [],
+        mixed ...$arguments,
     ) : Component {
-        $profiler = $this->profiler?->event( $component );
+        $profiler  = $this->profiler?->event( $__component );
+        $component = $this->getComponent( $__component );
 
-        // TODO : Retrieve static uniqueId if available
         $uniqueId = null;
+        // TODO : Retrieve static uniqueId if available
+        // TODO : Optional callback filter for $arguments by uniqueId
 
-        $component = $this->getComponent( $component );
+        /** @var array<string, mixed> $arguments */
+        $arguments = ['__attributes' => $__attributes, ...$arguments];
         $component
             ->setDependencies(
                 $this->engine,
@@ -119,7 +124,7 @@ class ComponentFactory implements LazyService, Profilable, LoggerAwareInterface
     }
 
     /**
-     * Begin the Build proccess of a component.
+     * Begin the Build process of a component.
      *
      * @param class-string|string $component
      *

@@ -6,8 +6,8 @@ use CompileError;
 use Core\Exception\RequiredMethodException;
 use Core\View\Component;
 use Core\View\Element\Attributes;
-use Core\View\Template\Compiler\NodeAttributes;
-use Core\View\Template\Compiler\Nodes\Html\ElementNode;
+use Core\View\Template\Compiler\{PrintContext};
+use Core\View\Template\Compiler\Nodes\Html\{AttributeNode, ElementNode};
 use ReflectionClass;
 use ReflectionParameter;
 use ReflectionException;
@@ -42,7 +42,39 @@ final class Arguments
         $this->properties = $properties;
         $this->node       = $node;
         $this->parent     = $node->parent;
-        $this->attributes = ( new NodeAttributes( $node ) )->attributes;
+        $this->attributes = new Attributes( ...$this->nodeAttributes() );
+    }
+
+    private function nodeAttributes() : array
+    {
+        if ( ! $this->node->attributes ) {
+            return [];
+        }
+
+        $attributes = [];
+        $context    = new PrintContext( raw : true );
+
+        // TODO : Validate inline expressions: class="flex {$var ?? 'column'} px:16"
+        foreach ( $this->node->attributes as $index => $attribute ) {
+            // Skip separators
+            if ( ! $attribute instanceof AttributeNode ) {
+                continue;
+            }
+
+            $name = $attribute->name->print( $context );
+
+            if ( \str_contains( $name, ':' ) ) {
+                [$property, $value] = \explode( ':', $name, 2 );
+                $this->add( $property, $value );
+
+                continue;
+            }
+
+            $value = $attribute->value->print( $context );
+
+            $attributes[$name] = $value;
+        }
+        return $attributes;
     }
 
     /**
@@ -54,8 +86,8 @@ final class Arguments
     {
         $this->promoteTaggedProperties();
         return [
-            'component' => $this->component::getComponentName(),
-            'arguments' => $this->getArray(),
+            '__component' => $this->component::getComponentName(),
+            ...$this->getArray(),
         ];
     }
 
@@ -71,7 +103,7 @@ final class Arguments
      */
     public function getArray() : array
     {
-        $arguments = [];
+        $arguments = ['__attributes' => $this->attributes->resolveAttributes( true )];
 
         foreach ( $this->componentArguments() as $argument => $default ) {
             try {
@@ -83,8 +115,6 @@ final class Arguments
 
             $arguments[$argument] = $this->pull( $argument, $default );
         }
-
-        $arguments['__attributes'] ??= $this->attributes->resolveAttributes( true );
 
         return $arguments;
     }

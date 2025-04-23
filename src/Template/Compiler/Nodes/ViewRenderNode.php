@@ -25,7 +25,7 @@ final class ViewRenderNode extends StatementNode
     private function arguments() : string
     {
         foreach ( $this->arguments as $argument => $value ) {
-            if ( $argument === 'content' ) {
+            if ( $value instanceof FragmentNode ) {
                 $content = [];
 
                 /** @var Node[] $value */
