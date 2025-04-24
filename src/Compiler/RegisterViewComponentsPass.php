@@ -33,19 +33,24 @@ final class RegisterViewComponentsPass extends CompilerPass
 
     protected readonly Definition $engineDefinition;
 
+    protected readonly Definition $cacheDefinition;
+
     /**
      * @param null|ReferenceConfigurator $engine    {@see Engine}
      * @param null|ReferenceConfigurator $stopwatch {@see Stopwatch}
      * @param null|ReferenceConfigurator $logger    {@see LoggerInterface}
+     * @param ?ReferenceConfigurator     $cache
      */
     public function __construct(
         protected ?ReferenceConfigurator $engine = null,
         protected ?ReferenceConfigurator $stopwatch = null,
         protected ?ReferenceConfigurator $logger = null,
+        protected ?ReferenceConfigurator $cache = null,
     ) {
         $this->engine?->nullOnInvalid();
         $this->stopwatch?->nullOnInvalid();
         $this->logger?->nullOnInvalid();
+        $this->cache?->nullOnInvalid();
     }
 
     /**
@@ -126,6 +131,7 @@ final class RegisterViewComponentsPass extends CompilerPass
                     new Reference( (string) $this->engine ),
                     new Reference( (string) $this->stopwatch ),
                     new Reference( (string) $this->logger ),
+                    new Reference( (string) $this->cache ),
                 ],
             );
 
@@ -150,7 +156,7 @@ final class RegisterViewComponentsPass extends CompilerPass
 
         foreach ( $componentDirectories as $directory ) {
             dump( $directory );
-            $this->engineDefinition->addMethodCall( 'addTemplateDirectory', [$directory] );
+            $this->cacheDefinition->addMethodCall( 'addTemplateDirectory', [$directory] );
         }
 
         $meta = new PhpStormMeta( $this->projectDirectory );
@@ -202,7 +208,7 @@ final class RegisterViewComponentsPass extends CompilerPass
             return true;
         }
 
-        $this->engineDefinition = $container->getDefinition( $this->engineID );
+        $this->cacheDefinition = $container->getDefinition( $this->engineID );
 
         return false;
     }

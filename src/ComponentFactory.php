@@ -82,13 +82,7 @@ class ComponentFactory implements LazyService, Profilable, LoggerAwareInterface
 
         /** @var array<string, mixed> $arguments */
         $arguments = ['__attributes' => $__attributes, ...$arguments];
-        $component
-            ->setDependencies(
-                $this->engine,
-                $this->profiler,
-                $this->logger,
-            )
-            ->create( $arguments, $uniqueId );
+        $component->create( $arguments, $uniqueId );
 
         $this->instantiated[$component->name][] = $component->uniqueId;
 

@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Core\View;
 
+use Cache\CachePoolTrait;
 use Core\Profiler\ClerkProfiler;
 use Core\Symfony\DependencyInjection\SettingsAccessor;
 use Core\View\Component\{Arguments, Properties};
+use Psr\Cache\CacheItemPoolInterface;
 use Core\View\ComponentFactory\{ViewComponent};
 use Core\View\Element\Attributes;
 use Core\View\Exception\RenderException;
@@ -27,7 +29,7 @@ use RuntimeException;
  */
 abstract class Component implements Stringable
 {
-    use SettingsAccessor;
+    use SettingsAccessor, CachePoolTrait;
 
     /** @var ?string Manually define a name for this component */
     protected const ?string NAME = null;
@@ -55,15 +57,30 @@ abstract class Component implements Stringable
 
     public static function prepareArguments( Arguments $arguments ) : void {}
 
+    /**
+     * @param null|Engine                                         $engine
+     * @param null|ClerkProfiler|Stopwatch                        $profiler
+     * @param null|LoggerInterface                                $logger
+     * @param null|array<array-key, mixed>|CacheItemPoolInterface $adapter
+     *
+     * @return $this
+     */
     #[Required]
     final public function setDependencies(
-        ?Engine                      $engine,
-        null|Stopwatch|ClerkProfiler $profiler,
-        ?LoggerInterface             $logger = null,
+        ?Engine                           $engine,
+        null|Stopwatch|ClerkProfiler      $profiler,
+        ?LoggerInterface                  $logger = null,
+        null|array|CacheItemPoolInterface $adapter = null,
     ) : self {
         $this->engine        ??= $engine;
         $this->clerkProfiler ??= ClerkProfiler::from( $profiler, 'View' );
         $this->logger        ??= $logger;
+        $this->assignCacheAdapter(
+            adapter   : $adapter,
+            prefix    : 'component',
+            defer     : true,
+            stopwatch : $this->clerkProfiler?->stopwatch,
+        );
 
         return $this;
     }

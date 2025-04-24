@@ -11,6 +11,7 @@ use Core\View\Template\Compiler\Nodes\Html\{AttributeNode, ElementNode};
 use ReflectionClass;
 use ReflectionParameter;
 use ReflectionException;
+use function Support\get;
 
 final class Arguments
 {
@@ -45,6 +46,9 @@ final class Arguments
         $this->attributes = new Attributes( ...$this->nodeAttributes() );
     }
 
+    /**
+     * @return array<string,null|string>
+     */
     private function nodeAttributes() : array
     {
         if ( ! $this->node->attributes ) {
@@ -55,7 +59,7 @@ final class Arguments
         $context    = new PrintContext( raw : true );
 
         // TODO : Validate inline expressions: class="flex {$var ?? 'column'} px:16"
-        foreach ( $this->node->attributes as $index => $attribute ) {
+        foreach ( $this->node->attributes as $attribute ) {
             // Skip separators
             if ( ! $attribute instanceof AttributeNode ) {
                 continue;
@@ -70,7 +74,7 @@ final class Arguments
                 continue;
             }
 
-            $value = $attribute->value->print( $context );
+            $value = $attribute->value?->print( $context );
 
             $attributes[$name] = $value;
         }
@@ -80,7 +84,7 @@ final class Arguments
     /**
      * Generate {@see ViewRenderNode} arguments.
      *
-     * @return array{component: string, arguments: array<string,mixed>}
+     * @return array<string,mixed>
      */
     public function __invoke() : array
     {
@@ -106,12 +110,13 @@ final class Arguments
         $arguments = ['__attributes' => $this->attributes->resolveAttributes( true )];
 
         foreach ( $this->componentArguments() as $argument => $default ) {
-            try {
-                $default = $default->getDefaultValue();
-            }
-            catch ( ReflectionException $e ) {
-                $default = null;
-            }
+            $default = get( [$default, 'getDefaultValue'], null );
+            // try {
+            //     $default = $default->getDefaultValue();
+            // }
+            // catch ( ReflectionException ) {
+            //     $default = null;
+            // }
 
             $arguments[$argument] = $this->pull( $argument, $default );
         }
