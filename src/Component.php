@@ -125,12 +125,17 @@ abstract class Component implements Stringable
 
         \assert( $engine->getLoader() instanceof Engine\Autoloader );
 
+        // dump(
+        //         $template,
+        //         $this->engine->parse( $template ),
+        // );
+
         $string = $engine->getLoader()->templateExists( $template )
                 ? $engine->renderToString(
                     name              : $template,
                     parameters        : $this,
                     // TOOD: DEBUG
-                    preserveCacheKey  : true,
+                    // preserveCacheKey  : true,
                     suppressExtension : ViewComponentExtension::class,
                 )
                 : $this->getString();
@@ -148,19 +153,6 @@ abstract class Component implements Stringable
         return false;
     }
 
-    protected function getTemplateString() : string
-    {
-        return \trim(
-            $this->getEngine()->renderToString(
-                $this->getTemplatePath(),
-                $this->getTemplateParameters(),
-                // TOOD: DEBUG
-                preserveCacheKey  : true,
-                suppressExtension : ViewComponentExtension::class,
-            ),
-        );
-    }
-
     protected function getTemplatePath() : string
     {
         return $this->name;
@@ -174,7 +166,7 @@ abstract class Component implements Stringable
         return $this;
     }
 
-    final protected function getEngine() : Engine
+    final public function getEngine() : Engine
     {
         if ( $this->engine === null ) {
             $this->logger?->notice( 'Returning internal fallback Engine.' );

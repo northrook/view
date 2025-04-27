@@ -54,6 +54,21 @@ final class ViewRenderNode extends StatementNode
 
     public function print( ?PrintContext $context ) : string
     {
+        // $context ??= new PrintContext();
+        //
+        // // dump( [ __METHOD__ => $context ] );
+        //
+        // if ( $context->raw ) {
+        //     return $context->format(
+        //             "\$this->global->icon->{$this->action}( %args )",
+        //             $this->arguments,
+        //     );
+        // }
+        //
+        // return $context->format(
+        //         "echo \$this->global->icon->{$this->action}( %args );",
+        //         $this->arguments,
+        // );
         $view = "echo \$this->global->{$this->provider}->{$this->action}(\n";
         $view .= $this->arguments();
         $view .= "\n);\n";

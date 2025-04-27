@@ -541,10 +541,11 @@ final class HtmlFormatter implements Printable
 
     /**
      * @param null|string $html
+     * @param bool        $contentOnly
      *
      * @return array<array-key, mixed>
      */
-    public function htmlToAst( ?string $html = null ) : array
+    public function htmlToAst( ?string $html = null, bool $contentOnly = false ) : array
     {
         if ( ! $html && isset( $this->html ) ) {
             $html = $this->html;
@@ -566,7 +567,9 @@ final class HtmlFormatter implements Printable
                 options : LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD | LIBXML_NOERROR | LIBXML_NOCDATA,
             );
             $dom->encoding = 'UTF-8';
-            return $this->traverseNodes( $dom );
+            $ast           = $this->traverseNodes( $dom );
+
+            return $contentOnly ? \end( $ast )['content'] : $ast;
         }
         catch ( Exception $exception ) {
             $this->errorHandler( $exception );

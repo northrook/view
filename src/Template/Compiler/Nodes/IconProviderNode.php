@@ -51,9 +51,11 @@ final class IconProviderNode extends StatementNode
     {
         $context ??= new PrintContext();
 
+        // dump( [ __METHOD__ => $context ] );
+
         if ( $context->raw ) {
             return $context->format(
-                "'. \$this->global->icon->{$this->action}( %args ) . '",
+                "\$this->global->icon->{$this->action}( %args )",
                 $this->arguments,
             );
         }
