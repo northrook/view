@@ -3,11 +3,11 @@
 namespace Core\View\Template;
 
 use Core\View\{Component\Properties,
-    Template\Compiler\Nodes\ViewRenderNode,
-    ComponentFactory,
-    Template\Compiler\Nodes\Php\ExpressionNode,
-    Template\Compiler\Nodes\TemplateNode,
-    Template\Compiler\NodeTraverser
+        Template\Compiler\Nodes\ViewRenderNode,
+        ComponentFactory,
+        Template\Compiler\Nodes\Php\ExpressionNode,
+        Template\Compiler\Nodes\TemplateNode,
+        Template\Compiler\NodeTraverser
 };
 use Core\View\Template\Compiler\Node;
 use Core\View\Template\Compiler\Nodes\Html\ElementNode;
@@ -19,7 +19,7 @@ final class ViewComponentExtension extends Extension
     private readonly array $matchTags;
 
     public function __construct(
-        private readonly ComponentFactory $factory,
+            private readonly ComponentFactory $factory,
     ) {
         $this->matchTags = $this->factory->getTags();
     }
@@ -29,13 +29,49 @@ final class ViewComponentExtension extends Extension
         return [$this->factory::PROPERTY => $this->factory]; // render( $component, $arguments );
     }
 
-    protected function parse( ElementNode $node, Properties $properties ) : Node
+    protected function componentContent( Node $node ) : int|Node
     {
-        if ( $node->getAttribute( 'component-id' ) ) {
-            dump( "Existing 'component-id'." );
+        // Skip expression nodes, as a component cannot exist there
+        if ( $node instanceof ExpressionNode ) {
+            return NodeTraverser::CONTINUE;
         }
 
+        // Only parse ElementNodes
+        if ( ! $node instanceof ElementNode ) {
+            return $node;
+        }
+
+        $componentName = $this->matchTag( $node );
+
+        if ( ! $componentName ) {
+            return $node;
+        }
+
+        $properties = $this->factory->getComponentProperties( $componentName );
+        $component  = $this->factory->getComponent( $properties->name );
+        $arguments  = $component::getNodeArguments( $node, $properties );
+        $arguments->setComponent( $component );
+        /**
+         * Replace matched {@see ElementNode} with {@see ViewRenderNode}.
+         *
+         * Components will be rendered at runtime using:
+         * ```
+         * $this->global->view->render(
+         *   component : 'component.name',
+         *   arguments: [ 'attributes' => ..., 'content' => ... ],
+         * );
+         * ```
+         */
+        return new ViewRenderNode( $arguments(), raw : true );
+    }
+
+    protected function parse( ElementNode $node, Properties $properties ) : Node
+    {
         $component = $this->factory->getComponent( $properties->name );
+
+        if ( $node->content ) {
+            Node::traverse( $node->content, $this->componentContent( ... ) );
+        }
 
         $arguments = $component::getNodeArguments( $node, $properties );
         $arguments->setComponent( $component );
@@ -59,11 +95,11 @@ final class ViewComponentExtension extends Extension
         return [slug( $this::class ) => $this->proccessTemplatePass( ... )];
     }
 
-    private function proccessTemplatePass( TemplateNode $templateNode ) : void
+    private function proccessTemplatePass( TemplateNode|Node $templateNode ) : void
     {
         ( new NodeTraverser() )->traverse(
-            node  : $templateNode,
-            enter : $this->traverseTemplate( ... ),
+                node  : $templateNode,
+                enter : $this->traverseTemplate( ... ),
         );
     }
 

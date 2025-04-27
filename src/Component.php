@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types=1);
+declare( strict_types = 1 );
 
 namespace Core\View;
 
@@ -49,60 +49,63 @@ abstract class Component implements Stringable
     public readonly Attributes $attributes;
 
     final public static function getNodeArguments(
-        ElementNode $from,
-        Properties  $componentProperties,
-    ) : Arguments {
+            ElementNode $from,
+            Properties  $componentProperties,
+    ) : Arguments
+    {
         return new Arguments( $from, $componentProperties );
     }
 
     public static function prepareArguments( Arguments $arguments ) : void {}
 
     /**
-     * @param null|Engine                                         $engine
-     * @param null|ClerkProfiler|Stopwatch                        $profiler
-     * @param null|LoggerInterface                                $logger
-     * @param null|array<array-key, mixed>|CacheItemPoolInterface $adapter
+     * @param null|Engine                                          $engine
+     * @param null|ClerkProfiler|Stopwatch                         $profiler
+     * @param null|LoggerInterface                                 $logger
+     * @param null|array<array-key, mixed>|CacheItemPoolInterface  $adapter
      *
      * @return $this
      */
     #[Required]
     final public function setDependencies(
-        ?Engine                           $engine,
-        null|Stopwatch|ClerkProfiler      $profiler,
-        ?LoggerInterface                  $logger = null,
-        null|array|CacheItemPoolInterface $adapter = null,
-    ) : self {
+            ?Engine                               $engine,
+            null | Stopwatch | ClerkProfiler      $profiler,
+            ?LoggerInterface                      $logger = null,
+            null | array | CacheItemPoolInterface $adapter = null,
+    ) : self
+    {
         $this->engine        ??= $engine;
         $this->clerkProfiler ??= ClerkProfiler::from( $profiler, 'View' );
         $this->logger        ??= $logger;
         $this->assignCacheAdapter(
-            adapter   : $adapter,
-            prefix    : 'component',
-            defer     : true,
-            stopwatch : $this->clerkProfiler?->stopwatch,
+                adapter   : $adapter,
+                prefix    : 'component',
+                defer     : true,
+                stopwatch : $this->clerkProfiler?->stopwatch,
         );
 
         return $this;
     }
 
     /**
-     * @param array<string, mixed> $arguments
-     * @param null|string          $uniqueId
+     * @param array<string, mixed>  $arguments
+     * @param null|string           $uniqueId
      *
      * @return $this
      */
     final public function create(
-        array   $arguments = [],
-        ?string $uniqueId = null,
-    ) : self {
+            array   $arguments = [],
+            ?string $uniqueId = null,
+    ) : self
+    {
         $this
-            ->initializeComponent( $uniqueId ?? \get_defined_vars() )
-            ->clerkProfiler?->event( "{$this->name}.{$this->uniqueId}" );
+                ->initializeComponent( $uniqueId ?? \get_defined_vars() )
+                ->clerkProfiler?->event( "{$this->name}.{$this->uniqueId}" );
 
-        if ( isset( $arguments['__attributes'] ) ) {
-            \assert( \is_array( $arguments['__attributes'] ) );
-            $this->attributes = new Attributes( ...$arguments['__attributes'] );
-            unset( $arguments['__attributes'] );
+        if ( isset( $arguments[ '__attributes' ] ) ) {
+            \assert( \is_array( $arguments[ '__attributes' ] ) );
+            $this->attributes = new Attributes( ...$arguments[ '__attributes' ] );
+            unset( $arguments[ '__attributes' ] );
         }
         else {
             $this->attributes = new Attributes();
@@ -111,8 +114,8 @@ abstract class Component implements Stringable
         $this->attributes->set( 'component-id', $this->uniqueId );
 
         \assert(
-            \method_exists( $this, '__invoke' ),
-            "Required method '".$this::class."::__invoke()' does not exist.",
+                \method_exists( $this, '__invoke' ),
+                "Required method '" . $this::class . "::__invoke()' does not exist.",
         );
 
         return $this->__invoke( ...$arguments );
@@ -125,22 +128,14 @@ abstract class Component implements Stringable
 
         \assert( $engine->getLoader() instanceof Engine\Autoloader );
 
-        // dump(
-        //         $template,
-        //         $this->engine->parse( $template ),
-        // );
-
         $string = $engine->getLoader()->templateExists( $template )
                 ? $engine->renderToString(
-                    name              : $template,
-                    parameters        : $this,
-                    // TOOD: DEBUG
-                    // preserveCacheKey  : true,
-                    suppressExtension : ViewComponentExtension::class,
+                        name       : $template,
+                        parameters : $this,
                 )
                 : $this->getString();
 
-        if ( ! $string ) {
+        if ( !$string ) {
             throw new RenderException( $template );
         }
 
@@ -148,7 +143,7 @@ abstract class Component implements Stringable
         return \trim( $string );
     }
 
-    protected function getString() : false|string
+    protected function getString() : false | string
     {
         return false;
     }
@@ -161,7 +156,7 @@ abstract class Component implements Stringable
     /**
      * @return array<string, mixed>|object
      */
-    protected function getTemplateParameters() : array|object
+    protected function getTemplateParameters() : array | object
     {
         return $this;
     }
@@ -179,19 +174,19 @@ abstract class Component implements Stringable
     {
         $name = static::NAME ?? ViewComponent::from( static::class )->name;
 
-        if ( ! $name ) {
-            throw new BadMethodCallException( static::class.' name is not defined.' );
+        if ( !$name ) {
+            throw new BadMethodCallException( static::class . ' name is not defined.' );
         }
 
-        if ( ! \ctype_alnum( \str_replace( ':', '', $name ) ) ) {
-            $message = static::class." name '{$name}' must be lower-case alphanumeric.";
+        if ( !\ctype_alnum( \str_replace( ':', '', $name ) ) ) {
+            $message = static::class . " name '{$name}' must be lower-case alphanumeric.";
 
-            if ( \is_numeric( $name[0] ) ) {
-                $message = static::class." name '{$name}' cannot start with a number.";
+            if ( \is_numeric( $name[ 0 ] ) ) {
+                $message = static::class . " name '{$name}' cannot start with a number.";
             }
 
             if ( \str_starts_with( $name, ':' ) || \str_ends_with( $name, ':' ) ) {
-                $message = static::class." name '{$name}' must not start or end with a separator.";
+                $message = static::class . " name '{$name}' must not start or end with a separator.";
             }
 
             throw new InvalidArgumentException( $message );
@@ -201,16 +196,16 @@ abstract class Component implements Stringable
     }
 
     /**
-     * @param array<array-key,mixed>|string $uniqueId
+     * @param array<array-key,mixed>|string  $uniqueId
      *
      * @return self
      */
-    private function initializeComponent( string|array $uniqueId ) : self
+    private function initializeComponent( string | array $uniqueId ) : self
     {
         if ( $this->engine === null ) {
             $this->logger?->warning(
-                '{component} initialized before setDependencies has been called.',
-                ['component' => $this::class],
+                    '{component} initialized before setDependencies has been called.',
+                    [ 'component' => $this::class ],
             );
         }
 
@@ -218,7 +213,7 @@ abstract class Component implements Stringable
 
         if ( \is_array( $uniqueId ) ) {
             try {
-                $uniqueId = \serialize( [$this::class => \spl_object_id( $this ), ...$uniqueId] );
+                $uniqueId = \serialize( [ $this::class => \spl_object_id( $this ), ...$uniqueId ] );
             }
             catch ( Exception $e ) {
                 throw new RuntimeException( $e->getMessage() );
@@ -228,8 +223,8 @@ abstract class Component implements Stringable
         // Set a predefined hash
         if ( \strlen( $uniqueId ) === 8 ) {
             \assert(
-                \ctype_alnum( $uniqueId ) && \strtolower( $uniqueId ) === $uniqueId,
-                "Invalid component unique ID '{$uniqueId}'. Expected 8 characters of alphanumeric, lowercase.",
+                    \ctype_alnum( $uniqueId ) && \strtolower( $uniqueId ) === $uniqueId,
+                    "Invalid component unique ID '{$uniqueId}'. Expected 8 characters of alphanumeric, lowercase.",
             );
             $this->uniqueId = $uniqueId;
         }
@@ -241,7 +236,7 @@ abstract class Component implements Stringable
     }
 
     /**
-     * @param array<string, mixed> $actions
+     * @param array<string, mixed>  $actions
      *
      * @return self
      */

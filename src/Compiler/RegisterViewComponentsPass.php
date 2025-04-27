@@ -155,7 +155,6 @@ final class RegisterViewComponentsPass extends CompilerPass
         $this->factoryDefinition->replaceArgument( '$tags', $componentTags );
 
         foreach ( $componentDirectories as $directory ) {
-            dump( $directory );
             $this->cacheDefinition->addMethodCall( 'addTemplateDirectory', [$directory] );
         }
 

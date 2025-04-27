@@ -109,16 +109,16 @@ final class Arguments
     {
         $arguments = ['__attributes' => $this->attributes->resolveAttributes( true )];
 
-        foreach ( $this->componentArguments() as $argument => $default ) {
-            $default = get( [$default, 'getDefaultValue'], null );
-            // try {
-            //     $default = $default->getDefaultValue();
-            // }
-            // catch ( ReflectionException ) {
-            //     $default = null;
-            // }
+        foreach ( $this->componentArguments() as $argument => $parameter ) {
+            $default = get( [$parameter, 'getDefaultValue'], null );
 
-            $arguments[$argument] = $this->pull( $argument, $default );
+            $value = $this->pull( $argument, $default );
+
+            if ( $value === null && $parameter->isVariadic() ) {
+                continue;
+            }
+
+            $arguments[$argument] = $value;
         }
 
         return $arguments;
