@@ -225,31 +225,31 @@ class IconProviderService implements LazyService, Countable, LoggerAwareInterfac
     }
 
     final public function getIcon(
-        string   $icon,
+        string   $name,
         mixed ...$attributes,
     ) : ?Element {
-        $svg = $this->getSvg( $icon );
+        $svg = $this->getSvg( $name );
 
         return $svg ? new Element( 'i', $svg, ...$attributes ) : null;
     }
 
-    final public function getSvg( string $icon, mixed ...$attributes ) : ?Element
+    final public function getSvg( string $name, mixed ...$attributes ) : ?Element
     {
-        [$pack, $icon, $tail] = $this->resolve( $icon );
+        [$pack, $name, $tail] = $this->resolve( $name );
 
-        if ( ! $this->has( $icon, $pack ) ) {
+        if ( ! $this->has( $name, $pack ) ) {
             return null;
         }
 
         $svg = $this->getCache(
             key_hash( 'xxh32', ...\get_defined_vars() ),
-            fn() => $this->getSvgElement( $icon, $pack, ...$attributes ),
+            fn() => $this->getSvgElement( $name, $pack, ...$attributes ),
         );
 
         if ( ! $svg instanceof Element ) {
             $this->logger?->error(
                 'Unable to provide icon {icon}.',
-                ['icon' => $icon],
+                ['icon' => $name],
             );
             return null;
         }
@@ -268,27 +268,27 @@ class IconProviderService implements LazyService, Countable, LoggerAwareInterfac
     }
 
     /**
-     * @param string      $icon
+     * @param string      $name
      * @param null|string $pack
      * @param mixed       ...$attributes
      *
      * @return Element
      */
     private function getSvgElement(
-        string   $icon,
+        string   $name,
         ?string  $pack = AUTO,
         mixed ...$attributes,
     ) : Element {
         $attributes = new Attributes( ...$attributes );
 
-        $vector = $this->getIconData( $icon, $pack );
+        $vector = $this->getIconData( $name, $pack );
 
         \assert( \is_array( $vector['attributes'] ) && \is_string( $vector['svg'] ) );
 
         $attributes
             ->add( ...$this->defaultAttributes )
             ->add( ...$vector['attributes'] )
-            ->class->add( $icon, true );
+            ->class->add( $name, true );
 
         $svg = \trim( (string) \preg_replace( ['#\s+#m', '#>\s<#'], [' ', '><'], $vector['svg'] ) );
 
