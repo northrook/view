@@ -15,7 +15,7 @@
     }
   },
   "scripts": {
-    "phpstan": "@php vendor/bin/phpstan analyse"
+    "phpstan": "@php vendor/bin/phpstan analyse src"
   },
   "minimum-stability": "dev",
   "prefer-stable": true,

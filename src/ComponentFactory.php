@@ -23,7 +23,7 @@ use Psr\Log\{
     LoggerAwareInterface,
     LoggerAwareTrait,
 };
-use Core\View\Exception\{ComponentNotFoundException, RenderException};
+use Core\View\Exception\{ComponentNotFoundException, ViewException};
 use Symfony\Component\Stopwatch\Stopwatch;
 use InvalidArgumentException;
 use function Support\str_start;
@@ -110,10 +110,7 @@ class ComponentFactory implements LazyService, Profilable, LoggerAwareInterface
             return new $render( ...$arguments );
         }
         catch ( Throwable $exception ) {
-            throw new RenderException(
-                $render,
-                previous : $exception,
-            );
+            throw new ViewException( $render, previous : $exception );
         }
     }
 

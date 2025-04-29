@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Core\View;
 
 use Core\Interface\{ActionInterface, View};
-use Core\View\Exception\RenderException;
+use Core\View\Exception\ViewException;
 use Core\View\Template\Engine;
 use InvalidArgumentException;
 use Symfony\Component\DependencyInjection\ServiceLocator;
@@ -76,10 +76,7 @@ class ViewFactory implements ActionInterface
             return new $render( ...$arguments );
         }
         catch ( Throwable $exception ) {
-            throw new RenderException(
-                $render,
-                previous : $exception,
-            );
+            throw new ViewException( $render, previous : $exception );
         }
     }
 

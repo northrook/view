@@ -104,7 +104,7 @@ final class ViewRenderNode extends StatementNode
     {
         // $context->raw = $this->raw;
 
-        if ( $context->raw ) {
+        if ( $context?->raw ) {
             return "\$this->global->{$this->provider}->{$this->action}({$this->arguments()})";
         }
 
