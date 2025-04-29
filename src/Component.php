@@ -11,7 +11,7 @@ use Core\View\Component\{Arguments, Properties};
 use Psr\Cache\CacheItemPoolInterface;
 use Core\View\ComponentFactory\{ViewComponent};
 use Core\View\Element\Attributes;
-use Core\View\Exception\RenderException;
+use Core\View\Exception\{ViewException};
 use Core\View\Template\{Compiler\Nodes\Html\ElementNode, Engine};
 use Psr\Log\LoggerInterface;
 use Stringable;
@@ -111,7 +111,8 @@ abstract class Component implements Stringable
         $this->attributes->set( 'component-id', $this->uniqueId );
 
         foreach ( $arguments as $key => $value ) {
-            if ( $key[0] === '_' && \property_exists( $this, $key ) ) {
+            // Autoset `__properties`
+            if ( $key[0] === '_' && \property_exists( $this, \substr( $key, 2 ) ) ) {
                 $this->{$key} = $value;
                 unset( $arguments[$key] );
             }
@@ -130,17 +131,22 @@ abstract class Component implements Stringable
         $engine   = $this->getEngine();
         $template = $this->getTemplatePath();
 
-        \assert( $engine->getLoader() instanceof Engine\Autoloader );
+        if ( $template === false ) {
+            $string = $this->getString();
+        }
+        else {
+            \assert( $engine->getLoader() instanceof Engine\Autoloader );
 
-        $string = $engine->getLoader()->templateExists( $template )
-                ? $engine->renderToString(
-                    name       : $template,
-                    parameters : $this,
-                )
-                : $this->getString();
+            $string = $engine->getLoader()->templateExists( $template )
+                    ? $engine->renderToString(
+                        name       : $template,
+                        parameters : $this,
+                    )
+                    : $this->getString();
+        }
 
         if ( ! $string ) {
-            throw new RenderException( $template );
+            throw new ViewException( $template ?: $this::class );
         }
 
         $this->clerkProfiler?->stop( "{$this->name}.{$this->uniqueId}" );
@@ -152,7 +158,7 @@ abstract class Component implements Stringable
         return false;
     }
 
-    protected function getTemplatePath() : string
+    protected function getTemplatePath() : false|string
     {
         return $this->name;
     }
