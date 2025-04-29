@@ -409,12 +409,12 @@ final class HtmlFormatter implements Printable
      */
     private function parseSyntaxTree( ?array $ast = null, null|string|int $key = null ) : string
     {
-        // Grab $this->ast for initial loop
+        // Grab $this->ast for the initial loop
         $ast ??= $this->ast;
         $tag        = null;
         $attributes = [];
 
-        // If $key is string, this iteration is an element
+        // If $key is [string], this iteration is an element
         if ( \is_string( $key ) ) {
             $tag        = \trim( str_after( $key, ':' ), ':' );
             $attributes = $ast['attributes'];
@@ -443,7 +443,7 @@ final class HtmlFormatter implements Printable
             }
             else {
                 Log::warning(
-                    '{method} encountered unexpected value type {type}.',
+                    '{method} encountered an unexpected value type {type}.',
                     ['method' => __METHOD__, 'type' => \gettype( $value )],
                 );
             }
@@ -498,7 +498,7 @@ final class HtmlFormatter implements Printable
         int|string $key,
         array      $ast,
     ) : void {
-        // Trim $value, and bail early if empty
+        // Trim $ value and bail early if empty
         if ( ! $string = \trim( $string ) ) {
             return;
         }
@@ -542,11 +542,15 @@ final class HtmlFormatter implements Printable
     /**
      * @param null|string $html
      * @param bool        $contentOnly
+     * @param string      $tag
      *
      * @return array<array-key, mixed>
      */
-    public function htmlToAst( ?string $html = null, bool $contentOnly = false ) : array
-    {
+    public function htmlToAst(
+        ?string $html = null,
+        bool    $contentOnly = false,
+        string  $tag = 'span',
+    ) : array {
         if ( ! $html && isset( $this->html ) ) {
             $html = $this->html;
             unset( $this->html );
@@ -556,8 +560,8 @@ final class HtmlFormatter implements Printable
             return [];
         }
 
-        if ( ! \str_starts_with( $html, '<html' ) && ! \str_ends_with( $html, '</html>' ) ) {
-            $html = "<html>{$html}</html>";
+        if ( ! \str_starts_with( $html, "<{$tag}" ) && ! \str_ends_with( $html, "</{$tag}>" ) ) {
+            $html = "<{$tag}>{$html}</{$tag}>";
         }
 
         try {
@@ -569,7 +573,7 @@ final class HtmlFormatter implements Printable
             $dom->encoding = 'UTF-8';
             $ast           = $this->traverseNodes( $dom );
 
-            return $contentOnly ? \end( $ast )['content'] : $ast;
+            return $contentOnly ? ( \end( $ast )['content'] ?? $ast ) : $ast;
         }
         catch ( Exception $exception ) {
             $this->errorHandler( $exception );
@@ -581,7 +585,7 @@ final class HtmlFormatter implements Printable
     /**
      * @param DOMNode $dom
      *
-     * @return array<array-key, mixed>
+     * @return array<array-key, array{tag: string, attributes: array<string, bool|string>, content: array<array-key,mixed>}|string>
      */
     private function traverseNodes( DOMNode $dom ) : array
     {
@@ -609,7 +613,7 @@ final class HtmlFormatter implements Printable
     /**
      * @param DOMElement $node
      *
-     * @return array<string, string>
+     * @return array<string, bool|string>
      */
     private function nodeAttributes( DOMElement $node ) : array
     {
