@@ -112,7 +112,7 @@ abstract class Component implements Stringable
 
         foreach ( $arguments as $key => $value ) {
             // Autoset `__properties`
-            if ( $key[0] === '_' && \property_exists( $this, \substr( $key, 2 ) ) ) {
+            if ( $key[0] === '_' && \property_exists( $this, \substr( $key, $key[1] === '_' ? 2 : 1 ) ) ) {
                 $this->{$key} = $value;
                 unset( $arguments[$key] );
             }
