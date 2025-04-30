@@ -8,7 +8,6 @@ use Attribute, Override;
 use Core\Symfony\Console\Output;
 use Core\Symfony\DependencyInjection\Autodiscover;
 use Core\View\Component;
-use Northrook\Logger\Log;
 use ReflectionException;
 use LogicException;
 use ReflectionClass;
@@ -47,17 +46,13 @@ final class ViewComponent extends Autodiscover
     public readonly string $directory;
 
     /**
-     * Configure how this {@see AbstractComponent} is handled.
+     * Configure how this {@see Component} is handled.
      *
      * ### `Tag`
      * Assign one or more HTML tags to trigger this component.
      *
      * Use the `:` separator to indicate a component subtype,
      * which will call a method of the same name.
-     *
-     * ### `Static`
-     * Components will by default be rendered at runtime,
-     * but static components will render into the template cache as HTML.
      *
      * @param string[] $tag       [optional]
      * @param ?string  $name
@@ -72,7 +67,7 @@ final class ViewComponent extends Autodiscover
             $this->name = \strtolower( \trim( $name, " \n\r\t\v\0." ) );
         }
 
-        $this->setTags( (array) $tag );
+        $this->nodeTags = \array_values( (array) $tag );
 
         parent::__construct(
             serviceID : $serviceId ?? '',
@@ -146,22 +141,6 @@ final class ViewComponent extends Autodiscover
             $this->name = $className;
         }
         return \strtolower( $this::PREFIX.$this->name );
-    }
-
-    /**
-     * @param string[] $tags
-     *
-     * @return void
-     */
-    private function setTags( array $tags ) : void
-    {
-        foreach ( $tags as $tag ) {
-            if ( ! \ctype_alpha( \str_replace( [':', '{', '}'], '', $tag ) ) ) {
-                Log::error( 'Tag {tag} contains invalid characters.', ['tag' => $tag] );
-            }
-        }
-
-        $this->nodeTags = \array_values( $tags );
     }
 
     private function getDirectory() : string
@@ -253,11 +232,15 @@ final class ViewComponent extends Autodiscover
     {
         $properties = [];
 
-        dump( $this->nodeTags );
-
         foreach ( $this->nodeTags as $tag ) {
             $tags = \explode( ':', $tag );
             $tag  = $tags[0];
+
+            if ( ! \ctype_alnum( \str_replace( [':', '{', '}'], '', $tag ) ) ) {
+                Output::error(
+                    "{$this->className} contains invalid characters in tag: {$tag}",
+                );
+            }
 
             foreach ( $tags as $position => $argument ) {
                 if ( $position === 0 ) {
@@ -268,21 +251,6 @@ final class ViewComponent extends Autodiscover
 
                 $property        = \trim( $argument, " \t\n\r\0\x0B{}" );
                 $tags[$position] = $property;
-                // if ( \str_contains( $argument, '{' ) ) {
-                //
-                //     // if ( Reflect::class( $this->className )->hasProperty( $property ) ) {
-                //     //     $tags[ $position ] = $property;
-                //     // }
-                //     // else {
-                //     //     Output::error( "Property '{$property}' not found in component '{$this->name}'" );
-                //     // }
-                //
-                //     continue;
-                // }
-
-                // if ( !Reflect::class( $this->className )->hasMethod( $argument ) ) {
-                //     Output::error( "Method {$this->className}::{$argument}' not found in component '{$this->name}'" );
-                // }
             }
             $properties[$tag] = $tags;
         }
