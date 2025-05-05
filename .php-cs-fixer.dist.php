@@ -1,5 +1,5 @@
 <?php
 
-declare( strict_types = 1 );
+declare(strict_types=1);
 
-return \Northrook\standards( __DIR__ );
+return \Northrook\standards( __DIR__.'/src' );

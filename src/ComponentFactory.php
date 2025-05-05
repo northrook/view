@@ -163,7 +163,7 @@ class ComponentFactory implements LazyService, Profilable, LoggerAwareInterface
             && \class_exists( $from )
             && \is_subclass_of( $from, Component::class )
         ) {
-            return ViewComponent::from( $from )->serviceID;
+            return ViewComponent::from( $from )->serviceId;
         }
 
         $from = str_start( $from, ViewComponent::PREFIX );

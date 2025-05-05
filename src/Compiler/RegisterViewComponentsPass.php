@@ -39,7 +39,7 @@ final class RegisterViewComponentsPass extends CompilerPass
      * @param null|ReferenceConfigurator $engine    {@see Engine}
      * @param null|ReferenceConfigurator $stopwatch {@see Stopwatch}
      * @param null|ReferenceConfigurator $logger    {@see LoggerInterface}
-     * @param ?ReferenceConfigurator     $cache
+     * @param null|ReferenceConfigurator $cache     {@see CacheItemPoolInterface}
      */
     public function __construct(
         protected ?ReferenceConfigurator $engine = null,
@@ -95,7 +95,8 @@ final class RegisterViewComponentsPass extends CompilerPass
 
         /** @var ViewComponent $viewComponent */
         $viewComponent = $viewComponentAttributes[0]->newInstance();
-        $viewComponent->setClassName( $className );
+        /** @noinspection PhpInternalEntityUsedInspection */
+        $viewComponent->registerService( $className );
 
         return $viewComponent;
     }
@@ -207,6 +208,8 @@ final class RegisterViewComponentsPass extends CompilerPass
             return true;
         }
 
+        // !! BUG
+        // TODO : Should likely be EngineDefinition
         $this->cacheDefinition = $container->getDefinition( $this->engineID );
 
         return false;

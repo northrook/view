@@ -17,9 +17,10 @@ use ValueError;
 use ReflectionAttribute;
 use RuntimeException;
 use function Support\normalize_path;
+use const Support\INFER;
 
 /**
- * Classing annotated with {@see Component} will be autoconfigured as a `service`.
+ * {@see Component} annotated with {@see ViewComponent} will be autoconfigured as a `service`.
  *
  * @used-by ComponentFactory, ComponentParser
  *
@@ -54,23 +55,32 @@ final class ViewComponent extends Autodiscover
      * Use the `:` separator to indicate a component subtype,
      * which will call a method of the same name.
      *
-     * @param string[] $tag       [optional]
-     * @param ?string  $name
-     * @param ?string  $serviceId
+     * @param string|string[] $tag       [optional]
+     * @param ?string         $name
+     * @param ?string         $serviceId
      */
     public function __construct(
         string|array $tag = [],
         ?string      $name = null,
-        ?string      $serviceId = null,
+        ?string      $serviceId = INFER,
     ) {
         if ( $name ) {
             $this->name = \strtolower( \trim( $name, " \n\r\t\v\0." ) );
         }
 
-        $this->nodeTags = \array_values( (array) $tag );
+        $tags = [];
+
+        foreach ( \is_array( $tag ) ? $tag : [$tag] as $value ) {
+            if ( ! \is_string( $value ) ) {
+                throw new InvalidArgumentException( 'Invalid source: '.\gettype( $value ) );
+            }
+
+            $tags[] = \trim( $value, " \n\r\t\v\0." );
+        }
+        $this->nodeTags = $tags;
 
         parent::__construct(
-            serviceID : $serviceId ?? '',
+            serviceId : $serviceId,
             tag       : [
                 'view.component_locator',
                 'monolog.logger' => ['channel' => 'view_component'],
@@ -116,7 +126,10 @@ final class ViewComponent extends Autodiscover
 
         /** @var static $self */
         $self = $attribute[0]->newInstance();
-        $self->setClassName( $component );
+
+        /** @noinspection PhpInternalEntityUsedInspection */
+        $self->registerService( $component );
+
         $self->getDirectory();
 
         return self::$instances[$component] ??= $self;
@@ -219,7 +232,7 @@ final class ViewComponent extends Autodiscover
                 $tag .= ':'.\implode( ':', $fragments );
             }
 
-            $set[$tag] = $this->serviceID;
+            $set[$tag] = $this->serviceId;
         }
 
         return $set;
