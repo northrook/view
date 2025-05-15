@@ -17,6 +17,8 @@ use Symfony\Component\DependencyInjection\{
 use Core\View\Template\Engine;
 use Psr\Log\LoggerInterface;
 use Support\PhpStormMeta;
+use ReflectionAttribute;
+use Throwable;
 use ReflectionClass, LogicException;
 
 final class RegisterViewComponentsPass extends CompilerPass
@@ -81,24 +83,28 @@ final class RegisterViewComponentsPass extends CompilerPass
 
     private function definitionViewComponentAttribute( Definition $definition ) : ?ViewComponent
     {
-        $className = $definition->getClass() ?: 'invalid';
-
-        if ( ! \class_exists( $className ) ) {
-            $message = $this::class." class '{$className}' does not exist.";
-            $this->console->error( $message );
+        try {
+            $className       = $definition->getClass();
+            $reflectionClass = new ReflectionClass( $className );
+        }
+        catch ( Throwable $exception ) {
+            $this->console->error( $exception->getMessage() );
+            return null;
+        }
+        try {
+            $reflectedAttribute = $reflectionClass->getAttributes(
+                ViewComponent::class,
+                ReflectionAttribute::IS_INSTANCEOF,
+            );
+            $attribute = $reflectedAttribute[0]->newInstance();
+            \assert( $attribute instanceof ViewComponent );
+        }
+        catch ( Throwable $exception ) {
+            $this->console->error( $exception->getMessage() );
             return null;
         }
 
-        $reflectionClass = new ReflectionClass( $className );
-
-        $viewComponentAttributes = $reflectionClass->getAttributes( ViewComponent::class );
-
-        /** @var ViewComponent $viewComponent */
-        $viewComponent = $viewComponentAttributes[0]->newInstance();
-        /** @noinspection PhpInternalEntityUsedInspection */
-        $viewComponent->registerService( $className );
-
-        return $viewComponent;
+        return $attribute->configure( $className );
     }
 
     protected function registerTaggedComponents() : void
