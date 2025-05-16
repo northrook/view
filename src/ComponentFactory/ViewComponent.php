@@ -22,7 +22,8 @@ use const Support\INFER;
 /**
  * {@see Component} annotated with {@see ViewComponent} will be autoconfigured as a `service`.
  *
- * @used-by ComponentFactory, ComponentParser
+ * @used-by ComponentFactory
+ * @extends Autodiscover<Component>
  *
  * @author  Martin Nielsen
  */
@@ -127,8 +128,7 @@ final class ViewComponent extends Autodiscover
         /** @var static $self */
         $self = $attribute[0]->newInstance();
 
-        /** @noinspection PhpInternalEntityUsedInspection */
-        $self->registerService( $component );
+        $self->configure( $component );
 
         $self->getDirectory();
 
