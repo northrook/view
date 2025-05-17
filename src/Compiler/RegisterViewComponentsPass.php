@@ -84,7 +84,8 @@ final class RegisterViewComponentsPass extends CompilerPass
     private function definitionViewComponentAttribute( Definition $definition ) : ?ViewComponent
     {
         try {
-            $className       = $definition->getClass();
+            $className = $definition->getClass();
+            \assert( \class_exists( $className, false ) );
             $reflectionClass = new ReflectionClass( $className );
         }
         catch ( Throwable $exception ) {

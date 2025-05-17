@@ -3,11 +3,11 @@
 namespace Core\View\Template;
 
 use Core\View\{Component\Properties,
-        Template\Compiler\Nodes\ViewRenderNode,
-        ComponentFactory,
-        Template\Compiler\Nodes\Php\ExpressionNode,
-        Template\Compiler\Nodes\TemplateNode,
-        Template\Compiler\NodeTraverser
+    ComponentFactory,
+    Template\Compiler\Nodes\ViewRenderNode,
+    Template\Compiler\Nodes\Php\ExpressionNode,
+    Template\Compiler\Nodes\TemplateNode,
+    Template\Compiler\NodeTraverser
 };
 use Core\View\Template\Compiler\Node;
 use Core\View\Template\Compiler\Nodes\Html\ElementNode;
@@ -19,7 +19,7 @@ final class ViewComponentExtension extends Extension
     private readonly array $matchTags;
 
     public function __construct(
-            private readonly ComponentFactory $factory,
+        private readonly ComponentFactory $factory,
     ) {
         $this->matchTags = $this->factory->getTags();
     }
@@ -98,8 +98,8 @@ final class ViewComponentExtension extends Extension
     private function proccessTemplatePass( TemplateNode|Node $templateNode ) : void
     {
         ( new NodeTraverser() )->traverse(
-                node  : $templateNode,
-                enter : $this->traverseTemplate( ... ),
+            node  : $templateNode,
+            enter : $this->traverseTemplate( ... ),
         );
     }
 

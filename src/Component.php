@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Core\View;
 
-use Cache\CachePoolTrait;
+use Cache\CacheHandler;
 use Core\Profiler\ClerkProfiler;
 use Core\Symfony\DependencyInjection\SettingsAccessor;
 use Core\View\Component\{Arguments, Properties};
@@ -29,7 +29,7 @@ use RuntimeException;
  */
 abstract class Component implements Stringable
 {
-    use SettingsAccessor, CachePoolTrait;
+    use SettingsAccessor, CacheHandler;
 
     /** @var ?string Manually define a name for this component */
     protected const ?string NAME = null;

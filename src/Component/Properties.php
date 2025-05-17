@@ -43,7 +43,7 @@ final readonly class Properties extends DataObject implements Stringable
     {
         // Parsed namespaced $tag
         if ( \str_contains( $tag, ':' ) ) {
-            // Always parse tags passed using a view:tag.. namespace
+            // Always parse tags passed using a view:tag namespace
             if ( \str_starts_with( $tag, 'view:' ) ) {
                 return \explode( ':', $tag )[1];
             }

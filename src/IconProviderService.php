@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Core\View;
 
-use Cache\CachePoolTrait;
+use Cache\CacheHandler;
 use Core\Interface\{LazyService};
 use Core\View\Element\Attributes;
 use Countable;
@@ -15,7 +15,7 @@ use const Support\AUTO;
 
 class IconProviderService implements LazyService, Countable, LoggerAwareInterface
 {
-    use CachePoolTrait;
+    use CacheHandler;
 
     /** @var array<string, array{'attributes': array<string,int|string>,'svg':string }> */
     private const array DEFAULT = [

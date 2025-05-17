@@ -18,19 +18,19 @@ use Core\Profiler\{
     StopwatchProfiler,
 };
 use Symfony\Component\DependencyInjection\ServiceLocator;
-use Core\Interface\LazyService;
-use Psr\Log\{
-    LoggerAwareInterface,
-    LoggerAwareTrait,
+use Core\Interface\{
+    LazyService,
+    Loggable,
+    LogHandler,
 };
 use Core\View\Exception\{ComponentNotFoundException, ViewException};
 use Symfony\Component\Stopwatch\Stopwatch;
 use InvalidArgumentException;
 use function Support\str_start;
 
-class ComponentFactory implements LazyService, Profilable, LoggerAwareInterface
+class ComponentFactory implements LazyService, Profilable, Loggable
 {
-    use StopwatchProfiler, LoggerAwareTrait;
+    use StopwatchProfiler, LogHandler;
 
     public const string PROPERTY = 'view';
 
