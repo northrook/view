@@ -85,7 +85,7 @@ final class RegisterViewComponentsPass extends CompilerPass
     {
         try {
             $className = $definition->getClass();
-            \assert( \class_exists( $className, false ) );
+            \assert( $className && \class_exists( $className, false ) );
             $reflectionClass = new ReflectionClass( $className );
         }
         catch ( Throwable $exception ) {
