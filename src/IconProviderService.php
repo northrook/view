@@ -5,17 +5,16 @@ declare(strict_types=1);
 namespace Core\View;
 
 use Cache\CacheHandler;
-use Core\Interface\{LazyService};
+use Core\Interface\{LazyService, Loggable, LogHandler};
 use Core\View\Element\Attributes;
 use Countable;
 use Psr\Cache\CacheItemPoolInterface;
-use Psr\Log\{LoggerAwareInterface, LoggerInterface};
 use function Support\key_hash;
 use const Support\AUTO;
 
-class IconProviderService implements LazyService, Countable, LoggerAwareInterface
+class IconProviderService implements LazyService, Countable, Loggable
 {
-    use CacheHandler;
+    use CacheHandler, LogHandler;
 
     /** @var array<string, array{'attributes': array<string,int|string>,'svg':string }> */
     private const array DEFAULT = [
@@ -166,19 +165,9 @@ class IconProviderService implements LazyService, Countable, LoggerAwareInterfac
         'viewbox' => '0 0 16 16',
     ];
 
-    protected ?LoggerInterface $logger;
-
-    final public function __construct(
-        ?CacheItemPoolInterface $cache = null,
-        ?LoggerInterface        $logger = null,
-    ) {
-        $this->assignCacheAdapter( $cache, 'core.icons' );
-        $this->logger = $logger;
-    }
-
-    final public function setLogger( LoggerInterface $logger ) : void
+    final public function __construct( ?CacheItemPoolInterface $cache = null )
     {
-        $this->logger = $logger;
+        $this->assignCacheAdapter( $cache, 'icons' );
     }
 
     /**
@@ -247,9 +236,10 @@ class IconProviderService implements LazyService, Countable, LoggerAwareInterfac
         );
 
         if ( ! $svg instanceof Element ) {
-            $this->logger?->error(
+            $this->log(
                 'Unable to provide icon {icon}.',
                 ['icon' => $name],
+                'warning',
             );
             return null;
         }

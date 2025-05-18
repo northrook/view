@@ -105,6 +105,8 @@ final class RegisterViewComponentsPass extends CompilerPass
             return null;
         }
 
+        \assert( \class_exists( $className, false ) );
+
         return $attribute->configure( $className );
     }
 
