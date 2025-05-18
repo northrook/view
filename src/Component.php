@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Core\View;
 
 use Cache\CacheHandler;
+use Core\Interface\{LogHandler, Loggable};
 use Core\Profiler\ClerkProfiler;
 use Core\Symfony\DependencyInjection\SettingsAccessor;
 use Core\View\Component\{Arguments, Properties};
@@ -13,7 +14,6 @@ use Core\View\ComponentFactory\{ViewComponent};
 use Core\View\Element\Attributes;
 use Core\View\Exception\{ViewException};
 use Core\View\Template\{Compiler\Nodes\Html\ElementNode, Engine};
-use Psr\Log\LoggerInterface;
 use Stringable;
 use Symfony\Component\Stopwatch\Stopwatch;
 use Symfony\Contracts\Service\Attribute\Required;
@@ -27,9 +27,9 @@ use RuntimeException;
  *
  * @require-method self __invoke()
  */
-abstract class Component implements Stringable
+abstract class Component implements Stringable, Loggable
 {
-    use SettingsAccessor, CacheHandler;
+    use SettingsAccessor, CacheHandler, LogHandler;
 
     /** @var ?string Manually define a name for this component */
     protected const ?string NAME = null;
@@ -39,8 +39,6 @@ abstract class Component implements Stringable
     private ?Engine $engine = null;
 
     private ?ClerkProfiler $clerkProfiler = null;
-
-    protected ?LoggerInterface $logger = null;
 
     public readonly string $name;
 
@@ -60,7 +58,6 @@ abstract class Component implements Stringable
     /**
      * @param null|Engine                                         $engine
      * @param null|ClerkProfiler|Stopwatch                        $profiler
-     * @param null|LoggerInterface                                $logger
      * @param null|array<array-key, mixed>|CacheItemPoolInterface $adapter
      *
      * @return $this
@@ -69,12 +66,10 @@ abstract class Component implements Stringable
     final public function setDependencies(
         ?Engine                           $engine,
         null|Stopwatch|ClerkProfiler      $profiler,
-        ?LoggerInterface                  $logger = null,
         null|array|CacheItemPoolInterface $adapter = null,
     ) : self {
         $this->engine        ??= $engine;
         $this->clerkProfiler ??= ClerkProfiler::from( $profiler, 'View' );
-        $this->logger        ??= $logger;
         $this->assignCacheAdapter(
             adapter   : $adapter,
             prefix    : 'component',
@@ -135,9 +130,7 @@ abstract class Component implements Stringable
             $string = $this->getString();
         }
         else {
-            \assert( $engine->getLoader() instanceof Engine\Autoloader );
-
-            $string = $engine->getLoader()->templateExists( $template )
+            $string = $engine->loader->templateExists( $template )
                     ? $engine->renderToString(
                         name       : $template,
                         parameters : $this,

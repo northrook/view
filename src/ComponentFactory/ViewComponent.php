@@ -22,6 +22,7 @@ use const Support\INFER;
 /**
  * {@see Component} annotated with {@see ViewComponent} will be autoconfigured as a `service`.
  *
+ * @template T of object
  * @used-by ComponentFactory
  * @extends Autodiscover<Component>
  *
@@ -34,7 +35,7 @@ final class ViewComponent extends Autodiscover
 
     public const string LOCATOR_ID = 'view.component_locator';
 
-    /** @var array<string,ViewComponent> */
+    /** @var array<string,ViewComponent<Component>> */
     private static array $instances = [];
 
     /** @var class-string<Component> */
@@ -93,7 +94,7 @@ final class ViewComponent extends Autodiscover
     }
 
     /**
-     * @return ViewComponent[]
+     * @return ViewComponent<T>[]
      */
     public static function getInstances() : array
     {
@@ -103,7 +104,7 @@ final class ViewComponent extends Autodiscover
     /**
      * @param class-string<Component> $component
      *
-     * @return self
+     * @return self<T>
      */
     public static function from( string $component ) : self
     {

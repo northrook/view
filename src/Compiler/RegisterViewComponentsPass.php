@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Core\View\Compiler;
 
-use Core\View\ComponentFactory;
+use Core\View\{Component, ComponentFactory};
 use Core\View\ComponentFactory\{ComponentBag, ViewComponent};
 use Core\Symfony\Console\ListReport;
 use Core\Symfony\DependencyInjection\CompilerPass;
@@ -81,8 +81,14 @@ final class RegisterViewComponentsPass extends CompilerPass
         return \array_keys( $this->container->findTaggedServiceIds( $this->locatorID ) );
     }
 
-    private function definitionViewComponentAttribute( Definition $definition ) : ?ViewComponent
-    {
+    /**
+     * @param Definition $definition
+     *
+     * @return null|ViewComponent<Component>
+     */
+    private function definitionViewComponentAttribute(
+        Definition $definition,
+    ) : ?ViewComponent {
         try {
             $className = $definition->getClass();
             \assert( $className && \class_exists( $className, false ) );
@@ -98,16 +104,18 @@ final class RegisterViewComponentsPass extends CompilerPass
                 ReflectionAttribute::IS_INSTANCEOF,
             );
             $attribute = $reflectedAttribute[0]->newInstance();
-            \assert( $attribute instanceof ViewComponent );
         }
         catch ( Throwable $exception ) {
             $this->console->error( $exception->getMessage() );
             return null;
         }
 
-        \assert( \class_exists( $className, false ) );
+        \assert( $attribute instanceof ViewComponent );
+        \assert( \is_subclass_of( $className, Component::class ) );
 
-        return $attribute->configure( $className );
+        $attribute->configure( $className );
+
+        return $attribute;
     }
 
     protected function registerTaggedComponents() : void
