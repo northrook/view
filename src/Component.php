@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Core\View;
 
 use Cache\CacheHandler;
+use Core\Autowire\SettingsAccessor;
 use Core\Interface\{LogHandler, Loggable};
 use Core\Profiler\ClerkProfiler;
-use Core\Symfony\DependencyInjection\SettingsAccessor;
 use Core\View\Component\{Arguments, Properties};
 use Psr\Cache\CacheItemPoolInterface;
 use Core\View\ComponentFactory\{ViewComponent};
