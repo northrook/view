@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace Core\View;
 
 use Cache\CacheHandler;
-use Core\Autowire\SettingsAccessor;
-use Core\Interface\{LogHandler, Loggable};
+use Core\Interface\{LogHandler, Loggable, SettingsProviderInterface};
 use Core\Profiler\ClerkProfiler;
 use Core\View\Component\{Arguments, Properties};
 use Psr\Cache\CacheItemPoolInterface;
@@ -21,6 +20,7 @@ use BadMethodCallException;
 use InvalidArgumentException;
 use Exception;
 use RuntimeException;
+use function Support\slug;
 
 /**
  * Base class for a view component.
@@ -29,7 +29,7 @@ use RuntimeException;
  */
 abstract class Component implements Stringable, Loggable
 {
-    use SettingsAccessor, CacheHandler, LogHandler;
+    use LogHandler;
 
     /** @var ?string Manually define a name for this component */
     protected const ?string NAME = null;
@@ -38,7 +38,11 @@ abstract class Component implements Stringable, Loggable
 
     private ?Engine $engine = null;
 
+    private readonly ?SettingsProviderInterface $settings;
+
     private ?ClerkProfiler $clerkProfiler = null;
+
+    protected readonly ?CacheHandler $cache;
 
     public readonly string $name;
 
@@ -56,25 +60,28 @@ abstract class Component implements Stringable, Loggable
     public static function prepareArguments( Arguments $arguments ) : void {}
 
     /**
-     * @param null|Engine                                         $engine
-     * @param null|ClerkProfiler|Stopwatch                        $profiler
-     * @param null|array<array-key, mixed>|CacheItemPoolInterface $adapter
+     * @param null|Engine                    $engine
+     * @param null|SettingsProviderInterface $settings
+     * @param null|CacheItemPoolInterface    $cache
+     * @param null|ClerkProfiler|Stopwatch   $profiler
      *
      * @return $this
      */
     #[Required]
     final public function setDependencies(
-        ?Engine                           $engine,
-        null|Stopwatch|ClerkProfiler      $profiler,
-        null|array|CacheItemPoolInterface $adapter = null,
+        ?Engine                      $engine,
+        ?SettingsProviderInterface   $settings = null,
+        ?CacheItemPoolInterface      $cache = null,
+        null|Stopwatch|ClerkProfiler $profiler = null,
     ) : self {
-        $this->engine        ??= $engine;
+        $this->engine ??= $engine;
+        $this->settings = $settings;
         $this->clerkProfiler ??= ClerkProfiler::from( $profiler, 'View' );
-        $this->assignCacheAdapter(
-            adapter   : $adapter,
-            prefix    : 'component',
-            defer     : true,
-            stopwatch : $this->clerkProfiler?->stopwatch,
+        $this->cache = new CacheHandler(
+            adapter     : $cache,
+            expiration  : $this->getSetting( 'cache.expiration', 14_400 ),
+            deferCommit : $this->getSetting( 'cache.defer', true ),
+            stopwatch   : $this->clerkProfiler?->stopwatch,
         );
 
         return $this;
@@ -239,21 +246,38 @@ abstract class Component implements Stringable, Loggable
     }
 
     /**
-     * @param array<string, mixed> $actions
+     * @template Setting of null|array<array-key, scalar>|scalar
      *
-     * @return self
+     * @param string  $key
+     * @param Setting $default
+     *
+     * @return Setting
      */
-    private function actionCalls( array $actions ) : self
-    {
-        foreach ( $actions as $action ) {
-            if ( \is_string( $action ) && \method_exists( $this, $action ) ) {
-                $this->{$action}();
-            }
-            if ( \is_callable( $action ) ) {
-                \call_user_func( $action, $this );
-            }
-        }
-
-        return $this;
+    final protected function getSetting(
+        string $key,
+        mixed  $default,
+    ) : mixed {
+        return isset( $this->settings )
+                ? $this->settings->get( slug( "component.{$key}", '.' ), $default )
+                : $default;
     }
+
+    // /**
+    //  * @param array<string, mixed> $actions
+    //  *
+    //  * @return self
+    //  */
+    // private function actionCalls( array $actions ) : self
+    // {
+    //     foreach ( $actions as $action ) {
+    //         if ( \is_string( $action ) && \method_exists( $this, $action ) ) {
+    //             $this->{$action}();
+    //         }
+    //         if ( \is_callable( $action ) ) {
+    //             \call_user_func( $action, $this );
+    //         }
+    //     }
+    //
+    //     return $this;
+    // }
 }

@@ -14,7 +14,7 @@ use const Support\AUTO;
 
 class IconProviderService implements LazyService, Countable, Loggable
 {
-    use CacheHandler, LogHandler;
+    use LogHandler;
 
     /** @var array<string, array{'attributes': array<string,int|string>,'svg':string }> */
     private const array DEFAULT = [
@@ -165,9 +165,11 @@ class IconProviderService implements LazyService, Countable, Loggable
         'viewbox' => '0 0 16 16',
     ];
 
+    protected readonly CacheHandler $cache;
+
     final public function __construct( ?CacheItemPoolInterface $cache = null )
     {
-        $this->assignCacheAdapter( $cache, 'icons' );
+        $this->cache = new CacheHandler( $cache, 'icon' );
     }
 
     /**
@@ -230,7 +232,7 @@ class IconProviderService implements LazyService, Countable, Loggable
             return null;
         }
 
-        $svg = $this->getCache(
+        $svg = $this->cache->get(
             key_hash( 'xxh32', ...\get_defined_vars() ),
             fn() => $this->getSvgElement( $name, $pack, ...$attributes ),
         );
