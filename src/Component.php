@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Core\View;
 
 use Cache\CacheHandler;
-use Core\Interface\{LogHandler, Loggable, SettingsProviderInterface};
-use Core\Profiler\ClerkProfiler;
+use Core\Autowire\{Logger, Profiler, SettingsProvider};
+use Core\Interface\{Loggable};
 use Core\View\Component\{Arguments, Properties};
 use Psr\Cache\CacheItemPoolInterface;
 use Core\View\ComponentFactory\{ViewComponent};
@@ -14,8 +14,6 @@ use Core\View\Element\Attributes;
 use Core\View\Exception\{ViewException};
 use Core\View\Template\{Compiler\Nodes\Html\ElementNode, Engine};
 use Stringable;
-use Symfony\Component\Stopwatch\Stopwatch;
-use Symfony\Contracts\Service\Attribute\Required;
 use BadMethodCallException;
 use InvalidArgumentException;
 use Exception;
@@ -29,7 +27,7 @@ use function Support\slug;
  */
 abstract class Component implements Stringable, Loggable
 {
-    use LogHandler;
+    use Logger, Profiler, SettingsProvider;
 
     /** @var ?string Manually define a name for this component */
     protected const ?string NAME = null;
@@ -37,10 +35,6 @@ abstract class Component implements Stringable, Loggable
     public const string TEMPLATE_DIRECTORY = 'templates/component';
 
     private ?Engine $engine = null;
-
-    private readonly ?SettingsProviderInterface $settings;
-
-    private ?ClerkProfiler $clerkProfiler = null;
 
     protected readonly ?CacheHandler $cache;
 
@@ -60,28 +54,20 @@ abstract class Component implements Stringable, Loggable
     public static function prepareArguments( Arguments $arguments ) : void {}
 
     /**
-     * @param null|Engine                    $engine
-     * @param null|SettingsProviderInterface $settings
-     * @param null|CacheItemPoolInterface    $cache
-     * @param null|ClerkProfiler|Stopwatch   $profiler
+     * @param null|Engine                 $engine
+     * @param null|CacheItemPoolInterface $cache
      *
      * @return $this
      */
-    #[Required]
     final public function setDependencies(
-        ?Engine                      $engine,
-        ?SettingsProviderInterface   $settings = null,
-        ?CacheItemPoolInterface      $cache = null,
-        null|Stopwatch|ClerkProfiler $profiler = null,
+        ?Engine                 $engine,
+        ?CacheItemPoolInterface $cache = null,
     ) : self {
         $this->engine ??= $engine;
-        $this->settings = $settings;
-        $this->clerkProfiler ??= ClerkProfiler::from( $profiler, 'View' );
         $this->cache = new CacheHandler(
             adapter     : $cache,
             expiration  : $this->getSetting( 'cache.expiration', 14_400 ),
             deferCommit : $this->getSetting( 'cache.defer', true ),
-            stopwatch   : $this->clerkProfiler?->stopwatch,
         );
 
         return $this;
@@ -97,9 +83,8 @@ abstract class Component implements Stringable, Loggable
         array   $arguments = [],
         ?string $uniqueId = null,
     ) : self {
-        $this
-            ->initializeComponent( $uniqueId ?? \get_defined_vars() )
-            ->clerkProfiler?->event( "{$this->name}.{$this->uniqueId}" );
+        $this->initializeComponent( $uniqueId ?? \get_defined_vars() );
+        $this->profiler->start( "{$this->name}.{$this->uniqueId}" );
 
         if ( isset( $arguments['__attributes'] ) ) {
             \assert( \is_array( $arguments['__attributes'] ) );
@@ -149,7 +134,7 @@ abstract class Component implements Stringable, Loggable
             throw new ViewException( $template ?: $this::class );
         }
 
-        $this->clerkProfiler?->stop( "{$this->name}.{$this->uniqueId}" );
+        $this->profiler->stop( "{$this->name}.{$this->uniqueId}" );
         return \trim( $string );
     }
 

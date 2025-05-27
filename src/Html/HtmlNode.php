@@ -7,7 +7,7 @@ namespace Core\View\Html;
 use Core\Interface\DataInterface;
 use Core\View\Element\Tag;
 use Stringable;
-use function Support\{str_before, str_includes};
+use function Support\{str_before, str_includes_any};
 
 /**
  * @internal
@@ -144,7 +144,7 @@ final class HtmlNode implements DataInterface, Stringable
 
     public static function tagFrom( string $string ) : string
     {
-        if ( ! str_includes( $string, '<>' ) ) {
+        if ( ! str_includes_any( $string, '<>' ) ) {
             return '';
         }
 

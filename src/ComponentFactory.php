@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Core\View;
 
+use Core\Autowire\{Logger, Profiler};
 use Core\View\Component\Properties;
 use Throwable;
 use Core\View\ComponentFactory\{
@@ -13,24 +14,18 @@ use Core\View\ComponentFactory\{
 use Core\View\Template\{
     Engine,
 };
-use Core\Profiler\{
-    Interface\Profilable,
-    StopwatchProfiler,
-};
 use Symfony\Component\DependencyInjection\ServiceLocator;
 use Core\Interface\{
     LazyService,
     Loggable,
-    LogHandler,
 };
 use Core\View\Exception\{ComponentNotFoundException, ViewException};
-use Symfony\Component\Stopwatch\Stopwatch;
 use InvalidArgumentException;
 use function Support\str_start;
 
-class ComponentFactory implements LazyService, Profilable, Loggable
+class ComponentFactory implements LazyService, Loggable
 {
-    use StopwatchProfiler, LogHandler;
+    use Profiler, Logger;
 
     public const string PROPERTY = 'view';
 
@@ -54,13 +49,6 @@ class ComponentFactory implements LazyService, Profilable, Loggable
         protected readonly array          $tags = [],
     ) {}
 
-    final public function setProfiler(
-        ?Stopwatch $stopwatch,
-        ?string    $category = 'View',
-    ) : void {
-        $this->assignProfiler( $stopwatch, $category );
-    }
-
     /**
      * @param string               $__component
      * @param array<string, mixed> $__attributes
@@ -73,7 +61,8 @@ class ComponentFactory implements LazyService, Profilable, Loggable
         array    $__attributes = [],
         mixed ...$arguments,
     ) : Component {
-        $profiler  = $this->profiler?->event( $__component );
+        $this->profiler->start( $__component );
+
         $component = $this->getComponent( $__component );
 
         $uniqueId = null;
@@ -86,7 +75,8 @@ class ComponentFactory implements LazyService, Profilable, Loggable
 
         $this->instantiated[$component->name][] = $component->uniqueId;
 
-        $profiler?->stop();
+        $this->profiler->stop( $__component );
+
         return $component;
     }
 
