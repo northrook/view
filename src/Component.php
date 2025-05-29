@@ -18,7 +18,6 @@ use BadMethodCallException;
 use InvalidArgumentException;
 use Exception;
 use RuntimeException;
-use function Support\slug;
 
 /**
  * Base class for a view component.
@@ -84,7 +83,7 @@ abstract class Component implements Stringable, Loggable
         ?string $uniqueId = null,
     ) : self {
         $this->initializeComponent( $uniqueId ?? \get_defined_vars() );
-        $this->profiler->start( "{$this->name}.{$this->uniqueId}" );
+        $this->profilerStart( "{$this->name}.{$this->uniqueId}" );
 
         if ( isset( $arguments['__attributes'] ) ) {
             \assert( \is_array( $arguments['__attributes'] ) );
@@ -134,7 +133,7 @@ abstract class Component implements Stringable, Loggable
             throw new ViewException( $template ?: $this::class );
         }
 
-        $this->profiler->stop( "{$this->name}.{$this->uniqueId}" );
+        $this->profilerStop( "{$this->name}.{$this->uniqueId}" );
         return \trim( $string );
     }
 
@@ -243,7 +242,10 @@ abstract class Component implements Stringable, Loggable
         mixed  $default,
     ) : mixed {
         return isset( $this->settings )
-                ? $this->settings->get( slug( "component.{$key}", '.' ), $default )
+                ? $this->settings->get(
+                    "component.{$key}",
+                    $default,
+                )
                 : $default;
     }
 

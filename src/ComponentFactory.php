@@ -61,7 +61,7 @@ class ComponentFactory implements LazyService, Loggable
         array    $__attributes = [],
         mixed ...$arguments,
     ) : Component {
-        $this->profiler->start( $__component );
+        $this->profilerStart( $__component );
 
         $component = $this->getComponent( $__component );
 
@@ -75,7 +75,7 @@ class ComponentFactory implements LazyService, Loggable
 
         $this->instantiated[$component->name][] = $component->uniqueId;
 
-        $this->profiler->stop( $__component );
+        $this->profilerStop( $__component );
 
         return $component;
     }
