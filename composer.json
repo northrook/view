@@ -25,7 +25,6 @@
     "ext-libxml": "*",
     "northrook/core": "dev-main",
     "northrook/cache": "dev-main",
-    "northrook/clerk": "dev-main",
     "northrook/profiler": "dev-main",
     "northrook/core-symfony": "dev-main",
     "northrook/pathfinder": "dev-main",
