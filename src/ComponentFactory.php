@@ -15,15 +15,11 @@ use Core\View\Template\{
     Engine,
 };
 use Symfony\Component\DependencyInjection\ServiceLocator;
-use Core\Interface\{
-    LazyService,
-    Loggable,
-};
 use Core\View\Exception\{ComponentNotFoundException, ViewException};
 use InvalidArgumentException;
 use function Support\str_start;
 
-class ComponentFactory implements LazyService, Loggable
+class ComponentFactory
 {
     use Profiler, Logger;
 
@@ -50,7 +46,7 @@ class ComponentFactory implements LazyService, Loggable
     ) {}
 
     /**
-     * @param string               $__component
+     * @param non-empty-string     $__component
      * @param array<string, mixed> $__attributes
      * @param array<string, mixed> $arguments
      *
@@ -107,7 +103,7 @@ class ComponentFactory implements LazyService, Loggable
     /**
      * Begin the Build process of a component.
      *
-     * @param class-string|string $component
+     * @param class-string|non-empty-string $component
      *
      * @return Component
      */

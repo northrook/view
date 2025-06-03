@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Core\View\ComponentFactory;
 
 use Attribute, Override;
-use Core\Symfony\Console\Output;
-use Core\Symfony\DependencyInjection\Autodiscover;
+use Core\Compiler\Autodiscover;
+use Core\Exception\CompilerException;
 use Core\View\Component;
 use ReflectionException;
 use LogicException;
@@ -211,9 +211,11 @@ final class ViewComponent extends Autodiscover
                 $reason ??= $tag[0] === ':'
                         ? 'Tags cannot start with a separator.'
                         : 'Tags must start with a letter.';
-                Output::error( 'Invalid component tag.', 'Value: '.$tag, $reason );
 
-                continue;
+                CompilerException::error(
+                    message  : "Invalid component tag '{$tag}'. {$reason}",
+                    continue : true,
+                );
             }
 
             if ( \str_contains( $tag, ':' ) ) {
@@ -251,8 +253,9 @@ final class ViewComponent extends Autodiscover
             $tag  = $tags[0];
 
             if ( ! \ctype_alnum( \str_replace( [':', '{', '}'], '', $tag ) ) ) {
-                Output::error(
-                    "{$this->className} contains invalid characters in tag: {$tag}",
+                CompilerException::error(
+                    message  : "{$this->className} contains invalid characters in tag: {$tag}",
+                    continue : true,
                 );
             }
 

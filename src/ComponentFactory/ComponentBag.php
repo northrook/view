@@ -14,7 +14,7 @@ use Core\View\Exception\ComponentNotFoundException;
 final class ComponentBag
 {
     /**
-     * @param array<string, array{name: string, class: class-string<Component>, static: bool, tags: string[], tagged: string[][]}|Properties> $components
+     * @param array<string, array{name: string, class: class-string<Component>, directory: string, tags: string[], tagged: string[][]}|Properties> $components
      */
     public function __construct( private array $components = [] ) {}
 

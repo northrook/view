@@ -6,14 +6,13 @@ namespace Core\View;
 
 use Cache\CacheHandler;
 use Core\Autowire\Logger;
-use Core\Interface\{LazyService, Loggable};
 use Core\View\Element\Attributes;
-use Countable;
 use Psr\Cache\CacheItemPoolInterface;
+use Countable;
 use function Support\key_hash;
 use const Support\AUTO;
 
-class IconProviderService implements LazyService, Countable, Loggable
+class IconProviderService implements Countable
 {
     use Logger;
 
