@@ -30,7 +30,7 @@
     "northrook/view-element": "dev-main",
     "northrook/view-template": "dev-main",
     "northrook/php-generator": "dev-main",
-    "symfony/dependency-injection": "^7.3"
+    "symfony/dependency-injection": "@stable"
   },
   "require-dev": {
     "northrook/dev": "dev-main",
